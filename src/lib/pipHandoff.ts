@@ -2,6 +2,7 @@ import { emit, listen } from "@tauri-apps/api/event";
 
 import { useAppSettingsStore } from "../store/useAppSettingsStore";
 import { usePlayerStore } from "../store/usePlayerStore";
+import { isWebMode } from "./api/env";
 import { logToBackend } from "./diagnostics";
 import { CURRENT_WINDOW_LABEL } from "./appWindow";
 import { SETTINGS } from "./settings/schema";
@@ -77,6 +78,19 @@ export async function openPopoutPlayer(): Promise<boolean> {
   const store = usePlayerStore.getState();
   const video = store.currentVideo;
   if (!video) return false;
+
+  // The browser owns the PiP window. Keep the original media element mounted;
+  // transferring it into Flow's desktop pop-out would stop native browser PiP.
+  if (isWebMode()) {
+    const element = document.querySelector<HTMLVideoElement>("video[data-flow-main-video]");
+    if (!element || typeof element.requestPictureInPicture !== "function") return false;
+    try {
+      await element.requestPictureInPicture();
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
   const hasQueue = store.queue.length > 0;
   const queue = hasQueue ? store.queue : [video];

@@ -1,4 +1,4 @@
-import { isTauriEnv } from "./env";
+import { hasBackend } from "./env";
 import { invokeBackend } from "./errors";
 import type { ShortsFeed } from "../../types/shorts";
 
@@ -24,7 +24,7 @@ export async function getShortsFeed(
   seedId?: string,
   region?: string,
 ): Promise<ShortsFeed> {
-  if (!(await isTauriEnv())) return MOCK_SHORTS;
+  if (!(await hasBackend())) return MOCK_SHORTS;
   return invokeBackend<ShortsFeed>("get_shorts_feed", {
     seedId: seedId ?? null,
     userSubs,
@@ -37,7 +37,7 @@ export async function loadMoreShorts(
   continuation?: string | null,
   region?: string,
 ): Promise<ShortsFeed> {
-  if (!(await isTauriEnv())) return { items: [], continuation: null };
+  if (!(await hasBackend())) return { items: [], continuation: null };
   return invokeBackend<ShortsFeed>("load_more_shorts", {
     continuation: continuation ?? null,
     userSubs,
@@ -46,7 +46,7 @@ export async function loadMoreShorts(
 }
 
 export async function resetShortsFeed(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   return invokeBackend<void>("reset_shorts_feed");
 }
 
@@ -61,11 +61,11 @@ export interface ShortView {
 }
 
 export async function reportShortView(view: ShortView): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   return invokeBackend<void>("report_short_view", { view });
 }
 
 export async function recordSeenShorts(ids: string[]): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   return invokeBackend<void>("record_seen_shorts", { ids });
 }

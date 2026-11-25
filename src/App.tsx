@@ -172,7 +172,7 @@ function App() {
   useProfileSwitchListener(markSwitching);
 
   // Onboarding belongs to the main window; an extra window only exists once it is done.
-  const [loadingOnboarding, setLoadingOnboarding] = useState(IS_MAIN_WINDOW && !isWebMode());
+  const [loadingOnboarding, setLoadingOnboarding] = useState(IS_MAIN_WINDOW);
   // A switch restarts the app; keep its "Switching to …" up until this profile is ready.
   const [arrivedFrom] = useState(() => (IS_MAIN_WINDOW ? takeSwitchingTo() : null));
 
@@ -198,7 +198,7 @@ function App() {
 
   // Check onboarding state from sqlite db setting
   useEffect(() => {
-    if (!IS_MAIN_WINDOW || isWebMode()) return;
+    if (!IS_MAIN_WINDOW) return;
     const checkOnboarding = async () => {
       // A profile added from another device has its onboarding state in what that device sent.
       try {
@@ -257,7 +257,7 @@ function App() {
         
         <Route path="/" element={<PageWrapper />}>
           <Route index element={
-            isWebMode() ? <Navigate to="/explore" replace /> : <Home onPlay={handlePlayVideo} onAddToQueue={handleAddToQueue} />
+            <Home onPlay={handlePlayVideo} onAddToQueue={handleAddToQueue} />
           } />
           <Route path="feed" element={
             <FlowNeuroPersona />

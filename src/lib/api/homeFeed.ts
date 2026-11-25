@@ -1,6 +1,6 @@
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { invokeBackend } from "./errors";
-import { isTauriEnv } from "./env";
+import { hasBackend, isTauriEnv, isWebMode } from "./env";
 import type { VideoSummary } from "../../types/video";
 
 export type HomeOriginKind = "subscription" | "related" | "search" | "channelMemory" | "neighbour";
@@ -49,33 +49,33 @@ export const EMPTY_HOME_SNAPSHOT: HomeSnapshot = {
 };
 
 export async function openHomeFeed(): Promise<HomeSnapshot> {
-  if (!(await isTauriEnv())) return EMPTY_HOME_SNAPSHOT;
+  if (!(await hasBackend())) return EMPTY_HOME_SNAPSHOT;
   return invokeBackend<HomeSnapshot>("home_feed_open");
 }
 
 export async function refreshHomeFeed(): Promise<HomeSnapshot> {
-  if (!(await isTauriEnv())) return EMPTY_HOME_SNAPSHOT;
+  if (!(await hasBackend())) return EMPTY_HOME_SNAPSHOT;
   return invokeBackend<HomeSnapshot>("home_feed_refresh");
 }
 
 export async function reportHomeViewport(lastVisible: number): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("home_feed_viewport", { lastVisible });
 }
 
 export async function setHomeFeedVisible(visible: boolean): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("home_feed_visible", { visible });
 }
 
 export async function retryHomeLoadMore(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("home_feed_retry_more");
 }
 
 /** Forgets Home's feed and caches, so the next visit is ranked by the brain as it is now. */
 export async function clearHomeFeed(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("home_feed_clear");
 }
 
@@ -87,6 +87,24 @@ export interface HomeFeedHandlers {
 
 /** Every change to Home's feed: the whole snapshot, its flags alone, or a page added at its end. */
 export async function onHomeFeedChanged(handlers: HomeFeedHandlers): Promise<UnlistenFn> {
+  if (isWebMode()) {
+    let stopped = false;
+    let previous = "";
+    const poll = async () => {
+      try {
+        const snapshot = await invokeBackend<HomeSnapshot>("home_feed_snapshot");
+        if (stopped) return;
+        const fingerprint = JSON.stringify(snapshot);
+        if (fingerprint !== previous) {
+          previous = fingerprint;
+          handlers.onSnapshot(snapshot);
+        }
+      } catch { /* the initial open reports the useful error to the page */ }
+    };
+    await poll();
+    const timer = window.setInterval(() => void poll(), 1500);
+    return () => { stopped = true; window.clearInterval(timer); };
+  }
   if (!(await isTauriEnv())) return () => {};
   const stops = await Promise.all([
     listen<HomeSnapshot>("home-feed", (event) => handlers.onSnapshot(event.payload)),
@@ -130,12 +148,12 @@ export interface HomeChips {
 export const NO_HOME_CHIPS: HomeChips = { interests: [], hasMixes: false, hasWatched: false, empty: [] };
 
 export async function getHomeChips(): Promise<HomeChips> {
-  if (!(await isTauriEnv())) return NO_HOME_CHIPS;
+  if (!(await hasBackend())) return NO_HOME_CHIPS;
   return invokeBackend<HomeChips>("home_feed_chips");
 }
 
 /** A chip's own content: `interest:<key>`, `new`, `recent`, `mixes`, `live` or `watched`. */
 export async function getHomeChipFeed(key: string, refresh: boolean): Promise<ChipFeed> {
-  if (!(await isTauriEnv())) return { cards: [], mixes: [], failed: false };
+  if (!(await hasBackend())) return { cards: [], mixes: [], failed: false };
   return invokeBackend<ChipFeed>("home_chip_feed", { key, refresh });
 }

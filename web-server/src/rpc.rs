@@ -54,6 +54,9 @@ fn unsupported(command: &str) -> AppError {
 async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Value> {
     if let Some(value) = crate::library::dispatch(state, command, args).await? { return Ok(value); }
     if let Some(value) = crate::music::dispatch(state, command, args).await? { return Ok(value); }
+    if let Some(value) = crate::neuro::dispatch(state, command, args).await? { return Ok(value); }
+    if let Some(value) = crate::home::dispatch(state, command, args).await? { return Ok(value); }
+    if let Some(value) = crate::shorts::dispatch(state, command, args).await? { return Ok(value); }
     let y = &state.youtube;
     macro_rules! output { ($expr:expr) => { Ok(serde_json::to_value($expr.await?)?) }; }
     match command {

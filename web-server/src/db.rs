@@ -7,6 +7,9 @@
 #[path = "../../src-tauri/src/db/music_home.rs"] pub mod music_home;
 #[path = "../../src-tauri/src/db/known_shorts.rs"] pub mod known_shorts;
 #[path = "../../src-tauri/src/db/unplayable_videos.rs"] pub mod unplayable_videos;
+#[path = "../../src-tauri/src/db/neuro_stores.rs"] pub mod neuro_stores;
+#[path = "../../src-tauri/src/db/seen_videos.rs"] pub mod seen_videos;
+#[path = "../../src-tauri/src/db/recommendations.rs"] pub mod recommendations;
 
 use std::{path::Path, time::Duration};
 use sqlx::{SqlitePool, sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions}};

@@ -3,6 +3,7 @@
 #[path = "../../src-tauri/src/appimage.rs"] mod appimage;
 #[path = "../../src-tauri/src/errors/mod.rs"] mod errors;
 #[path = "../../src-tauri/src/models/mod.rs"] mod models;
+#[path = "../../src-tauri/src/flow_neuro/mod.rs"] mod flow_neuro;
 #[path = "../../src-tauri/src/streaming/mod.rs"] mod streaming;
 #[path = "../../src-tauri/src/security/validation.rs"] pub(crate) mod validation;
 #[path = "../../src-tauri/src/services/youtube_service.rs"] mod youtube_service;
@@ -12,10 +13,14 @@ mod db;
 mod library;
 mod music;
 mod profiles;
+mod neuro;
+mod home;
+mod shorts;
 #[path = "../../src-tauri/src/services/music_service.rs"] mod music_service;
 mod media;
 mod auth;
 mod foss;
+mod services;
 
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use axum::{Router, extract::DefaultBodyLimit, middleware, routing::{get, post}};
@@ -33,6 +38,9 @@ struct AppState {
     streams: StreamingManager,
     relay: reqwest::Client,
     requests: Arc<tokio::sync::Semaphore>,
+    recommendations: Arc<services::recommendation_service::RecommendationService>,
+    home: home::HomeService,
+    shorts: Arc<services::shorts_service::ShortsService>,
 }
 
 #[tokio::main]
@@ -52,6 +60,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     extractor.keep_identity_in(data.join("visitor.json"));
     let pool = db::open(&data).await?;
     library::load_settings(&pool).await?;
+    let brain = flow_neuro::brain_store::BrainStore::load(pool.clone()).await?;
+    let neuro_stores = Arc::new(flow_neuro::side_stores::SideStores::load(pool.clone()).await?);
+    let recommendations = Arc::new(services::recommendation_service::RecommendationService::new(
+        pool.clone(), brain, neuro_stores,
+    ));
     let music = music_service::MusicService::new(extractor.clone(), pool.clone());
     let youtube = YoutubeService::new(extractor);
     let (streams, listeners) = StreamingManager::new();
@@ -64,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(5))
         .build()?;
-    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)) };
+    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)), recommendations, home: home::HomeService::new(), shorts: Arc::new(services::shorts_service::ShortsService::new()) };
     let app = Router::new()
         .route("/api/v1/health", get(|| async { axum::Json(serde_json::json!({"status":"ok","protocol":1,"experimental":true})) }))
         .route("/api/v1/rpc/{command}", post(rpc::handle))
