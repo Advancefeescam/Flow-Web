@@ -116,13 +116,7 @@ pub const WATCH_HISTORY_MAX: usize = 2000;
 pub const WATCHED_THRESHOLD_SAMPLED: f32 = 0.15;
 pub const WATCHED_THRESHOLD_FULL: f32 = 0.85;
 
-/// Longest a video can be and still count as a Short.
-pub const SHORT_MAX_SECONDS: u64 = 60;
-
-/// A Short only when its length is known: an unknown length is not a guess at one.
-pub fn is_known_short(duration_seconds: Option<u64>) -> bool {
-    duration_seconds.is_some_and(|seconds| seconds > 0 && seconds <= SHORT_MAX_SECONDS)
-}
+pub use crate::models::video::{SHORT_MAX_SECONDS, is_known_short};
 pub const CHANNEL_SUPPRESSION_DAYS: u64 = 14;
 /// A rejected video stays hidden for good; past this many the oldest rejections are dropped.
 pub const MAX_SUPPRESSED_VIDEOS: usize = 5_000;

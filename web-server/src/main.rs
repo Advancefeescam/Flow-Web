@@ -8,6 +8,11 @@
 #[path = "../../src-tauri/src/services/youtube_service.rs"] mod youtube_service;
 mod security { pub(crate) use crate::validation; }
 mod rpc;
+mod db;
+mod library;
+mod music;
+mod profiles;
+#[path = "../../src-tauri/src/services/music_service.rs"] mod music_service;
 mod media;
 mod auth;
 
@@ -21,6 +26,9 @@ use youtube_service::YoutubeService;
 #[derive(Clone)]
 struct AppState {
     youtube: YoutubeService,
+    music: music_service::MusicService,
+    pool: sqlx::SqlitePool,
+    writes: Arc<tokio::sync::Mutex<()>>,
     streams: StreamingManager,
     relay: reqwest::Client,
     requests: Arc<tokio::sync::Semaphore>,
@@ -41,6 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(&data)?;
     let extractor = Arc::new(InnertubeClient::new());
     extractor.keep_identity_in(data.join("visitor.json"));
+    let pool = db::open(&data).await?;
+    library::load_settings(&pool).await?;
+    let music = music_service::MusicService::new(extractor.clone(), pool.clone());
     let youtube = YoutubeService::new(extractor);
     let (streams, listeners) = StreamingManager::new();
     tokio::spawn(streaming::proxy::start_proxy_server(streams.clone(), listeners.media));
@@ -52,7 +63,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(5))
         .build()?;
-    let state = AppState { youtube, streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)) };
+    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)) };
     let app = Router::new()
         .route("/api/v1/health", get(|| async { axum::Json(serde_json::json!({"status":"ok","protocol":1,"experimental":true})) }))
         .route("/api/v1/rpc/{command}", post(rpc::handle))
@@ -60,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/media/stream/{token}", get(media::stream))
         .route("/media/sabr/{*path}", get(media::sabr))
         .route("/media/{*rest}", axum::routing::any(|| async { axum::http::StatusCode::NOT_FOUND }))
-        .fallback_service(ServeDir::new(&dist).not_found_service(ServeFile::new(dist.join("index.html"))))
+        .fallback_service(ServeDir::new(&dist).fallback(ServeFile::new(dist.join("index.html"))))
         .layer(DefaultBodyLimit::max(256 * 1024))
         .layer(middleware::from_fn_with_state(auth, auth::guard))
         .with_state(state);

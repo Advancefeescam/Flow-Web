@@ -3,12 +3,12 @@ use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 use crate::{AppState, errors::{AppError, AppResult, ErrorResponse}, models::{explore::ExploreTarget, search::SearchVideosRequest}, validation::*};
 
-fn arg<T: DeserializeOwned>(args: &Value, key: &str) -> AppResult<T> {
+pub(crate) fn arg<T: DeserializeOwned>(args: &Value, key: &str) -> AppResult<T> {
     serde_json::from_value(args.get(key).cloned().unwrap_or(Value::Null))
         .map_err(|_| AppError::Validation(format!("Invalid or missing argument: {key}")))
 }
 
-fn video(args: &Value) -> AppResult<String> {
+pub(crate) fn video(args: &Value) -> AppResult<String> {
     let id: String = arg(args, "videoId")?;
     validate_video_id(&id)?;
     Ok(id)
@@ -18,7 +18,7 @@ fn channel(args: &Value) -> AppResult<String> {
     validate_channel_id(&id)?;
     Ok(id)
 }
-fn token(args: &Value, key: &str) -> AppResult<Option<String>> {
+pub(crate) fn token(args: &Value, key: &str) -> AppResult<Option<String>> {
     let value: Option<String> = arg(args, key)?;
     if let Some(ref value) = value { validate_page_token(value)?; }
     Ok(value)
@@ -52,6 +52,8 @@ fn unsupported(command: &str) -> AppError {
 }
 
 async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Value> {
+    if let Some(value) = crate::library::dispatch(state, command, args).await? { return Ok(value); }
+    if let Some(value) = crate::music::dispatch(state, command, args).await? { return Ok(value); }
     let y = &state.youtube;
     macro_rules! output { ($expr:expr) => { Ok(serde_json::to_value($expr.await?)?) }; }
     match command {
@@ -59,7 +61,11 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
             let request: SearchVideosRequest = arg(args, "request")?;
             if let Some(ref page) = request.page_token { validate_page_token(page)?; }
             else { validate_search_query(&request.query)?; }
-            output!(y.search_videos(request))
+            let response = y.search_videos(request).await?;
+            let shorts: Vec<String> = response.shorts.iter().map(|s| s.id.clone())
+                .chain(response.items.iter().filter(|v| v.is_short).map(|v| v.id.clone())).collect();
+            let _ = crate::db::known_shorts::remember(&state.pool, &shorts, chrono::Utc::now().timestamp_millis()).await;
+            Ok(json!(response))
         },
         "get_video_details" => output!(y.get_video_details(&video(args)?)),
         "get_video_metadata" => output!(y.get_video_metadata(&video(args)?)),
@@ -74,7 +80,16 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
         "get_stream_info" => {
             let id = video(args)?;
             let refresh: Option<bool> = arg(args, "refresh")?;
-            let info = y.get_stream_info(&id, refresh.unwrap_or(false)).await?;
+            let info = match y.get_stream_info(&id, refresh.unwrap_or(false)).await {
+                Ok(info) => { let _ = crate::db::unplayable_videos::clear(&state.pool,&id).await; info },
+                Err(err) => {
+                    if err.is_lasting_refusal() {
+                        let response = ErrorResponse::from(AppError::ContentNotAvailable(err.to_string()));
+                        let _ = crate::db::unplayable_videos::mark(&state.pool,&id,&response.kind,chrono::Utc::now().timestamp_millis()).await;
+                    }
+                    return Err(err);
+                }
+            };
             Ok(serde_json::to_value(crate::media::prepare(&state.streams, &id, refresh.unwrap_or(false), info)?)?)
         },
         "get_channel_details" => output!(y.get_channel_details(&channel(args)?)),
@@ -137,6 +152,10 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
             let data: String = arg(args,"data")?;
             Ok(json!(y.parse_subscription_export(&data)?))
         },
+        "get_original_title" => Ok(json!(crate::api::original_title::original_title(&video(args)?).await)),
+        "get_dearrow_override" => output!(crate::api::dearrow::fetch_dearrow_override_api(&video(args)?)),
+        "get_return_youtube_dislike" => Ok(json!(crate::api::ryd::fetch_ryd_votes(&video(args)?).await)),
+        "image_proxy_base" => Ok(Value::Null),
         _ => Err(unsupported(command)),
     }
 }

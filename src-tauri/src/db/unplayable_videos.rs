@@ -58,7 +58,10 @@ mod tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
         mark(&pool, "members", "membersOnly", 1).await.unwrap();
         mark(&pool, "region", "geographicRestriction", 2)
             .await

@@ -218,7 +218,7 @@ pub fn validate_library_file(
     Ok(resolved)
 }
 
-#[cfg(not(feature = "web-headless"))]
+#[cfg(not(flow_web_headless))]
 pub fn validate_local_media_id(id: &str) -> AppResult<()> {
     if crate::local_media::is_local_id(id) {
         Ok(())
@@ -227,7 +227,7 @@ pub fn validate_local_media_id(id: &str) -> AppResult<()> {
     }
 }
 
-#[cfg(all(test, not(feature = "web-headless")))]
+#[cfg(all(test, not(flow_web_headless)))]
 mod tests {
     use super::{
         is_openable_link, validate_app_route, validate_external_url, validate_library_file,

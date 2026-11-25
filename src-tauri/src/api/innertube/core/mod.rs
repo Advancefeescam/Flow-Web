@@ -2,9 +2,9 @@ pub mod botguard;
 pub mod clients;
 pub mod context;
 pub mod gate_tracker;
-#[cfg(not(feature = "web-headless"))]
+#[cfg(not(flow_web_headless))]
 pub(crate) mod hidden_webview;
-#[cfg(feature = "web-headless")]
+#[cfg(flow_web_headless)]
 #[path = "headless_webview.rs"]
 pub(crate) mod hidden_webview;
 pub mod http;

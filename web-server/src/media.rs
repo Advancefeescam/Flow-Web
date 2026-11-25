@@ -1292,7 +1292,7 @@ fn allowed_remote(url: &str) -> bool {
         && url.host_str().is_some_and(|host| ["googlevideo.com", "youtube.com", "youtube-nocookie.com"].iter().any(|domain| host == *domain || host.ends_with(&format!(".{domain}"))))
     })
 }
-fn register(manager: &StreamingManager, id: &str, url: &str, mime: &str, agent: &str) -> String {
+pub(crate) fn register(manager: &StreamingManager, id: &str, url: &str, mime: &str, agent: &str) -> String {
     if !allowed_remote(url) { return String::new(); }
     let token = uuid::Uuid::new_v4().to_string();
     manager.register_video_stream(id, token.clone(), url.into(), mime.into(), agent.into());
@@ -1326,7 +1326,7 @@ pub fn prepare(manager: &StreamingManager, id: &str, refresh: bool, mut info: St
         manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());
         info.dash_manifest_url = Some(format!("/media/stream/{token}"));
     }
-    if let Some(descriptor) = info.sabr_descriptor.take() {
+    if let Some(descriptor) = info.sabr_descriptor.take().filter(|d| allowed_remote(&d.server_abr_streaming_url)) {
         if refresh { manager.sabr().discard_video(&descriptor.video_id); }
         let session = manager.sabr().prepare(descriptor, crate::streaming::sabr::CodecSupport::default());
         if let Some(sabr) = info.sabr.as_mut() {
