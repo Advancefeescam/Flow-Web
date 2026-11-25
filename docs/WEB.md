@@ -30,7 +30,7 @@ The Containerfile builds the web UI and headless Rust server without desktop GUI
 | Profiles | Server-side profile switching and isolation are not yet ported |
 | Downloads, import/export, local media | Browser download and user-selected file equivalents are not yet implemented; no arbitrary host file access |
 | Desktop window, tray, updater, global OS shortcuts | Native-only; web equivalents where applicable |
-| Home-screen manifest | Added; offline caching and iPad testing pending |
+| PWA install and static asset cache | Manifest and service worker added; iPad install testing pending |
 
 The full frontend suite (504 files, 2,998 tests) and
 `pnpm build --mode web` pass locally and in the latest web runtime workflow. Rust formatting and compilation are being checked in GitHub Actions; desktop CI has exposed a missing `StreamVariant` import that is being corrected. No complete browser playback or ARM64 deployment has been verified yet. Do not merge until the server compiles, media behavior has been reviewed, and playback has been tested on the intended devices.

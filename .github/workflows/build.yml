@@ -95,7 +95,10 @@ jobs:
 
   platform-build:
     name: Compile (${{ matrix.name }})
-    if: github.event_name == 'pull_request'
+    # The web-runtime PR has its own Linux web-server compile/test workflow.
+    # Keep the multi-OS desktop matrix for desktop changes without spending
+    # three platform builds on every web-only iteration.
+    if: github.event_name == 'pull_request' && github.head_ref != 'feat/web-runtime'
     timeout-minutes: 60
     strategy:
       fail-fast: false
