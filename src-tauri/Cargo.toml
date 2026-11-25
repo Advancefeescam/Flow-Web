@@ -8,6 +8,9 @@ default-run = "flow"
 license = "GPL-3.0-only"
 repository = "https://github.com/Flow-Tube/Flow-Desktop"
 
+[features]
+web-headless = []
+
 [lib]
 name = "flow_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
