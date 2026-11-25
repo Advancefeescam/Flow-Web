@@ -4,7 +4,7 @@ use crate::{
     flow_neuro::signals::InteractionType,
     models::video::VideoSummary,
     rpc::{arg, video},
-    validation::validate_video_id,
+    validation::{validate_channel_id, validate_video_id},
 };
 use serde_json::{Value, json};
 
@@ -188,15 +188,18 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
         }
         "unblock_channel" => {
             let id: String = arg(args, "channelId")?;
-            service.unblock_channel(id).await?;
+            validate_channel_id(&id)?;
+            service.unblock_channel(id.clone()).await?;
+            crate::services::blocked_channel_names::forget(&state.pool, &id).await?;
             Value::Null
         }
         "block_channel" => {
             let id = arg(args, "channelId")?;
+            validate_channel_id(&id)?;
             let name: Option<String> = arg(args, "channelName")?;
             service.block_channel(id.clone()).await?;
             if let Some(name) = name.filter(|name| !name.trim().is_empty()) {
-                crate::db::settings::set_setting(&state.pool, &format!("blocked_channel_name:{id}"), &name).await?;
+                crate::services::blocked_channel_names::remember(&state.pool, &id, &name).await?;
             }
             Value::Null
         }
