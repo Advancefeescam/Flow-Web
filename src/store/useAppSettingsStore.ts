@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getSetting, setSetting as persistSetting } from "../lib/api/db";
+import { getSettings, setSetting as persistSetting } from "../lib/api/db";
 import { getString } from "../lib/i18n/index";
 import {
   SETTING_DEFINITIONS,
@@ -61,9 +61,9 @@ export const useAppSettingsStore = create<AppSettingsState>((set, get) => ({
 
     set({ loading: true, lastError: null });
     try {
-      const entries = await Promise.all(
-        SETTING_DEFINITIONS.map(async (definition) => {
-          const stored = await getSetting(definition.key);
+      const settings = await getSettings(SETTING_DEFINITIONS.map(definition => definition.key));
+      const entries = SETTING_DEFINITIONS.map((definition) => {
+          const stored = settings[definition.key] ?? null;
           const parsed = normalizeSettingValue(definition, stored);
           if (parsed.usedFallback) {
             console.warn("Invalid persisted setting; using default", {
@@ -73,8 +73,7 @@ export const useAppSettingsStore = create<AppSettingsState>((set, get) => ({
             });
           }
           return [definition.key, parsed.value] as const;
-        }),
-      );
+        });
 
       set({
         values: Object.fromEntries(entries) as SettingsValues,

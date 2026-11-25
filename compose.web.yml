@@ -1,0 +1,19 @@
+services:
+  flow-web:
+    build:
+      context: .
+      dockerfile: Containerfile
+    ports:
+      - "127.0.0.1:8780:8780"
+    environment:
+      FLOW_WEB_PASSWORD: ${FLOW_WEB_PASSWORD:?Set a strong private password}
+      FLOW_WEB_ORIGIN: ${FLOW_WEB_ORIGIN:-http://127.0.0.1:8780}
+    volumes:
+      - flow-data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+volumes:
+  flow-data:

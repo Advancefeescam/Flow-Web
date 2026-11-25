@@ -161,3 +161,9 @@ export async function setSetting(key: string, value: string): Promise<void> {
   await invokeBackend<void>("set_setting", { key, value });
   announceSettingWrite(key);
 }
+
+/** One round trip on hosted instances, with the original native path unchanged. */
+export async function getSettings(keys: string[]): Promise<Record<string, string | null>> {
+  if (isWebMode()) return invokeBackend<Record<string, string | null>>("get_settings", { keys });
+  return Object.fromEntries(await Promise.all(keys.map(async key => [key, await getSetting(key)] as const)));
+}

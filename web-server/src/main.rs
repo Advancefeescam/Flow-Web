@@ -15,6 +15,7 @@ mod profiles;
 #[path = "../../src-tauri/src/services/music_service.rs"] mod music_service;
 mod media;
 mod auth;
+mod foss;
 
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use axum::{Router, extract::DefaultBodyLimit, middleware, routing::{get, post}};

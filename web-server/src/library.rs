@@ -51,6 +51,17 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
             .map_err(|_| AppError::Validation(concat!("Invalid argument: ", $key).into()))? };
     }
     let result = match command {
+        "get_settings" => {
+            let keys = read!("keys", Vec<String>);
+            if keys.len() > 500 { return Err(AppError::Validation("Too many settings".into())); }
+            let mut values = serde_json::Map::new();
+            for key in keys {
+                if key.starts_with("proxy_") { values.insert(key, Value::Null); continue; }
+                check_key(&key)?;
+                values.insert(key.clone(), json!(settings::get_setting(p, &key).await?));
+            }
+            Value::Object(values)
+        },
         "get_setting" => {
             let key = read!("key", String);
             // No server networking credentials are returned to the browser.

@@ -14,6 +14,7 @@ export default defineConfig(async ({ mode }) => ({
     // built exactly as before.
     babel({ presets: [reactCompilerPreset({ compilationMode: "annotation" })] }),
     tailwindcss(),
+    ...(mode === "web" ? [{ name: "flow-web-html", transformIndexHtml: (html: string) => html.replace("<title>Flow Desktop</title>", '<title>Flow Web</title><link rel="manifest" href="/manifest.webmanifest" /><meta name="theme-color" content="#141414" />').replace("Flow Desktop is the privacy-first YouTube and YouTube Music companion to Flow for Android, powered by a native local recommendation engine.", "Unofficial self-hosted web port of Flow for YouTube and YouTube Music.") }] : []),
   ],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

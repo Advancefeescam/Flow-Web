@@ -26,10 +26,10 @@ pub(crate) fn token(args: &Value, key: &str) -> AppResult<Option<String>> {
 
 pub async fn handle(State(state): State<AppState>, Path(command): Path<String>, Json(args): Json<Value>) -> Response {
     if !args.is_object() { return error(AppError::Validation("Expected a JSON object".into())); }
-    let Ok(_permit) = state.requests.try_acquire() else {
+    let Ok(Ok(_permit)) = tokio::time::timeout(std::time::Duration::from_secs(10), state.requests.acquire()).await else {
         return error(AppError::RateLimited("Flow Web is busy. Try again.".into()));
     };
-    match tokio::time::timeout(std::time::Duration::from_secs(85), dispatch(&state, &command, &args)).await {
+    match tokio::time::timeout(std::time::Duration::from_secs(75), dispatch(&state, &command, &args)).await {
         Ok(Ok(value)) => Json(value).into_response(),
         Ok(Err(err)) => error(err),
         Err(_) => error(AppError::Network("The request timed out".into())),
@@ -152,6 +152,8 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
             let data: String = arg(args,"data")?;
             Ok(json!(y.parse_subscription_export(&data)?))
         },
+        "get_sponsorblock_segments" => output!(crate::foss::fetch_sponsorblock_segments(&video(args)?, None)),
+        "get_non_music_segments" => output!(crate::foss::fetch_non_music_segments(&video(args)?, None)),
         "get_original_title" => Ok(json!(crate::api::original_title::original_title(&video(args)?).await)),
         "get_dearrow_override" => output!(crate::api::dearrow::fetch_dearrow_override_api(&video(args)?)),
         "get_return_youtube_dislike" => Ok(json!(crate::api::ryd::fetch_ryd_votes(&video(args)?).await)),
