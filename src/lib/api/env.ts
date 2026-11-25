@@ -31,3 +31,10 @@ export async function isTauriEnv(): Promise<boolean> {
   detectedTauri = false;
   return false;
 }
+
+/** Web mode is opt-in at build time; never impersonate a native Tauri runtime. */
+export const isWebMode = (): boolean => import.meta.env.VITE_FLOW_WEB === "true";
+
+export async function hasBackend(): Promise<boolean> {
+  return isWebMode() || await isTauriEnv();
+}

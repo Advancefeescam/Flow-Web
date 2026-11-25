@@ -7,7 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig(async ({ mode }) => ({
   plugins: [
     react(),
     // A pilot: only components that start with "use memo" are compiled. Everything else is
@@ -24,6 +24,7 @@ export default defineConfig(async () => ({
   server: {
     port: 1420,
     strictPort: true,
+    ...(mode === "web" ? { proxy: { "/api": "http://127.0.0.1:8780", "/media": "http://127.0.0.1:8780" } } : {}),
     host: host || false,
     hmr: host
       ? {
