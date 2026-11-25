@@ -1,4 +1,4 @@
-use crate::models::video::StreamInfo;
+use crate::models::video::{StreamInfo, StreamVariant};
 use crate::streaming::codec::VideoCodecFamily;
 use std::collections::BTreeMap;
 use tracing::info;

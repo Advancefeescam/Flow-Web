@@ -10,6 +10,8 @@
 #[path = "../../src-tauri/src/db/neuro_stores.rs"] pub mod neuro_stores;
 #[path = "../../src-tauri/src/db/seen_videos.rs"] pub mod seen_videos;
 #[path = "../../src-tauri/src/db/recommendations.rs"] pub mod recommendations;
+#[path = "../../src-tauri/src/db/cache.rs"] pub mod cache;
+#[path = "../../src-tauri/src/db/video_kind_checks.rs"] pub mod video_kind_checks;
 
 use std::{path::Path, time::Duration};
 use sqlx::{SqlitePool, sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions}};

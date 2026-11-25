@@ -1,6 +1,14 @@
 use std::sync::Arc;
 use axum::{body::Body, extract::{Path, State}, http::{HeaderMap, Method, StatusCode, header}, response::{IntoResponse, Response}};
-use crate::{AppState, api::innertube::core::clients, errors::{AppError, AppResult}, models::video::StreamInfo, streaming::{proxy::StreamingManager, swap::{LinkResolver, StreamLink}}, youtube_service::YoutubeService};
+use crate::{
+    AppState,
+    api::innertube::core::clients,
+    errors::{AppError, AppResult, ErrorResponse},
+    models::video::{StreamInfo, VideoSummary},
+    streaming::{proxy::StreamingManager, swap::{LinkResolver, StreamLink}},
+    validation::{validate_channel_id, validate_video_id},
+    youtube_service::YoutubeService,
+};
 
 fn stream_user_agent(info: &StreamInfo) -> String {
     info.expires_at

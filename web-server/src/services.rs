@@ -16,10 +16,10 @@ pub mod taste_service;
 #[path = "../../src-tauri/src/services/blocked_channel_names.rs"]
 pub mod blocked_channel_names;
 
-pub use crate::subscription_feed;
+pub(crate) use crate::subscription_feed;
 
 pub mod youtube_service {
     pub use crate::youtube_service::*;
 }
 
-pub use crate::home_feed;
+pub(crate) use crate::home_feed;

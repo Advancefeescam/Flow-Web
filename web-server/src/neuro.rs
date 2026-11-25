@@ -187,7 +187,7 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
             Value::Null
         }
         "unblock_channel" => {
-            let id = arg(args, "channelId")?;
+            let id: String = arg(args, "channelId")?;
             service.unblock_channel(id).await?;
             Value::Null
         }
