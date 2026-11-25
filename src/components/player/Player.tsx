@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 30524)
-Total output lines: 3102
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as dashjs from "dashjs";
 import Hls from "hls.js";
@@ -1421,7 +1418,59 @@ export const Player: React.FC<PlayerProps> = ({
     if (shouldPlay && (isDashPlayback || isHlsPlayback || src) && !error) {
       void video.play().catch((cause) => {
         if ((cause as DOMException | null)?.name === "AbortError") return;
-        desiredPlayin…524 tokens truncated…deo?.currentTime ?? usePlayerStore.getState().currentTime;
+        desiredPlayingRef.current = false;
+        setIsPlaying(false);
+      });
+      if (usesExternalAudio && audio) {
+        void audio.play().catch(() => {});
+      }
+    } else {
+      video.pause();
+      audio?.pause();
+    }
+  }, [error, isDashPlayback, setIsPlaying, src, usesExternalAudio]);
+
+  const togglePlay = useCallback(() => {
+    const video = videoRef.current;
+    setPlaybackDesired(video ? video.paused : !isPlaying);
+    revealControls();
+  }, [isPlaying, revealControls, setPlaybackDesired]);
+
+  const toggleCaptions = useCallback(() => {
+    setSelectedCaptionId((current) =>
+      current === "off"
+        ? selectPreferredCaptionId(captions, preferredSubtitleLanguage) ?? "off"
+        : "off",
+    );
+  }, [captions, preferredSubtitleLanguage]);
+
+  const nudgeSubtitleFontSize = useCallback((delta: number) => {
+    const { subtitleStyle: current, setSubtitleStyle } = usePlayerStore.getState();
+    const index = SUBTITLE_FONT_SCALES.indexOf(current.fontScale) + delta;
+    const fontScale = SUBTITLE_FONT_SCALES[Math.min(SUBTITLE_FONT_SCALES.length - 1, Math.max(0, index))];
+    if (fontScale === undefined || fontScale === current.fontScale) return;
+    setSubtitleStyle({ ...current, fontScale });
+  }, []);
+
+  const stepFrame = useCallback((direction: 1 | -1) => {
+    const video = videoRef.current;
+    if (!video || isLive) return;
+    setPlaybackDesired(false);
+    const frameDuration = 1 / (selectedQuality?.fps || 30);
+    seekTo(video.currentTime + direction * frameDuration);
+  }, [isLive, seekTo, selectedQuality, setPlaybackDesired]);
+
+  const stepPlaybackRate = useCallback((direction: 1 | -1) => {
+    const nextRate = direction === 1
+      ? configuredSpeedOptions.find((rate) => rate > playbackRate)
+      : [...configuredSpeedOptions].reverse().find((rate) => rate < playbackRate);
+    if (nextRate !== undefined) selectPlaybackRate(nextRate);
+  }, [configuredSpeedOptions, playbackRate, selectPlaybackRate]);
+
+  const jumpChapter = useCallback((direction: 1 | -1) => {
+    if (chapters.length === 0) return;
+    const video = videoRef.current;
+    const time = video?.currentTime ?? usePlayerStore.getState().currentTime;
     if (direction === 1) {
       const next = chapters.find((chapter) => chapter.startSeconds > time + 0.5);
       seekTo(next ? next.startSeconds : video?.duration ?? duration);
