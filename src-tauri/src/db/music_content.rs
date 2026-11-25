@@ -418,7 +418,10 @@ mod tests {
         #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         #[cfg(flow_web_headless)]
-        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         pool
     }
 

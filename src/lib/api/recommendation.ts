@@ -1,7 +1,7 @@
 import type { MusicTasteProfile } from "../../types/music";
 import type { VideoSummary } from "../../types/video";
 import { isDeepFlowCurrentlyActive } from "../deepFlow";
-import { hasBackend, isTauriEnv } from "./env";
+import { hasBackend } from "./env";
 import { invokeBackend } from "./errors";
 import { profileStorage } from "../storage/profileStorage";
 
@@ -530,29 +530,29 @@ export interface NeighbourChannel {
 }
 
 export async function getNeighbourChannels(): Promise<NeighbourChannel[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<NeighbourChannel[]>("get_neighbour_channels");
 }
 
 /** Home stops drawing on the channel until the viewer watches it again. */
 export async function forgetRememberedChannel(channelId: string): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("forget_remembered_channel", { channelId });
 }
 
 /** Forgets every channel watched often; channels turned down stay turned down. */
 export async function clearChannelMemory(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("clear_channel_memory");
 }
 
 /** Names of hidden channels this device does not know, from their RSS feeds. */
 export async function resolveHiddenChannelNames(channelIds: string[]): Promise<Record<string, string>> {
-  if (channelIds.length === 0 || !(await isTauriEnv())) return {};
+  if (channelIds.length === 0 || !(await hasBackend())) return {};
   return invokeBackend<Record<string, string>>("resolve_hidden_channel_names", { channelIds });
 }
 
 export async function getTasteOverview(): Promise<TasteOverview> {
-  if (!(await isTauriEnv())) return { picks: [], groups: [], hiddenChannels: [], rememberedChannels: [] };
+  if (!(await hasBackend())) return { picks: [], groups: [], hiddenChannels: [], rememberedChannels: [] };
   return invokeBackend<TasteOverview>("get_taste_overview");
 }

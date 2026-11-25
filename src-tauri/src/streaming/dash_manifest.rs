@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
-use tracing::info;
 use crate::models::video::StreamInfo;
 use crate::streaming::codec::VideoCodecFamily;
+use std::collections::BTreeMap;
+use tracing::info;
 
 fn extract_codecs(mime_type: Option<&str>) -> Option<String> {
     let mime_type = mime_type?;

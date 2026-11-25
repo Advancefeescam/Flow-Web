@@ -104,6 +104,32 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
             json!({"name":persona.name(),"title":persona.title(),"description":persona.description(),"icon":persona.icon()})
         }
         "get_brain_snapshot" => json!(service.get_brain_snapshot().await?),
+        "get_taste_overview" => json!(service.taste_overview().await),
+        "get_neighbour_channels" => {
+            let subscriptions = crate::home_feed::inputs::subscriptions(&state.pool).await?;
+            let stored = crate::home_feed::neighbours::load(&state.pool).await?;
+            let found = service.neighbour_channels(&subscriptions.names).await;
+            json!(crate::home_feed::neighbours::discoverable(found, &stored))
+        }
+        "forget_remembered_channel" => {
+            let id: String = arg(args, "channelId")?;
+            validate_channel_id(&id)?;
+            let now = u64::try_from(chrono::Utc::now().timestamp_millis()).unwrap_or(0);
+            crate::home_feed::channel_memory::forget(&state.pool, &id, now).await?;
+            Value::Null
+        }
+        "clear_channel_memory" => {
+            let now = u64::try_from(chrono::Utc::now().timestamp_millis()).unwrap_or(0);
+            crate::home_feed::channel_memory::clear(&state.pool, now).await?;
+            Value::Null
+        }
+        "resolve_hidden_channel_names" => {
+            let ids: Vec<String> = arg(args, "channelIds")?;
+            if ids.len() > 500 { return Err(AppError::Validation("Too many channel IDs".into())); }
+            for id in &ids { validate_channel_id(id)?; }
+            let blocked: std::collections::HashSet<String> = service.get_brain_snapshot().await?.blocked_channels.into_iter().collect();
+            json!(state.blocked_channel_names.resolve(&state.pool, ids, &blocked).await)
+        }
         "get_recommendation_events" => {
             let limit: Option<i64> = arg(args, "limit")?;
             json!(service.get_recommendation_log(limit.unwrap_or(50).clamp(1, 500)).await?)

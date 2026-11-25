@@ -399,7 +399,10 @@ mod channel_tests {
         #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         #[cfg(flow_web_headless)]
-        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         upsert_watch_record(&pool, &record(Some("UC1"), 10))
             .await
             .unwrap();
@@ -419,7 +422,10 @@ mod channel_tests {
         #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         #[cfg(flow_web_headless)]
-        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         let song = |seconds| WatchHistoryRecord {
             video_id: "song".into(),
             is_music: true,
@@ -454,7 +460,10 @@ mod channel_tests {
         #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         #[cfg(flow_web_headless)]
-        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         let short = WatchHistoryRecord {
             total_duration_seconds: Some(150),
             is_short: true,
@@ -489,7 +498,10 @@ mod shorts_and_years_tests {
         #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
         #[cfg(flow_web_headless)]
-        sqlx::migrate!("../src-tauri/migrations").run(&pool).await.unwrap();
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         pool
     }
 

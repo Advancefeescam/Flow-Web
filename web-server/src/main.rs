@@ -16,6 +16,8 @@ mod profiles;
 mod neuro;
 mod home;
 mod shorts;
+mod home_feed;
+mod subscription_feed;
 #[path = "../../src-tauri/src/services/music_service.rs"] mod music_service;
 mod media;
 mod auth;
@@ -41,6 +43,7 @@ struct AppState {
     recommendations: Arc<services::recommendation_service::RecommendationService>,
     home: home::HomeService,
     shorts: Arc<services::shorts_service::ShortsService>,
+    blocked_channel_names: Arc<services::blocked_channel_names::BlockedChannelNames>,
 }
 
 #[tokio::main]
@@ -77,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(5))
         .build()?;
-    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)), recommendations, home: home::HomeService::new(), shorts: Arc::new(services::shorts_service::ShortsService::new()) };
+    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)), recommendations, home: home::HomeService::new(), shorts: Arc::new(services::shorts_service::ShortsService::new()), blocked_channel_names: Arc::new(services::blocked_channel_names::BlockedChannelNames::default()) };
     let app = Router::new()
         .route("/api/v1/health", get(|| async { axum::Json(serde_json::json!({"status":"ok","protocol":1,"experimental":true})) }))
         .route("/api/v1/rpc/{command}", post(rpc::handle))
