@@ -194,7 +194,7 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
             Value::Null
         }
         "block_channel" => {
-            let id = arg(args, "channelId")?;
+            let id: String = arg(args, "channelId")?;
             validate_channel_id(&id)?;
             let name: Option<String> = arg(args, "channelName")?;
             service.block_channel(id.clone()).await?;
