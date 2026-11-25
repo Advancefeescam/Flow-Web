@@ -1,219 +1,168 @@
 <div align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/banners/flow-desktop-dark.svg">
-    <img alt="Flow Desktop. Privacy-first YouTube and YouTube Music for Windows, macOS and Linux." src="https://assets.flow-tube.org/v1/banners/flow-desktop-light.svg" width="100%">
-  </picture>
+  <img src="Assets/logo.png" alt="Flow logo" width="112">
 
-  **A privacy-respecting YouTube and YouTube Music client with a native, fully local recommendation engine.**
+  <h1>Flow Web</h1>
 
-  Flow Desktop is the desktop companion to [Flow for Android](https://github.com/Flow-Tube/Flow), built with Rust, Tauri, React, and TypeScript.
+  **A privacy-respecting YouTube and YouTube Music experience, right in your browser.**
+
+  An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop), bringing the Flow experience to more devices without a native app.
 
   <p>
-  <a href="https://github.com/Flow-Tube/Flow-Desktop/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/get-windows-dark.svg"><img alt="Download for Windows" src="https://assets.flow-tube.org/v1/badges/pill/get-windows-light.svg" height="60"></picture></a>
-  <a href="https://github.com/Flow-Tube/Flow-Desktop/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/get-macos-dark.svg"><img alt="Download for macOS" src="https://assets.flow-tube.org/v1/badges/pill/get-macos-light.svg" height="60"></picture></a>
-  <a href="https://github.com/Flow-Tube/Flow-Desktop/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/get-linux-dark.svg"><img alt="Download for Linux" src="https://assets.flow-tube.org/v1/badges/pill/get-linux-light.svg" height="60"></picture></a>
-  <a href="https://flatpark.org/apps/io.github.aedev.flow.desktop/"><img alt="Get it on FlatPark" src="https://flatpark.org/badges/get-it-on-flatpark.svg" height="60"></a>
-  </p>
-  <p>
-  <a href="#downloads-and-supported-systems"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/split/desktop-dark.svg"><img alt="Desktop: Windows · macOS · Linux" src="https://assets.flow-tube.org/v1/badges/split/desktop-light.svg" height="32"></picture></a>
-  <picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/split/tauri-dark.svg"><img alt="Built with Rust · Tauri 2" src="https://assets.flow-tube.org/v1/badges/split/tauri-light.svg" height="32"></picture>
-  <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/split/license-dark.svg"><img alt="License: GPL-3.0" src="https://assets.flow-tube.org/v1/badges/split/license-light.svg" height="32"></picture></a>
+    <img alt="Platform: Web" src="https://img.shields.io/badge/Platform-Web-6750A4?style=flat-square">
+    <img alt="Deployment: Self-hosted" src="https://img.shields.io/badge/Deployment-Self--hosted-6750A4?style=flat-square">
+    <img alt="Status: In development" src="https://img.shields.io/badge/Status-In%20development-9A6700?style=flat-square">
+    <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/badge/License-GPL--3.0-6750A4?style=flat-square"></a>
   </p>
 
-  [**Downloads**](https://github.com/Flow-Tube/Flow-Desktop/releases) · [**Android app**](https://github.com/Flow-Tube/Flow) · [**Community**](https://www.reddit.com/r/Flow_Official/) · [**Support development**](#support--donations)
+  [**About**](#about) · [**Development**](#development) · [**Original Flow**](#the-flow-project) · [**Support Flow**](#support--donations)
 </div>
 
-> Flow Desktop is under active development. Features and storage formats may change before the first stable release.
+> [!NOTE]
+> Flow Web is an independent, unofficial fork of Flow Desktop. The web port is in early development and is not yet ready for everyday use. The original Flow applications are developed separately by the Flow project.
+
+---
+
+## About
+
+Flow offers an alternative way to watch YouTube and listen to YouTube Music, with a focus on privacy, personal libraries and recommendations under your control.
+
+Flow Web aims to bring that same experience to the browser. Whether you use an iPad, an operating system without an official Flow client, a shared computer, or simply prefer not to install another app, you should be able to open your own Flow instance and start watching.
+
+The goal is to complement the native Flow clients, not replace them.
+
+### Why Flow Web?
+
+- **No client installation.** Open your instance in a browser rather than installing a platform-specific application.
+- **More devices.** Bring Flow to iOS, iPadOS and other platforms where a native client may not be available.
+- **Self-hosted by design.** Run your own instance on a home server, NAS or small ARM64 device.
+- **A familiar experience.** Retain the original Flow interface, design language and core functionality wherever the browser allows.
+- **One library, across devices.** Work towards compatibility with Flow Sync so your subscriptions, playlists, watch history and recommendations can follow you.
 
 ---
 
 ## Features
 
-- Native video playback with quality and codec selection, SABR/DASH/HLS support, chapters, subtitles, playback speed, queues, mini-player, and Picture-in-Picture.
-- YouTube Music home, search, artists, albums, playlists, queue management, synchronized lyrics, repeat, shuffle, and equalizer controls.
-- A dedicated Shorts feed with comments, descriptions, saved Shorts, looping, auto-next, and timed scrolling modes.
-- Local subscriptions, playlists, Watch Later, likes, albums, video and music history, Continue Watching, and regional Explore feeds.
-- Channel pages with videos, Shorts, playlists, community posts, comments, and live chat support.
-- SponsorBlock, DeArrow, Return YouTube Dislike, and Discord Rich Presence integrations.
-- Imports from Flow backups, Google Takeout, NewPipe, LibreTube, FreeTube, and OPML.
+The web port aims to retain the following capabilities from Flow Desktop. These are development goals, not a list of working web features.
+
+- Video search and playback, with quality selection, subtitles, chapters and playback speed controls.
+- YouTube Music, including artists, albums, playlists, queues and lyrics.
+- Shorts, channel pages, subscriptions, Explore and comments.
+- Personal playlists, Watch Later, likes, history and Continue Watching.
+- SponsorBlock, DeArrow and Return YouTube Dislike integrations.
+- A responsive interface for phones, tablets and desktop browsers, with an optional installable PWA.
 
 ### FlowNeuro
 
-FlowNeuro is Flow's native local recommendation engine. It learns from watches, skips, likes, dislikes, searches, topic preferences, and creator affinity, and ranks content on your device without sending a recommendation profile to a Flow server.
+[Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop) includes FlowNeuro, a recommendation engine that learns from your viewing habits and preferences without relying on a Google account.
 
-The Control Center lets you inspect topic weights, time-based patterns, channel memory, learning activity, and blocked content. You can export, import, reset, or temporarily pause learning with Deep Flow mode.
+Flow Web aims to reuse the original Rust engine and keep recommendation processing and storage within your own instance. Compatibility with the native Flow clients and their recommendation state is a development goal.
+
+---
+
+## Architecture
+
+Flow Web is based on the existing React, TypeScript and Rust codebase of Flow Desktop. The intended architecture separates the browser interface from the native desktop runtime, replacing Tauri-specific communication with an HTTP API.
+
+```mermaid
+flowchart TD
+    A["Browser / PWA"] --> B["Flow Web · HTTP API"]
+    subgraph Instance["Self-hosted instance"]
+        B --> C["YouTube extraction & streaming"]
+        B --> D["FlowNeuro & MusicBrain"]
+        B --> E["SQLite"]
+    end
+    C --> F["YouTube"]
+    B <-.-> G["Flow Sync"]
+```
+
+The existing Rust services, streaming implementation and recommendation engines will be reused where practical. Video decoding is intended to happen in the browser rather than through server-side transcoding.
+
+### Target platforms
+
+| Client | Intended access |
+| --- | --- |
+| iOS / iPadOS | Safari, home screen web app |
+| Android | Modern mobile browsers |
+| Windows / macOS / Linux | Modern desktop browsers |
+| Other systems | Compatible web browser |
+
+The intended server targets are Linux on x86-64 and ARM64, including container deployments through Docker or Podman. Browser and server compatibility have not yet been validated.
 
 ---
 
 ## Privacy and security
 
-- No Google account is required, and Flow contains no advertising or analytics SDK.
-- History, settings, library data, and recommendation state are stored locally in SQLite.
-- Tauri permissions are restricted to the main window and the OS, dialog, and external-link capabilities the app uses.
-- A strict Content Security Policy blocks arbitrary scripts, frames, objects, and remote application code.
-- Rust validates search terms, video IDs, channel IDs, browse IDs, and continuation tokens before network requests.
-- Media is relayed through a tokenized loopback-only proxy instead of exposing a public local server.
-- BotGuard and PO-token handling run through a native hidden WebView, with a packaged Node script retained only as a compatibility fallback.
+Flow Web follows the privacy goals of the original project while adapting them to a self-hosted environment.
 
-Flow still contacts YouTube and optional services such as SponsorBlock, DeArrow, Return YouTube Dislike, and configured lyrics providers when their features are used.
+- No Google account should be required for ordinary use.
+- Personal data and recommendation state should remain on the instance you operate or trust.
+- Remote access should use HTTPS and appropriate authentication.
+- Streaming and API endpoints must be designed for web security rather than exposing desktop-only interfaces directly.
 
----
-
-## Downloads and supported systems
-
-Release builds are published through [GitHub Releases](https://github.com/Flow-Tube/Flow-Desktop/releases).
-
-- **Stable:** reviewed releases intended for normal use.
-- **Beta / RC:** public GitHub prereleases for wider testing. These install as **Flow Beta** with isolated application data.
-- **Nightly:** automatic snapshots from `main`. These install as **Flow Nightly**, use isolated data, and may be unstable. Download the latest packages from the [Nightly release](https://github.com/Flow-Tube/Flow-Desktop/releases/tag/nightly), which every new build replaces.
-
-| Platform | Supported versions | Architectures | Packages |
-| --- | --- | --- | --- |
-| Windows | Windows 10 22H2, Windows 11 | x64, ARM64 | NSIS installer |
-| macOS | macOS 13 Ventura or later | Intel x64, Apple Silicon | DMG |
-| Linux | Ubuntu 22.04+, Debian 12+, and comparable modern distributions | x64, ARM64 | AppImage, `.deb`, `.rpm`, Flatpak ([FlatPark](https://flatpark.org/apps/io.github.aedev.flow.desktop/)) |
-
-Linux builds require a compatible glibc, GTK 3, and WebKitGTK 4.1 environment. Legacy 32-bit systems are not supported. See [docs/LINUX.md](docs/LINUX.md) for which package to pick, graphics problems, codecs, sync and moving from Beta to Stable.
-
-### Opening Flow on macOS
-
-Flow isn't signed with an Apple Developer ID or notarized yet, so the first launch is blocked with a message such as "Apple could not verify Flow is free of malware" or "Flow is damaged and can't be opened". To open it:
-
-1. Open the DMG and drag Flow into your Applications folder. Flow can only update itself from there.
-2. In Terminal, remove the download mark macOS puts on the app:
-
-   ```sh
-   xattr -dr com.apple.quarantine /Applications/Flow.app
-   ```
-
-   For a Beta or Nightly build, use `"/Applications/Flow Beta.app"` or `"/Applications/Flow Nightly.app"`, with the quotes.
-3. Open Flow as usual.
-
-Without Terminal: try to open Flow once, then go to **System Settings > Privacy & Security**, scroll down to the message about Flow and click **Open Anyway**. Updates Flow installs itself don't need this again.
-
-### Flatpak (FlatPark)
-
-[FlatPark](https://flatpark.org/apps/io.github.aedev.flow.desktop/) offers Flow as a Flatpak. It downloads the official `.deb` from this repository's releases, unmodified, at install time, and runs it on the GNOME runtime with its codecs, so H.264, VP9 and AV1 all play. Updates come through Flatpak; Flow's own updater stays off there.
-
-```sh
-flatpak remote-add --if-not-exists flatpark https://dl.flatpark.org/flatpark.flatpakrepo
-flatpak install flatpark io.github.aedev.flow.desktop
-```
-
-FlatPark follows the latest GitHub release, betas included, and not the nightly builds. The packaging lives in the [FlatPark registry](https://github.com/flatpark/flatpark/tree/main/registry/io.github.aedev.flow.desktop), where packaging issues go.
-
-### Linux media codecs
-
-On Linux, video decoding goes through WebKitGTK and the system GStreamer plugins (Windows and macOS ship their own decoders). If audio plays but video stays frozen on a spinner, a video decoder is missing.
-
-- **AppImage** — bundles the required GStreamer codec plugins (including `gst-libav` for H.264); no system codec packages are needed.
-- **`.deb`** — declares the codec plugins as dependencies. Install with `sudo apt install ./Flow_*.deb` so they are pulled in automatically.
-- **`.rpm`** — the freely licensed plugins are hard dependencies. On Fedora, a full H.264 decoder is only available through [RPM Fusion](https://rpmfusion.org/Configuration) for patent reasons (Fedora's own OpenH264 can't decode most YouTube video): enable RPM Fusion and run `sudo dnf swap ffmpeg-free ffmpeg --allowerasing` and `sudo dnf install gstreamer1-plugin-libav`, or use the AppImage instead. Without it, Flow plays VP9, which Fedora always has.
-
-### Linux startup crashes and blank windows
-
-If the app opens to a blank or white window, that is usually the WebKitGTK DMABUF renderer failing on your graphics stack (common with NVIDIA proprietary drivers and some Wayland sessions). Flow disables it automatically and, if a launch still fails to render, **escalates GPU workarounds on the next launch on its own**: first forcing software compositing (`WEBKIT_DISABLE_COMPOSITING_MODE=1`), then falling back to X11/XWayland (`GDK_BACKEND=x11`). A clean launch resets this. You can still override any of these yourself — for example `WEBKIT_DISABLE_DMABUF_RENDERER=0` to re-enable the DMABUF renderer.
-
-If the app aborts on startup with `Could not create default EGL display: EGL_BAD_PARAMETER` (seen on some Arch-family / Mesa systems with the **AppImage**), that is a known Tauri AppImage packaging issue: a bundled `libwayland` client library conflicts with your system's newer Mesa/EGL stack. As an interim workaround, delete the bundled Wayland libraries and run the extracted app:
-
-```sh
-./Flow_*_linux_amd64.AppImage --appimage-extract
-rm squashfs-root/usr/lib/*wayland*so*
-./squashfs-root/AppRun
-```
-
-The `.deb`, `.rpm` and the FlatPark Flatpak use the system's or the runtime's own libraries and avoid this class of issue; prefer those when the AppImage fails.
+A self-hosted service is not the same as a fully on-device application: the instance operator controls the server and its stored data. Flow also communicates with YouTube and optional third-party services when their features are used.
 
 ---
 
 ## Development
 
-Requirements: Node.js 22.12+, pnpm 11.9+, stable Rust, and the [Tauri 2 prerequisites](https://v2.tauri.app/start/prerequisites/) for your operating system.
+The repository currently contains the upstream Flow Desktop codebase. The first milestones are a browser-compatible API transport, a headless Rust backend and working video playback.
 
 ```sh
+git clone https://github.com/Advancefeescam/Flow-Web.git
+cd Flow-Web
 pnpm install --frozen-lockfile
-pnpm tauri dev
+pnpm dev
 ```
 
-Build packages for the current operating system:
+The inherited frontend requires Node.js 22.12+ and pnpm 11.9+. The Vite development server is useful for inspecting the interface, but browser mode still uses upstream mock data in several places. This is not yet a functional self-hosted installation.
 
-```sh
-pnpm test
-pnpm build
-pnpm tauri build
-```
+Production container images and deployment instructions will be added once the web backend is ready.
 
-Windows, Linux, and macOS packages are built natively by the GitHub Actions release workflow. Production macOS and Windows releases should be signed and, on macOS, notarized before publication.
+### Roadmap
+
+- [ ] Browser-compatible API transport and events
+- [ ] Headless Rust backend and secure media delivery
+- [ ] Search, video playback and core browsing
+- [ ] Personal library, FlowNeuro and MusicBrain
+- [ ] Flow Sync compatibility
+- [ ] Responsive iPadOS experience and PWA
+- [ ] Docker and Podman deployment for x86-64 and ARM64
+
+---
+
+## The Flow project
+
+Flow Web builds on the work of [A-EDev](https://github.com/A-EDev) and the original Flow contributors. It is not an official Flow release and is not affiliated with or endorsed by the upstream project.
+
+For the native clients and the original ecosystem:
+
+- [Flow for Android](https://github.com/Flow-Tube/Flow)
+- [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop) — Windows, macOS and Linux
+- [Flow Sync](https://github.com/Flow-Tube/Flow-Sync)
+- [Official Flow community](https://www.reddit.com/r/Flow_Official/)
+
+Please report issues specific to the web port in this repository, rather than in the upstream project.
 
 ---
 
 <a id="support--donations"></a>
 ## Support & donations
 
-Flow is free and open-source software maintained by an independent developer. Patreon supports card, PayPal, Apple Pay, recurring support, and one-time tips.
+The original Flow project makes this port possible. If you enjoy Flow, consider supporting its original developer and contributors directly.
 
-<a href="https://opencollective.com/flow-tube"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-dark.svg"><img alt="Support Flow on Open Collective" src="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-light.svg" height="60"></picture></a>
-<a href="https://patreon.com/A_EDev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-dark.svg"><img alt="Support Flow on Patreon" src="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-light.svg" height="60"></picture></a>
-
-You can also donate directly with crypto. Scan a QR code using a compatible wallet, or click it where custom wallet links are supported. The address and network are printed below every code — always verify both before sending.
-
-<table>
-  <tr>
-    <td align="center">
-      <strong>USDT · TRC20</strong><br><br>
-      <a href="tron:TRz7VDrTWwCLCfQmYBEJakqcZgbFNWfUMP"><img src="Assets/donations/usdt-trc20.png" alt="USDT TRC20 donation QR code" width="170"></a><br><br>
-      <code>TRz7VDrTWwCLCfQmYBEJakqcZgbFNWfUMP</code>
-    </td>
-    <td align="center">
-      <strong>Bitcoin · BTC</strong><br><br>
-      <a href="bitcoin:bc1qgmkkxxvzvsymtpfazqfl93jw6k4jgy0xmrtnv8?label=Flow%20Development"><img src="Assets/donations/bitcoin.png" alt="Bitcoin donation QR code" width="170"></a><br><br>
-      <code>bc1qgmkkxxvzvsymtpfazqfl93jw6k4jgy0xmrtnv8</code>
-    </td>
-    <td align="center">
-      <strong>Ethereum · ERC-20</strong><br><br>
-      <a href="ethereum:0xfbac6f464fec7fe458e318971a42ba45b305b70e"><img src="Assets/donations/ethereum.png" alt="Ethereum donation QR code" width="170"></a><br><br>
-      <code>0xfbac6f464fec7fe458e318971a42ba45b305b70e</code>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2">
-      <strong>Solana · SOL</strong><br><br>
-      <a href="solana:7b3SLgiVPb8qQUvERSPGRWoFoiGEDvkFuY98M1GEngug?label=Flow%20Development"><img src="Assets/donations/solana.png" alt="Solana donation QR code" width="170"></a><br><br>
-      <code>7b3SLgiVPb8qQUvERSPGRWoFoiGEDvkFuY98M1GEngug</code>
-    </td>
-    <td align="center">
-      <strong>Monero · XMR</strong><br><br>
-      <a href="monero:8AgaxZnpEvT8VXJpczpL7BQejwSEw97saJmKYqq4zKErbe9bkYSwUhJ813msPPbdYhF11oz4N7tfEj4Zi6k27fKD83ca1if"><img src="Assets/donations/monero.png" alt="Monero donation QR code" width="170"></a><br><br>
-      <code>8AgaxZnpEvT8VXJpczpL7BQejwSEw97saJmKYqq4zKErbe9bkYSwUhJ813msPPbdYhF11oz4N7tfEj4Zi6k27fKD83ca1if</code>
-    </td>
-  </tr>
-</table>
-
-Wallet URI support varies between wallet applications. Bitcoin, Ethereum, Solana, and Monero QR codes use their standard payment URI formats; the TRC20 code uses a Tron URI and may fall back to displaying the address in wallets that do not register the scheme.
+<a href="https://opencollective.com/flow-tube"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-dark.svg"><img alt="Support the original Flow project on Open Collective" src="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-light.svg" height="60"></picture></a>
+<a href="https://patreon.com/A_EDev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-dark.svg"><img alt="Support the original Flow developer on Patreon" src="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-light.svg" height="60"></picture></a>
 
 ---
 
 ## License
 
-Flow Desktop is free software licensed under the [GNU General Public License v3.0](LICENSE).
+Flow Web is derived from Flow Desktop and is licensed under the [GNU General Public License v3.0](LICENSE) (GPL-3.0-only).
 
-This license requires that any project using Flow's source code, including the FlowNeuro engine, must also be released as open source under GPLv3. It may not be used in a proprietary or closed-source application.
-
-Copyright © 2025–2026 A-EDev
-
----
-
-## Star History
-
-<a href="https://github.com/Flow-Tube/Flow-Desktop/stargazers">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/stars/stars-flow-desktop-dark.svg">
-    <img alt="Star history of Flow Desktop" src="https://assets.flow-tube.org/v1/stars/stars-flow-desktop-light.svg" width="100%">
-  </picture>
-</a>
+Original Flow Desktop copyright © 2025–2026 A-EDev. Original copyright notices and attribution are retained. Modified versions distributed to others must comply with the GPLv3.
 
 ---
 
 <div align="center">
-  <a href="https://github.com/Flow-Tube"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/part-of-flow-dark.svg"><img alt="Part of the Flow ecosystem" src="https://assets.flow-tube.org/v1/badges/pill/part-of-flow-light.svg" height="60"></picture></a>
+  <sub>Built on <a href="https://github.com/Flow-Tube/Flow-Desktop">Flow Desktop</a> · An unofficial community project · Free and open source</sub>
 </div>
