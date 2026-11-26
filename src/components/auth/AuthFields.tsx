@@ -3,7 +3,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { TextInput } from "../ui/TextInput";
 
 const fieldClass = "w-full !rounded-xl !px-4 !py-3 !text-base focus-visible:!ring-2 focus-visible:!ring-primary";
-const labelClass = "block space-y-2 text-sm font-medium text-chrome-neutral-200";
+const labelClass = "flex flex-col gap-2 text-sm font-medium text-chrome-neutral-200";
 type Props = { value: string; onChange: (value: string) => void; disabled?: boolean; autoFocus?: boolean };
 
 export function AuthUsernameField({ value, onChange, disabled }: Props) {
