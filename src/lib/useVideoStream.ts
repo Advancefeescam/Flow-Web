@@ -29,7 +29,7 @@ import type {
   VideoSummary,
 } from "../types/video";
 import { profileStorage } from "./storage/profileStorage";
-import { chooseWebDashManifest, fallbackWebDashManifest } from "./webPlayback";
+import { chooseWebDashManifest, fallbackWebDashManifest, chooseWebDirectFile, fallbackWebDirectFile } from "./webPlayback";
 
 export type SourceMode = "hls" | "dash-native" | "sabr-dash" | "direct" | "unavailable";
 
@@ -450,7 +450,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
         } else {
           setHlsManifestUrl(null);
           setDashManifestUrl(null);
-          setStreamUrl(pickDirectVariantUrl(info, initialQualityId, preferredCodec));
+          setStreamUrl(chooseWebDirectFile(info, pickDirectVariantUrl(info, initialQualityId, preferredCodec)));
         }
         setStreamVideoId(currentVideo.id);
 
@@ -509,7 +509,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
         const chosenVariant = selectVariantByBandwidth(streamVariants, canUseAdaptive, preferredCodec);
         if (chosenVariant) {
           handResumeToSource(positionNow());
-          setStreamUrl(chosenVariant.localUrl);
+          setStreamUrl(streamInfoRef.current ? chooseWebDirectFile(streamInfoRef.current, chosenVariant.localUrl) : chosenVariant.localUrl);
         }
         return;
       }
@@ -524,7 +524,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
       }
       handResumeToSource(positionNow());
       setSelectedQualityId(variant.id);
-      setStreamUrl(variant.localUrl);
+      setStreamUrl(streamInfoRef.current ? chooseWebDirectFile(streamInfoRef.current, variant.localUrl) : variant.localUrl);
       setIsPlaying(true);
     },
     [audioTracks, dashManifestUrl, preferredCodec, setIsPlaying, streamVariants, handResumeToSource],
@@ -558,6 +558,13 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
         return;
       }
 
+      const proxyFile = sourceMode === "direct" ? fallbackWebDirectFile(info, streamUrl) : null;
+      if (proxyFile) {
+        recordPlayerEvent("web direct file unavailable; using server relay");
+        handResumeToSource(resumeAt);
+        setStreamUrl(proxyFile);
+        return;
+      }
       attemptedModesRef.current.add(sourceMode);
       const next = available.find((mode) => !attemptedModesRef.current.has(mode));
 
@@ -620,10 +627,10 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
       } else {
         setHlsManifestUrl(null);
         setDashManifestUrl(null);
-        setStreamUrl(pickDirectVariantUrl(info, selectedQualityId || "auto", preferredCodec));
+        setStreamUrl(chooseWebDirectFile(info, pickDirectVariantUrl(info, selectedQualityId || "auto", preferredCodec)));
       }
     },
-    [sourceMode, selectedQualityId, preferredCodec, handResumeToSource, dashManifestUrl],
+    [sourceMode, selectedQualityId, preferredCodec, handResumeToSource, dashManifestUrl, streamUrl],
   );
 
   const onHardRetry = useCallback(() => {
@@ -704,8 +711,9 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
           setStreamUrl(null);
         } else if (mode === "dash-native") {
           setHlsManifestUrl(null);
-          setDashManifestUrl(info.dashManifestUrl || null);
-          setStreamUrl(info.dashManifestUrl || null);
+          const manifest = chooseWebDashManifest(info);
+          setDashManifestUrl(manifest);
+          setStreamUrl(manifest);
         } else if (mode === "sabr-dash") {
           setHlsManifestUrl(null);
           setDashManifestUrl(info.sabr?.manifestUrl || null);
@@ -713,7 +721,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
         } else {
           setHlsManifestUrl(null);
           setDashManifestUrl(null);
-          setStreamUrl(pickDirectVariantUrl(info, initialQualityId, preferredCodec));
+          setStreamUrl(chooseWebDirectFile(info, pickDirectVariantUrl(info, initialQualityId, preferredCodec)));
         }
       })
       .catch((err) => {

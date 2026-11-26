@@ -20,3 +20,9 @@ export function useWebRail(): boolean {
   const rail = useMediaQuery(WEB_RAIL_QUERY);
   return isWebMode() && rail;
 }
+
+export const WEB_STACKED_WATCH_QUERY = "(max-width: 1023px), (max-width: 1199px) and (orientation: portrait)";
+export function useWebStackedWatch(): boolean {
+  const stacked = useMediaQuery(WEB_STACKED_WATCH_QUERY);
+  return isWebMode() && stacked;
+}

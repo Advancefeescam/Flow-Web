@@ -40,6 +40,7 @@ export interface RelatedVideosProps {
   loading: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  loadMoreFailed?: boolean;
   onLoadMore: () => void;
   onSelect: (item: RelatedContentItem) => void;
   onAddToQueue?: (video: VideoSummary) => void;

@@ -655,7 +655,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
     <>
       <div
         className={cx(
-          "pointer-events-none absolute inset-0 z-20 flex h-full w-full flex-col justify-end pt-24",
+          "flow-video-controls pointer-events-none absolute inset-0 z-20 flex h-full w-full flex-col justify-end pt-24",
           isTheaterMode ? "px-4 pb-3 sm:px-6 sm:pb-4 lg:px-8" : "px-3 pb-3 sm:px-5 sm:pb-4",
         )}
       >
@@ -823,6 +823,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
 
           <div className={cx("flow-video-transport flex items-center justify-between gap-3", fade)}>
             <div className="flow-video-transport-main flex min-w-0 items-center gap-1 sm:gap-2">
+              <div className="flow-video-primary-buttons contents">
               {showNextPrevious && (
                 <button
                   type="button"
@@ -878,6 +879,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
                 </button>
               )}
 
+              </div>
               {showVolume && (
               <div ref={volumeWheelRef} className={cx("group/volume hidden items-center sm:flex rounded-full hover:pr-2", shade.pill)}>
                 <button
@@ -942,7 +944,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
                 ref={showChapters ? chapterPillRef : undefined}
                 type="button"
                 onClick={() => togglePanel("chapters")}
-                className={cx("hidden items-center gap-1.5 text-xs font-medium text-chrome-white sm:text-sm hover:bg-chrome-white/10 rounded-full px-2 py-1 transition-all select-none cursor-pointer active:scale-95 group/pill max-w-[150px] sm:max-w-[260px] truncate", shade.pill)}
+                className={cx("flow-video-chapter hidden items-center gap-1.5 text-xs font-medium text-chrome-white sm:text-sm hover:bg-chrome-white/10 rounded-full px-2 py-1 transition-all select-none cursor-pointer active:scale-95 group/pill max-w-[150px] sm:max-w-[260px] truncate", shade.pill)}
               >
                 <span className="chapter-title truncate"></span>
                 <ChevronRight size={14} className="text-chrome-zinc-400 group-hover/pill:text-chrome-white transition-colors shrink-0" />

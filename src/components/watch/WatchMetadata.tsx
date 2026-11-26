@@ -148,7 +148,7 @@ export function WatchMetadata({
         </div>
       )}
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flow-watch-owner-actions flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <WatchOwner
           channelId={channelId}
           channelName={channelName}
@@ -158,7 +158,7 @@ export function WatchMetadata({
           collaborators={videoData?.collaborators ?? []}
         />
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flow-watch-actions flex flex-wrap items-center gap-2">
           <div className="flex h-10 items-center divide-x divide-outline-soft overflow-hidden rounded-full bg-surface-container-low">
             <button
               onClick={reactions.like}

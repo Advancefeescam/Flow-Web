@@ -30,3 +30,18 @@ describe("web scrub preview", () => {
     expect(webScrubTime(150, 100, 100, Infinity)).toBeNull();
   });
 });
+
+
+describe("web direct muxed files", () => {
+  it("tries the same file directly and falls back without changing quality", () => {
+    const policy = createWebDashPolicy();
+    const proxyUrl = "/media/stream/file";
+    const directUrl = "https://rr1.googlevideo.com/videoplayback?test=1";
+    const source = {...info, webDirectMuxed: [{proxyUrl, directUrl}]};
+    expect(policy.chooseFile(source, proxyUrl, 0)).toBe(directUrl);
+    expect(policy.chooseFile(source, "/media/stream/other", 0)).toBe("/media/stream/other");
+    expect(policy.fallbackFile(source, directUrl, 1)).toBe(proxyUrl);
+    expect(policy.chooseFile(source, proxyUrl, 2)).toBe(proxyUrl);
+    expect(policy.chooseFile(source, proxyUrl, 300002)).toBe(directUrl);
+  });
+});
