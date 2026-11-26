@@ -28,7 +28,9 @@ export function Topbar() {
   const location = useLocation();
   const isWatchPage = location.pathname.startsWith('/watch/');
   const compact = useWebCompact();
-  const compactWatch = compact && isWatchPage;
+  const isShortsPage = location.pathname === '/shorts' || location.pathname.startsWith('/shorts/');
+  // Reuse Watch's single-row mobile header on immersive Shorts routes.
+  const compactWatch = compact && (isWatchPage || isShortsPage);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   useEffect(() => { setSearchOpen(false); }, [location.pathname]);
