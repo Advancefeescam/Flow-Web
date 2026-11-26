@@ -24,6 +24,7 @@ jobs:
         with:
           toolchain: stable
       - run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev cmake clang
+      - run: bash -n scripts/web-dev.sh
       - run: pnpm install --frozen-lockfile
       - run: pnpm test
       - run: pnpm build --mode web

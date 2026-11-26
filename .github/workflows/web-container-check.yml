@@ -1,0 +1,53 @@
+name: Web container smoke tests
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            architecture: amd64
+          - runner: ubuntu-24.04-arm
+            architecture: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - run: docker build -f Containerfile -t flow-web:smoke .
+      - name: Start headless server and check authentication boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker volume create flow-web-smoke
+          docker run -d --name flow-web-smoke -p 127.0.0.1:8780:8780 \
+            -e FLOW_WEB_PASSWORD=container-smoke-only-not-a-real-password \
+            -e FLOW_WEB_ORIGIN=http://127.0.0.1:8780 \
+            -v flow-web-smoke:/data flow-web:smoke
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:8780/ -o /tmp/flow-index.html; then break; fi
+            sleep 2
+          done
+          test -s /tmp/flow-index.html
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8780/api/v1/health)" = 401
+          test "$(docker exec flow-web-smoke id -u)" != 0
+          docker restart flow-web-smoke
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:8780/ -o /tmp/flow-restart.html; then break; fi
+            sleep 2
+          done
+          test -s /tmp/flow-restart.html
+          docker exec flow-web-smoke test -s /data/flow-web.sqlite
+      - name: Container logs
+        if: always()
+        run: docker logs flow-web-smoke || true
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f flow-web-smoke || true
+          docker volume rm flow-web-smoke || true

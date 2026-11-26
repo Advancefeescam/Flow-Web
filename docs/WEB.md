@@ -124,3 +124,16 @@ Music queue persistence and long-track resume positions use the existing upstrea
 Set `FLOW_WEB_SYNC_URL` to your existing Flow Sync server's base URL (HTTPS or a private HTTP address as permitted by the original protocol). Open **Sync** in the browser to check server reachability, advertised protocols and live support. The destination is configured by the operator, not supplied by an RPC request. The check calls the original client’s unauthenticated `GET /v1/info` endpoint; it does not claim, reset, join or upload to the server. No admin token is needed.
 
 The next implementation gates are a durable server-side credential store, adapting the original linked-device state and profile mapping, joining with the existing confirmation protocol, collection apply/push transactions and change notifications, then a real Android/Desktop interoperability and restart test. Do not claim compatibility until those pass. A Flow Web instance should be one device, not one member per browser tab.
+
+
+## Repeatable local development and deployment
+
+For an existing clean checkout of `integration/desktop` (or its detached commit), run:
+
+```bash
+bash scripts/web-dev.sh --configure
+````
+
+The launcher asks for a password, bind address, exact browser origin and optional Flow Sync server once. It stores those four literal values in a user-only file outside the repository (`~/.config/flow-web/dev.conf`, or XDG_CONFIG_HOME / FLOW_WEB_DEV_CONFIG). Later starts use `bash scripts/web-dev.sh`; `bash scripts/web-dev.sh --update` fetches and fast-forwards only, refuses dirty/diverged checkouts, rebuilds and runs. `--configure` edits the saved settings. It is a developer launcher, not a production service. It preserves the existing `web-server/data` path.
+
+For production-style container testing, copy `.env.web.example` to `.env`, restrict the file to your user, set the password and origin, and run `podman compose -f compose.web.yml up -d --build` (or Docker Compose). The same volume is used for restarts and rebuilds. Keep the published host on loopback behind HTTPS unless deliberately testing on a trusted LAN. Do not copy the development password into production. Configure the optional Flow Sync URL here as well. See [release gates](RELEASE-WEB.md) for what still needs verification.
