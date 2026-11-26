@@ -1,5 +1,6 @@
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { invokeBackend } from "./errors";
+import { isWebMode } from "./env";
 
 // Wire types mirror `src-tauri/src/sync2/{actions,service,link_task}.rs` (camelCase).
 
@@ -131,7 +132,8 @@ export const syncProfile = (profile: string, link: string | null) =>
 export const syncAddedProfile = (profile: string, link: string) =>
   invokeBackend<void>("linked_sync_added_profile", { profile, link });
 /** Resolves once the running profile has what other devices sent for it. */
-export const catchUpLinkedProfile = () => invokeBackend<void>("linked_catch_up");
+// Web uses one server-side profile and has no linked-device sync engine yet.
+export const catchUpLinkedProfile = () => isWebMode() ? Promise.resolve() : invokeBackend<void>("linked_catch_up");
 export const stopProfile = (profile: string) => invokeBackend<void>("linked_stop_profile", { profile });
 /** Stops `link` syncing on every device; each keeps its data. */
 export const deleteSyncedProfile = (link: string) => invokeBackend<void>("linked_delete_profile", { link });

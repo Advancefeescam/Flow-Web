@@ -16,6 +16,30 @@ pub async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResul
     let m = &state.music;
     macro_rules! out { ($expr:expr) => { serde_json::to_value($expr.await?)? }; }
     let value = match command {
+        "load_music_queue_state" => out!(crate::db::music_queue::load_queue_state(&state.pool)),
+        "save_music_queue_state" => {
+            let value: String = arg(args, "state")?;
+            if value.len() > 4 * 1024 * 1024 || serde_json::from_str::<Value>(&value).is_err() {
+                return Err(AppError::Validation("Invalid music queue state".into()));
+            }
+            let _write = state.writes.lock().await;
+            out!(crate::db::music_queue::save_queue_state(&state.pool, &value, chrono::Utc::now().timestamp_millis()))
+        },
+        "clear_music_queue_state" => {
+            let _write = state.writes.lock().await;
+            out!(crate::db::music_queue::clear_queue_state(&state.pool))
+        },
+        "get_music_resume_position" => out!(crate::db::music_queue::get_resume_position(&state.pool, &video(args)?)),
+        "save_music_resume_position" => {
+            let id = video(args)?;
+            let position: f64 = arg(args, "positionSeconds")?;
+            let duration: f64 = arg(args, "durationSeconds")?;
+            if !position.is_finite() || !duration.is_finite() || duration <= 0.0 {
+                return Err(AppError::Validation("Invalid resume position".into()));
+            }
+            let _write = state.writes.lock().await;
+            out!(crate::db::music_queue::save_resume_position(&state.pool, &id, position.clamp(0.0, duration), duration, chrono::Utc::now().timestamp_millis()))
+        },
         "get_music_home_page" => {
             let continuation = token(args,"continuation")?;
             let page = m.home(continuation.as_deref()).await?;
