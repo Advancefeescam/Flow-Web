@@ -81,6 +81,18 @@ export function parseSavedPosition(raw: string | null | undefined): MiniPlayerRa
   return { xRatio: 1, yRatio: 1 };
 }
 
+/** The web dock must stay above the measured phone navigation bar. Native bounds are unchanged. */
+function currentMiniPlayerBounds(width: number, height: number): MiniPlayerBounds {
+  const shell = document.querySelector<HTMLElement>(".flow-web-shell");
+  const nav = shell?.querySelector<HTMLElement>("[data-flow-mobile-nav]");
+  const navHeight = nav?.getBoundingClientRect().height ?? 0;
+  if (!shell || navHeight <= 0) return computeMiniPlayerBounds(window.innerWidth, window.innerHeight, width, height);
+  const viewportHeight = shell.getBoundingClientRect().height - navHeight;
+  const header = shell.querySelector<HTMLElement>(".flow-adaptive-topbar")?.getBoundingClientRect().height ?? 0;
+  const top = Math.max(8, Math.min(header + 8, viewportHeight - height - 8));
+  return computeMiniPlayerBounds(window.innerWidth, viewportHeight, width, height, 8, top);
+}
+
 export interface UseMiniPlayerDragOptions {
   frameRef: React.RefObject<HTMLDivElement | null>;
   isFloating: boolean;
@@ -132,7 +144,7 @@ export function useMiniPlayerDrag({
       ratiosRef.current = parseSavedPosition(savedPositionSetting);
       if (isFloating) {
         const dims = getPlayerDimensions();
-        const bounds = computeMiniPlayerBounds(window.innerWidth, window.innerHeight, dims.width, dims.height);
+        const bounds = currentMiniPlayerBounds(dims.width, dims.height);
         const pos = positionFromRatios(ratiosRef.current, bounds);
         syncPositionToDom(pos.x, pos.y);
       }
@@ -150,7 +162,7 @@ export function useMiniPlayerDrag({
 
     const updateFromRatios = () => {
       const dims = getPlayerDimensions();
-      const bounds = computeMiniPlayerBounds(window.innerWidth, window.innerHeight, dims.width, dims.height);
+      const bounds = currentMiniPlayerBounds(dims.width, dims.height);
       const pos = positionFromRatios(ratiosRef.current, bounds);
       syncPositionToDom(pos.x, pos.y);
     };
@@ -167,8 +179,10 @@ export function useMiniPlayerDrag({
     };
 
     window.addEventListener("resize", onResize);
+    window.visualViewport?.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("resize", onResize);
+      window.visualViewport?.removeEventListener("resize", onResize);
       if (resizeRaf !== null) window.cancelAnimationFrame(resizeRaf);
     };
   }, [isFloating, frameRef]);
@@ -193,7 +207,7 @@ export function useMiniPlayerDrag({
     }
 
     const dims = getPlayerDimensions();
-    const bounds = computeMiniPlayerBounds(window.innerWidth, window.innerHeight, dims.width, dims.height);
+    const bounds = currentMiniPlayerBounds(dims.width, dims.height);
     const currentPos = currentPosRef.current || positionFromRatios(ratiosRef.current, bounds);
     const newRatios = ratiosFromPosition(currentPos.x, currentPos.y, bounds);
     ratiosRef.current = newRatios;
@@ -207,7 +221,7 @@ export function useMiniPlayerDrag({
       if (target?.closest("[data-drag-ignore='true']")) return;
 
       const dims = getPlayerDimensions();
-      const bounds = computeMiniPlayerBounds(window.innerWidth, window.innerHeight, dims.width, dims.height);
+      const bounds = currentMiniPlayerBounds(dims.width, dims.height);
       const currentPos = currentPosRef.current || positionFromRatios(ratiosRef.current, bounds);
 
       pressRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
@@ -235,7 +249,7 @@ export function useMiniPlayerDrag({
       }
 
       const dims = getPlayerDimensions();
-      const bounds = computeMiniPlayerBounds(window.innerWidth, window.innerHeight, dims.width, dims.height);
+      const bounds = currentMiniPlayerBounds(dims.width, dims.height);
       const nextX = Math.max(bounds.minX, Math.min(bounds.maxX, startPosRef.current.x + dx));
       const nextY = Math.max(bounds.minY, Math.min(bounds.maxY, startPosRef.current.y + dy));
 

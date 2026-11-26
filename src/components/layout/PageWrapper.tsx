@@ -1,6 +1,8 @@
 import { Suspense, useEffect, useLayoutEffect, useRef } from 'react';
 import { getString } from '../../lib/i18n/index';
 import { Topbar } from './Topbar';
+import { MobileNavigation } from './MobileNavigation';
+import { isWebMode } from '../../lib/api/env';
 import { Sidebar } from './Sidebar';
 import { NavigationType, Outlet, useLocation, useNavigationType } from 'react-router-dom';
 import { useUiStore } from '../../store/useUiStore';
@@ -87,7 +89,7 @@ export function PageWrapper() {
   return (
     <div className="flex h-full flex-col bg-background text-chrome-zinc-100 overflow-hidden font-sans">
       <Topbar />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <Sidebar />
         <main
           ref={mainRef}
@@ -95,8 +97,8 @@ export function PageWrapper() {
             isPlaylistDetailsPage
               || isMusicCollectionPage
               || isHistoryPage
-              ? "flex min-h-0 flex-1 flex-col overflow-hidden"
-              : "flex-1 overflow-y-auto"
+              ? "flex min-w-0 min-h-0 flex-1 flex-col overflow-hidden"
+              : "min-w-0 min-h-0 flex-1 overflow-y-auto"
           }
         >
           {/*
@@ -112,11 +114,12 @@ export function PageWrapper() {
           </ScrollContainerContext.Provider>
         </main>
       </div>
+      {isWebMode() && <MobileNavigation />}
       {usesDrawer && (
         <div
           data-open={isWatchSidebarOpen}
           inert={!isWatchSidebarOpen}
-          className={`fixed inset-x-0 bottom-0 top-[calc(var(--app-titlebar-height)+3.5rem)] z-50 flex ${
+          className={`flow-sidebar-overlay fixed inset-x-0 bottom-0 top-[calc(var(--app-titlebar-height)+var(--flow-web-topbar-height,3.5rem))] z-50 flex ${
             isWatchSidebarOpen ? '' : 'pointer-events-none'
           }`}
         >

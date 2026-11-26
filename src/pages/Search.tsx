@@ -27,7 +27,7 @@ export function Search({ onPlay, onAddToQueue }: SearchProps) {
 
   return (
     <div className="grow overflow-y-auto">
-      <div className="mx-auto w-full max-w-400 px-8 pb-20">
+      <div className="flow-search-page mx-auto w-full max-w-400 px-8 pb-20">
         {query.trim() ? (
           <>
             <SearchControlBar

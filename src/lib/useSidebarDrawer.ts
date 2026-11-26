@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useMediaQuery } from "./useMediaQuery";
+import { useWebMedium } from "./webAdaptive";
 
 /** Below Tailwind's `sm` the side rail is hidden, so the menu opens the drawer instead. */
 export const NARROW_WINDOW_QUERY = "(max-width: 639px)";
@@ -8,5 +9,6 @@ export const NARROW_WINDOW_QUERY = "(max-width: 639px)";
 export function useSidebarDrawer(): boolean {
   const { pathname } = useLocation();
   const narrow = useMediaQuery(NARROW_WINDOW_QUERY);
-  return narrow || pathname.startsWith("/watch/") || pathname.startsWith("/settings");
+  const medium = useWebMedium();
+  return narrow || medium || pathname.startsWith("/watch/") || pathname.startsWith("/settings");
 }

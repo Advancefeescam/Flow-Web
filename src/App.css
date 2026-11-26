@@ -1133,3 +1133,181 @@
 :root[data-app-font="custom"] body {
   font-family: "FlowCustomFont", system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans Arabic", "Noto Naskh Arabic", sans-serif;
 }
+
+
+/* Web-only adaptive shell. Desktop Tauri's layout and gestures stay untouched. */
+.flow-web-shell {
+  height: 100dvh;
+  --flow-web-topbar-height: 3.5rem;
+  --flow-web-nav-space: 0px;
+}
+.flow-web-bottom-nav { display: none; }
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-topbar-leading, .flow-web-shell .flow-topbar-actions { gap: .25rem; }
+  .flow-web-shell .flow-topbar-search { padding-inline: .5rem; }
+  .flow-web-shell .flow-theater-slot { min-height: 0; max-height: 70dvh; }
+  .flow-web-shell .flow-home-page, .flow-web-shell .flow-search-page { padding-inline: 1rem; }
+}
+@media (max-width: 639px) {
+  .flow-web-shell {
+    --flow-web-topbar-height: calc(6.5rem + env(safe-area-inset-top, 0px));
+    --flow-web-nav-space: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  .flow-web-shell .flow-adaptive-topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 3rem 3rem;
+    height: var(--flow-web-topbar-height);
+    padding: env(safe-area-inset-top, 0px) max(.5rem, env(safe-area-inset-right, 0px)) .5rem max(.5rem, env(safe-area-inset-left, 0px));
+    column-gap: .25rem;
+  }
+  .flow-web-shell .flow-topbar-leading { grid-column: 1; grid-row: 1; }
+  .flow-web-shell .flow-topbar-actions { grid-column: 2; grid-row: 1; gap: 0; }
+  .flow-web-shell .flow-topbar-search { grid-column: 1 / -1; grid-row: 2; max-width: none; padding-inline: .25rem; }
+  .flow-web-shell .flow-topbar-logo svg { width: 30px; height: 30px; }
+  .flow-web-shell .flow-topbar-logo span { display: none; }
+  .flow-web-shell .flow-search-input { font-size: 16px; }
+  .flow-web-shell .flow-web-bottom-nav {
+    display: flex;
+    min-height: var(--flow-web-nav-space);
+    padding: .25rem max(.25rem, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(.25rem, env(safe-area-inset-left, 0px));
+  }
+  .flow-web-shell .flow-home-page { padding-block-start: .75rem; }
+  .flow-web-shell .flow-watch-page { min-height: 100%; padding-bottom: 5rem; }
+  .flow-web-shell .flow-watch-grid { padding: 0; gap: .75rem; }
+  .flow-web-shell .flow-watch-player [data-flow-watch-player-slot] { border-radius: 0; }
+  .flow-web-shell .flow-watch-details, .flow-web-shell .flow-watch-related { padding-inline: .75rem; }
+}
+@media (max-width: 359px) {
+  .flow-web-shell .flow-topbar-logo { display: none; }
+}
+
+
+/* Existing card and player components, rearranged only in narrow web windows. */
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-search-controls, .flow-web-shell .flow-search-control-inner {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+  .flow-web-shell .short-stage { padding-block: 0; }
+  .flow-web-shell .flow-short-layout { padding: 0; gap: 0; align-items: center; }
+  .flow-web-shell .flow-short-placeholder { display: none; }
+  .flow-web-shell .short-frame {
+    position: relative;
+    height: 100%;
+    max-height: 100%;
+    width: min(100%, calc(100cqh * 9 / 16));
+    flex-shrink: 0;
+    border-radius: 0;
+  }
+  .flow-web-shell .flow-short-video { width: 100%; aspect-ratio: auto; }
+  .flow-web-shell .flow-short-meta {
+    position: absolute;
+    z-index: 25;
+    inset-inline-start: .75rem;
+    bottom: 2rem;
+    width: min(17rem, calc(100% - 5.5rem));
+    max-height: 52%;
+    overflow-y: auto;
+    margin: 0;
+    gap: .5rem;
+    padding: .5rem;
+    border-radius: 1rem;
+    background: rgb(0 0 0 / .55);
+    text-shadow: 0 1px 3px #000;
+  }
+  .flow-web-shell .flow-short-meta button, .flow-web-shell .flow-short-meta span { color: #fff; }
+  .flow-web-shell .flow-short-caption { -webkit-line-clamp: 2; text-align: start; font-size: .875rem; }
+  .flow-web-shell .flow-short-actions {
+    position: absolute;
+    z-index: 26;
+    inset-inline-end: .5rem;
+    bottom: 2rem;
+    margin: 0;
+    gap: .25rem;
+    width: 4rem;
+    align-items: center;
+  }
+  .flow-web-shell .flow-short-action-button { width: 2.75rem; height: 2.75rem; }
+  .flow-web-shell .flow-short-actions span { color: #fff; margin-block: .125rem .25rem; }
+  .flow-web-shell .flow-short-panel {
+    position: absolute;
+    z-index: 40;
+    inset-inline: 0;
+    bottom: 0;
+    height: min(78%, 34rem);
+    width: 100% !important;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+  .flow-web-shell .flow-short-panel[data-panel-open="false"] { display: none; }
+  .flow-web-shell .short-stage:has(.flow-short-panel[data-panel-open="true"]) .flow-short-meta,
+  .flow-web-shell .short-stage:has(.flow-short-panel[data-panel-open="true"]) .flow-short-actions { visibility: hidden; }
+  .flow-web-shell .flow-short-more { inset-inline-end: 3rem; max-width: calc(100vw - 5rem); }
+  .flow-web-shell .flow-short-arrows { inset-inline-end: .75rem; top: .75rem; transform: none; flex-direction: row; }
+  .flow-web-shell .flow-short-arrows button { width: 2.25rem; height: 2.25rem; }
+}
+@media (max-width: 639px) {
+  .flow-web-shell .flow-search-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: .5rem;
+    padding-inline: 0;
+  }
+  .flow-web-shell .flow-search-thumb { width: 100%; grid-column: 1 / -1; }
+  .flow-web-shell .flow-search-meta { grid-column: 1; }
+  .flow-web-shell .flow-watch-frame { border-radius: 0; }
+  .flow-web-shell .flow-floating-video { max-width: min(60vw, 260px); }
+  .flow-web-shell .flow-web-dock-position { bottom: calc(var(--flow-web-nav-space) + .5rem); }
+  .flow-web-shell .flow-web-dock-position.fixed { inset-inline-end: .5rem; }
+}
+@media (pointer: coarse) {
+  .flow-web-shell .flow-card-menu-button { opacity: 1; }
+}
+@media (max-height: 480px) and (max-width: 1023px) {
+  .flow-web-shell .flow-short-actions { bottom: .5rem; gap: 0; }
+  .flow-web-shell .flow-short-action-button { width: 2rem; height: 2rem; }
+  .flow-web-shell .flow-short-action-button svg { width: 1rem; height: 1rem; }
+  .flow-web-shell .flow-short-meta { bottom: .5rem; }
+}
+
+
+/* Mobile Safari / installed PWA: keep controls inside the physical display. */
+.flow-web-shell {
+  --flow-web-topbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.flow-web-shell .flow-adaptive-topbar {
+  height: var(--flow-web-topbar-height);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.flow-web-shell .flow-sidebar-overlay {
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+}
+.flow-web-auth-surface {
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-adaptive-page { padding-inline: 1rem; }
+  .flow-web-shell .flow-short-arrows { top: 4.25rem; }
+}
+@media (max-width: 639px) {
+  .flow-web-shell {
+    --flow-web-topbar-height: calc(6.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: 0;
+  }
+  .flow-web-shell .flow-adaptive-topbar { padding-inline: .5rem; }
+  .flow-web-shell .flow-web-bottom-nav { padding-inline: .25rem; }
+  .flow-web-shell .flow-topbar-leading > button, .flow-web-shell .flow-topbar-actions > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .flow-web-shell .flow-search-suggestions { max-height: min(60dvh, 30rem); }
+  .flow-web-shell .flow-library-page { gap: 1.5rem; padding-top: 1rem; }
+  .flow-web-shell .flow-library-header { flex-wrap: wrap; gap: .75rem; }
+  .flow-web-shell .flow-short-arrows { top: .5rem; inset-inline-end: auto; inset-inline-start: .5rem; flex-direction: column; }
+  .flow-web-shell .flow-short-arrows button { width: 2rem; height: 2rem; }
+}

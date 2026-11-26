@@ -16,7 +16,7 @@ function AuthSurface({ children }: { children: ReactNode }) {
   const snapshot = document.documentElement.dataset.themeVariant;
   const variant = systemDark ? "dark" : "light";
   const style = snapshot ? undefined : { ...scopeVariables(DEFAULT_THEME, variant), colorScheme: variant } as CSSProperties;
-  return <main style={style} className="h-dvh w-full overflow-y-auto bg-background text-on-surface">
+  return <main style={style} className="flow-web-auth-surface h-dvh w-full overflow-y-auto bg-background text-on-surface">
     <div className="min-h-full flex flex-col items-center justify-center px-4 py-8 sm:px-8">
       <motion.section initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }} className="w-full max-w-[420px] rounded-[28px] border border-outline-soft bg-surface-container px-6 py-7 sm:px-9 sm:py-9">

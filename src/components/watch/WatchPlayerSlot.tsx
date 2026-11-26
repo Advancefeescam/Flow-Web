@@ -25,7 +25,7 @@ export function WatchPlayerSlot() {
       style={tallerAspect === null ? undefined : { aspectRatio: String(tallerAspect), maxHeight: "calc(100vh - 160px)" }}
       className={
         isTheaterMode
-          ? "relative w-full aspect-video max-h-[calc(100vh-160px)] min-h-[480px] bg-chrome-black"
+          ? "flow-theater-slot relative w-full aspect-video max-h-[calc(100vh-160px)] min-h-[480px] bg-chrome-black"
           : "relative w-full aspect-video overflow-hidden rounded-xl bg-chrome-black"
       }
     >

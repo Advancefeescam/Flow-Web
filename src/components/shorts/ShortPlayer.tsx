@@ -1,5 +1,6 @@
 import { getString } from "../../lib/i18n/index";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useWebCompact, useWebMedium } from "../../lib/webAdaptive";
 import { motion } from "framer-motion";
 import { Loader2, Volume1, Volume2, VolumeX } from "lucide-react";
 import { getReturnYouTubeDislike, type RydData } from "../../lib/api/foss";
@@ -58,6 +59,9 @@ export function ShortPlayer({
   const [activeRetryToken, setActiveRetryToken] = useState(0);
   const [activeRetryAttempted, setActiveRetryAttempted] = useState(false);
   const thumbnail = useProxiedImageUrl(short.thumbnailUrl);
+  const compact = useWebCompact();
+  const medium = useWebMedium();
+  const adaptive = compact || medium;
   const panelOpen = active && panelState !== "none";
   const { details } = useShortDetails(short.id, active);
   const { countText: fetchedCommentCountText } = useVideoComments(active ? short.id : undefined);
@@ -134,8 +138,8 @@ export function ShortPlayer({
       <div className="absolute inset-0 bg-chrome-neutral-950/60 pointer-events-none" />
 
       <motion.div
-        layout={active}
-        className="relative z-10 flex h-full w-full max-w-none flex-row items-end justify-center gap-6 px-6 lg:gap-8"
+        layout={active && !adaptive}
+        className="flow-short-layout relative z-10 flex h-full w-full max-w-none flex-row items-end justify-center gap-6 px-6 lg:gap-8"
       >
         {active ? (
           <ShortMetadata
@@ -144,14 +148,14 @@ export function ShortPlayer({
             onOpenDescription={() => onRequestPanel("description")}
           />
         ) : (
-          <div className="mb-4 w-[260px] lg:w-[280px]" />
+          <div className="flow-short-placeholder mb-4 w-[260px] lg:w-[280px]" />
         )}
 
         <motion.div
-          layout={active}
+          layout={active && !adaptive}
           className="short-frame flex flex-row overflow-hidden rounded-2xl bg-chrome-black ring-1 ring-chrome-white/10"
         >
-          <div className="relative z-20 aspect-[9/16] h-full bg-chrome-black">
+          <div className="flow-short-video relative z-20 aspect-[9/16] h-full bg-chrome-black">
             <ShortVideoSurface
               videoId={short.id}
               dashUrl={active ? dashUrl : null}
@@ -221,11 +225,12 @@ export function ShortPlayer({
           </div>
 
           <motion.div
-            layout={active}
+            layout={active && !adaptive}
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: panelOpen ? SIDE_PANEL_WIDTH : 0, opacity: 1 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className={`flex h-full flex-col overflow-hidden bg-surface-container-high ${
+            data-panel-open={panelOpen}
+            className={`flow-short-panel flex h-full flex-col overflow-hidden bg-surface-container-high ${
               panelOpen ? "border-s border-outline-soft" : ""
             }`}
           >
@@ -254,7 +259,7 @@ export function ShortPlayer({
             likeFromSurfaceRef={likeFromSurfaceRef}
           />
         ) : (
-          <div className="mb-4 w-[260px] lg:w-[280px]" />
+          <div className="flow-short-placeholder mb-4 w-[260px] lg:w-[280px]" />
         )}
       </motion.div>
     </div>

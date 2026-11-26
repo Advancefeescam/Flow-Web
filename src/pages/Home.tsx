@@ -302,7 +302,7 @@ export const Home: React.FC<HomeProps> = ({ onPlay, onAddToQueue }) => {
 
   // `<main>` above owns the scroll; an auto-height block here would only add a painted layer.
   return (
-    <div className="flex-1 space-y-6 px-8 py-6">
+    <div className="flow-home-page flex-1 space-y-6 px-8 py-6">
       {homeFeedEnabled && (
         <HomeChipRow chips={chipOptions} selected={chips.selected} onSelect={chips.select} />
       )}

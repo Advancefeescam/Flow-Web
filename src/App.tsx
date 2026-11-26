@@ -232,7 +232,7 @@ function App() {
 
   if (loadingOnboarding || !tabsRestored) {
     return (
-      <div style={windowLayoutStyle} className="relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans">
+      <div style={windowLayoutStyle} className={`relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans ${isWebMode() ? "flow-web-shell" : ""}`}>
         <ThemeController />
         <TitleBar />
         <div className="flex flex-1 items-center justify-center">
@@ -247,7 +247,7 @@ function App() {
   }
 
   return (
-    <div style={windowLayoutStyle} className="relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans">
+    <div style={windowLayoutStyle} className={`relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans ${isWebMode() ? "flow-web-shell" : ""}`}>
       <ThemeController />
       <SelectionMenu />
       <TitleBar />

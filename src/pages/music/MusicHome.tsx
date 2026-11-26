@@ -351,7 +351,7 @@ export default function MusicHome() {
   };
 
   return (
-    <div className="px-6 py-6 lg:px-8">
+    <div className="flow-adaptive-page px-6 py-6 lg:px-8">
       <CategoryChips
         categories={categories}
         activeCategory={activeMood}
