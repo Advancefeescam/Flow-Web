@@ -1,21 +1,21 @@
 # Working on Flow Web as an AI agent
 
-Flow Web is the browser and headless-server edition of Flow, a privacy-first YouTube and YouTube Music client. This repository also contains Flow Desktop (Tauri 2) and the Android companion. Web work reuses Flow's original React interface, Innertube extraction, streaming, SQLite schema, FlowNeuro, and MusicBrain. Preserve desktop behavior while giving browser users real equivalents where the browser cannot call an operating-system API.
+Flow Web is the browser and headless-server edition of Flow, a privacy-first YouTube and YouTube Music client. The full Flow Desktop (Tauri 2) source lives on integration/desktop; this branch is a generated web export. Web work reuses Flow's original React interface, Innertube extraction, streaming, SQLite schema, FlowNeuro, and MusicBrain. Preserve desktop behavior while giving browser users real equivalents where the browser cannot call an operating-system API.
 
 ## Repository map
 
 - src/ is the React 19 and TypeScript interface shared by web and desktop. Backend calls belong in src/lib/api/ or focused hooks, global state in src/store/, and UI composition in src/components/ and src/pages/.
 - web-server/ is the standalone Rust HTTP server. main.rs wires routes and state; rpc.rs dispatches an explicit command allowlist; media.rs and hls.rs expose authenticated, constrained media; db.rs opens the shared SQLite schema.
-- src-tauri/src/ contains the desktop command layer and reusable extraction, streaming, recommendation, sync, and database modules. Reuse domain logic where possible; do not make the web server depend on a Tauri window or host-file dialog.
+- vendor/flow-desktop/src/ contains the retained upstream command layer and reusable extraction, streaming, recommendation, sync, and database modules. The root src-tauri entry is a compatibility symlink. Reuse domain logic where possible; do not make the web server depend on a Tauri window or host-file dialog.
 - src-tauri/migrations/ is shared by both runtimes. Existing migrations are immutable. Add a new numbered migration for schema changes; inspect the directory for the next number.
 - docs/WEB.md describes the current web runtime and parity gaps. Keep it accurate when a feature or its verification status changes.
-- FlowApp_mobile/ contains Android code and protocol references. Read its AGENTS.md before changing that subtree.
+- The Android companion lives in a separate upstream repository; use it for protocol references when relevant.
 
 If Design.md exists, read it before changing React or Tailwind code. If graphify-out/graph.json exists, use graphify query for codebase questions and graphify update . after edits. Neither file is guaranteed to be present.
 
 ## Agent workflow
 
-1. Inspect the working tree, the relevant source, and current main before editing. Fetch main when available, compare it with the working branch, and preserve all existing user changes. Do not reset or overwrite a dirty tree.
+1. Inspect the working tree and relevant source before editing. Develop source changes on integration/desktop and regenerate the public web tree; do not edit the generated vendor directory directly. See docs/UPSTREAM.md. Fetch main when available, compare it with the working branch, and preserve all existing user changes. Do not reset or overwrite a dirty tree.
 2. Turn broad requests into a concrete parity checklist from the actual code and user-visible flows. Work through it end to end. Prefer a working vertical slice with error handling and browser verification over disconnected stubs. Do not label a feature complete because a command returns a placeholder or a build succeeds.
 3. Search for existing implementations before adding logic. Keep changes focused, remove dead code, and comment only when the reason is not apparent from the code.
 4. Make routine implementation decisions independently. Ask only when a missing product choice or external access truly blocks the next step. Keep working on independent tasks while waiting for an answer.

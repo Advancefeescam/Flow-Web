@@ -6,3 +6,5 @@ web-server/target
 web-server/data
 .env
 .env.local
+
+vendor/flow-desktop/target

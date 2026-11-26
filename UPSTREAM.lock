@@ -1,5 +1,5 @@
 {
-  "format": 1,
+  "format": 2,
   "upstream_repository": "https://github.com/Flow-Tube/Flow-Desktop",
-  "integration_commit": "d2133ef3dca6b61c901193b882bb2a7956fd430f"
+  "integration_commit": "b9e6047b3287a7c3509c62b0266d78eeaec5ba80"
 }

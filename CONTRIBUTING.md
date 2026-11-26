@@ -18,14 +18,13 @@ Develop source changes against `integration/desktop`. The public `main` branch i
 
 ## Validation
 
-From the integration or web branch, with the prerequisites in the web runtime guide:
+From a Linux/WSL checkout of the integration or web branch, with the prerequisites in the web runtime guide:
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm test
 pnpm build --mode web
-cargo check --manifest-path web-server/Cargo.toml --all-targets
-cargo test --manifest-path web-server/Cargo.toml
+(cd web-server && cargo check --all-targets && cargo test)
 ```
 
 For browser/player changes, include the browser version, OS, server architecture and actual playback or interaction results. Note skipped tests and unverified behavior. Smoke-test native behavior where shared code changes. Add screenshots or recordings for visible changes, with sensitive data removed.
