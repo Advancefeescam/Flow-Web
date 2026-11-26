@@ -1347,7 +1347,9 @@ fn allowed_direct_media(raw: &str) -> bool {
 }
 
 fn build_direct_dash(info: &StreamInfo) -> Option<String> {
-    if info.is_live || info.hls_manifest_url.is_some() {
+    // A VOD response can carry HLS alongside byte-range adaptive formats.
+    // Only actual live broadcasts must stay on the live transport.
+    if info.is_live {
         return None;
     }
     // Preserve the original representations and range metadata. If any URL
@@ -1377,21 +1379,37 @@ fn build_direct_dash(info: &StreamInfo) -> Option<String> {
 /// Add the browser-specific manifest without changing upstream StreamInfo or
 /// its existing proxy URLs (also used for downloads and fallback).
 pub fn prepare_web(manager: &StreamingManager, id: &str, refresh: bool, info: StreamInfo) -> AppResult<serde_json::Value> {
-    let direct = if matches!(std::env::var("FLOW_WEB_DIRECT_MEDIA").as_deref(), Ok("0")) {
+    let direct_enabled = !matches!(std::env::var("FLOW_WEB_DIRECT_MEDIA").as_deref(), Ok("0"));
+    let direct = if !direct_enabled {
         None
     } else {
         build_direct_dash(&info)
     };
     let direct_files: Vec<Option<String>> = info.variants.iter().map(|variant| {
-        (!info.is_live && !matches!(std::env::var("FLOW_WEB_DIRECT_MEDIA").as_deref(), Ok("0"))
+        (!info.is_live && direct_enabled
             && variant.is_playable && variant.has_audio && !variant.is_video_only
             && allowed_direct_media(&variant.local_url)).then(|| variant.local_url.clone())
     }).collect();
+    let has_hls = info.hls_manifest_url.is_some();
+    let direct_video_formats = info.variants.iter().filter(|v| v.is_playable && v.is_video_only && allowed_direct_media(&v.local_url)).count();
+    let direct_audio_formats = info.audio_tracks.iter().filter(|a| allowed_direct_media(&a.local_url)).count();
     let prepared = prepare(manager, id, refresh, info)?;
     let muxed: Vec<_> = prepared.variants.iter().zip(direct_files).filter_map(|(variant, direct)| {
         direct.filter(|_| variant.is_playable && !variant.local_url.is_empty()).map(|url| serde_json::json!({"proxyUrl":variant.local_url,"directUrl":url}))
     }).collect();
     let has_proxy_dash = prepared.dash_manifest_url.is_some();
+    tracing::info!(
+        video_id = %id,
+        direct_enabled,
+        is_live = prepared.is_live,
+        has_hls,
+        direct_video_formats,
+        direct_audio_formats,
+        direct_muxed_formats = muxed.len(),
+        proxy_dash = has_proxy_dash,
+        direct_dash = direct.is_some() && has_proxy_dash,
+        "web playback transport candidates"
+    );
     let mut response = serde_json::to_value(prepared)?;
     if !muxed.is_empty() { response["webDirectMuxed"] = serde_json::json!(muxed); }
     if let Some(xml) = direct.filter(|_| has_proxy_dash) {
@@ -1429,7 +1447,9 @@ pub fn prepare(manager: &StreamingManager, id: &str, refresh: bool, mut info: St
             format!("/media/hls/{token}")
         });
     info.dash_manifest_url = None;
-    if info.hls_manifest_url.is_none() {
+    // VOD DASH can coexist with HLS; the browser selects a supported transport.
+    // Retain HLS priority for live streams.
+    if !info.is_live || info.hls_manifest_url.is_none() {
         if let Some(xml) = crate::streaming::dash_manifest::build_synthetic_dash_manifest(&info) {
             let token = uuid::Uuid::new_v4().to_string();
             manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());
@@ -1545,6 +1565,8 @@ mod tests {
         assert!(xml.contains("https://rr1.googlevideo.com/videoplayback?a=1&amp;b=2"));
         assert!(xml.contains("https://rr2.googlevideo.com/videoplayback"));
         assert!(xml.contains("100-199"));
+        info.hls_manifest_url = Some("https://manifest.googlevideo.com/api/manifest/hls_playlist/test".into());
+        assert_eq!(build_direct_dash(&info).as_deref(), Some(xml.as_str()));
         info.is_live = true;
         assert!(build_direct_dash(&info).is_none());
         info.is_live = false;
