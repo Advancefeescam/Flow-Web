@@ -9,14 +9,14 @@
   An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop), built with Rust, React and TypeScript.
 
   <p>
-  <a href="#installation"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/install-dark.svg"><img src="Assets/web/install-light.svg" alt="Run in your browser" height="70"></picture></a>
-  <a href="#docker--podman"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/server-dark.svg"><img src="Assets/web/server-light.svg" alt="Deploy with Docker or Podman" height="70"></picture></a>
-  <a href="#development"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/source-dark.svg"><img src="Assets/web/source-light.svg" alt="Build from source" height="70"></picture></a>
+  <a href="#installation"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/install-dark.svg"><img src="Assets/web/install-light.svg" alt="Run in your browser" height="60"></picture></a>
+  <a href="#docker--podman"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/server-dark.svg"><img src="Assets/web/server-light.svg" alt="Deploy with Docker or Podman" height="60"></picture></a>
+  <a href="#development"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/source-dark.svg"><img src="Assets/web/source-light.svg" alt="Build from source" height="60"></picture></a>
   </p>
   <p>
-  <a href="#about"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/platform-dark.svg"><img src="Assets/web/platform-light.svg" alt="Web: any browser" height="38"></picture></a>
-  <picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/stack-dark.svg"><img src="Assets/web/stack-light.svg" alt="Built with Rust and React" height="38"></picture>
-  <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/license-dark.svg"><img src="Assets/web/license-light.svg" alt="License: GPL-3.0" height="38"></picture></a>
+  <a href="#about"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/platform-dark.svg"><img src="Assets/web/platform-light.svg" alt="Web: modern browsers" height="32"></picture></a>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/stack-dark.svg"><img src="Assets/web/stack-light.svg" alt="Built with Rust and React" height="32"></picture>
+  <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/license-dark.svg"><img src="Assets/web/license-light.svg" alt="License: GPL-3.0" height="32"></picture></a>
   </p>
 
   [**Installation**](#installation) · [**Features**](#features) · [**Original Flow**](#the-flow-project) · [**Support development**](#support--donations)
