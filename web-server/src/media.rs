@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use axum::{body::Body, extract::{Path, State}, http::{HeaderMap, Method, StatusCode, header}, response::{IntoResponse, Response}};
+use axum::{body::Body, extract::{Path, Query, State}, http::{HeaderMap, Method, StatusCode, header}, response::{IntoResponse, Response}};
 use crate::{
     AppState,
     api::innertube::core::clients,
@@ -1325,7 +1325,7 @@ mod non_music_segment_tests {
     }
 }
 
-fn allowed_remote(url: &str) -> bool {
+pub(crate) fn allowed_remote(url: &str) -> bool {
     reqwest::Url::parse(url).is_ok_and(|url| {
         url.scheme() == "https" && url.port().is_none() && url.username().is_empty() && url.password().is_none()
         && url.host_str().is_some_and(|host| ["googlevideo.com", "youtube.com", "youtube-nocookie.com"].iter().any(|domain| host == *domain || host.ends_with(&format!(".{domain}"))))
@@ -1356,14 +1356,20 @@ pub fn prepare(manager: &StreamingManager, id: &str, refresh: bool, mut info: St
     }
     info.captions.retain(|caption| !caption.url.is_empty());
 
-    // Upstream manifest URL overrides are designed for trusted desktop IPC,
-    // not a network API. Expose only generated DASH manifests and SABR sessions.
-    info.hls_manifest_url = None;
+    info.hls_manifest_url = info.hls_manifest_url.take()
+        .filter(|url| allowed_remote(url))
+        .map(|url| {
+            let token = uuid::Uuid::new_v4().to_string();
+            manager.register_session(token.clone(), url, "application/vnd.apple.mpegurl".into(), agent.clone());
+            format!("/media/hls/{token}")
+        });
     info.dash_manifest_url = None;
-    if let Some(xml) = crate::streaming::dash_manifest::build_synthetic_dash_manifest(&info) {
-        let token = uuid::Uuid::new_v4().to_string();
-        manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());
-        info.dash_manifest_url = Some(format!("/media/stream/{token}"));
+    if info.hls_manifest_url.is_none() {
+        if let Some(xml) = crate::streaming::dash_manifest::build_synthetic_dash_manifest(&info) {
+            let token = uuid::Uuid::new_v4().to_string();
+            manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());
+            info.dash_manifest_url = Some(format!("/media/stream/{token}"));
+        }
     }
     if let Some(descriptor) = info.sabr_descriptor.take().filter(|d| allowed_remote(&d.server_abr_streaming_url)) {
         if refresh { manager.sabr().discard_video(&descriptor.video_id); }
@@ -1374,17 +1380,44 @@ pub fn prepare(manager: &StreamingManager, id: &str, refresh: bool, mut info: St
     } else {
         info.sabr = None;
     }
-    if info.local_url.is_empty() && info.dash_manifest_url.is_none() && info.sabr.is_none()
+    if info.local_url.is_empty() && info.dash_manifest_url.is_none() && info.hls_manifest_url.is_none() && info.sabr.is_none()
         && !info.variants.iter().any(|v| v.is_playable && v.has_audio) {
         return Err(AppError::Streaming("No browser-compatible stream was found in this experimental build".into()));
     }
     Ok(info)
 }
-pub async fn stream(State(state): State<AppState>, Path(token): Path<String>, method: Method, headers: HeaderMap) -> Response {
-    if uuid::Uuid::parse_str(&token).is_err() || state.streams.get_session(&token).is_none() {
+#[derive(serde::Deserialize)]
+pub struct StreamQuery {
+    download: Option<String>,
+}
+
+fn attachment_name(name: &str, mime: &str) -> Option<String> {
+    let (stem, extension) = name.rsplit_once('.')?;
+    let matches_mime = matches!((extension, mime),
+        ("mp4", "video/mp4") | ("m4a", "audio/mp4") |
+        ("webm", "video/webm") | ("webm", "audio/webm") | ("ogg", "audio/ogg"));
+    if stem.is_empty() || stem.len() > 120 || !matches_mime {
+        return None;
+    }
+    if !stem.bytes().all(|byte| byte.is_ascii_alphanumeric() || b" -_().".contains(&byte)) {
+        return None;
+    }
+    Some(format!("attachment; filename=\"{name}\""))
+}
+
+pub async fn stream(State(state): State<AppState>, Path(token): Path<String>, Query(query): Query<StreamQuery>, method: Method, headers: HeaderMap) -> Response {
+    if uuid::Uuid::parse_str(&token).is_err() {
         return StatusCode::NOT_FOUND.into_response();
     }
-    relay(&state, &format!("/stream/{token}"), method, headers, false).await
+    let Some(session) = state.streams.get_session(&token) else { return StatusCode::NOT_FOUND.into_response(); };
+    let attachment = match query.download.as_deref() {
+        Some(name) => match attachment_name(name, &session.content_type) {
+            Some(value) => Some(value),
+            None => return StatusCode::BAD_REQUEST.into_response(),
+        },
+        None => None,
+    };
+    relay(&state, &format!("/stream/{token}"), method, headers, false, attachment.as_deref()).await
 }
 fn valid_sabr(path: &str) -> bool {
     if path.len() > 256 || !path.bytes().all(|c| c.is_ascii_alphanumeric() || b"/_.-".contains(&c)) || path.contains("..") { return false; }
@@ -1393,9 +1426,9 @@ fn valid_sabr(path: &str) -> bool {
 }
 pub async fn sabr(State(state): State<AppState>, Path(path): Path<String>, method: Method, headers: HeaderMap) -> Response {
     if !valid_sabr(&path) { return StatusCode::NOT_FOUND.into_response(); }
-    relay(&state, &format!("/sabr/{path}"), method, headers, path.ends_with("/manifest.mpd")).await
+    relay(&state, &format!("/sabr/{path}"), method, headers, path.ends_with("/manifest.mpd"), None).await
 }
-async fn relay(state: &AppState, path: &str, method: Method, headers: HeaderMap, rewrite_manifest: bool) -> Response {
+async fn relay(state: &AppState, path: &str, method: Method, headers: HeaderMap, rewrite_manifest: bool, attachment: Option<&str>) -> Response {
     let origin = format!("http://127.0.0.1:{}", state.streams.get_port());
     let mut request = state.relay.request(method.clone(), format!("{origin}{path}"));
     if let Some(range) = headers.get(header::RANGE) {
@@ -1404,6 +1437,9 @@ async fn relay(state: &AppState, path: &str, method: Method, headers: HeaderMap,
     let Ok(upstream) = request.send().await else { return StatusCode::BAD_GATEWAY.into_response(); };
     let status = upstream.status();
     let mut response = Response::builder().status(status);
+    if status.is_success() {
+        if let Some(value) = attachment { response = response.header(header::CONTENT_DISPOSITION, value); }
+    }
     for name in [header::CONTENT_TYPE, header::CONTENT_RANGE, header::ACCEPT_RANGES, header::CONTENT_ENCODING] {
         if let Some(value) = upstream.headers().get(&name) { response = response.header(name, value); }
     }
@@ -1433,5 +1469,13 @@ mod tests {
         assert!(valid_sabr("abc/video/seg/1"));
         assert!(!valid_sabr("abc/../manifest.mpd"));
         assert!(!valid_sabr("abc/proxy/http://localhost"));
+    }
+    #[test]
+    fn attachment_names_cannot_inject_headers_or_extensions() {
+        assert_eq!(attachment_name("My video (1).mp4", "video/mp4").as_deref(), Some("attachment; filename=\"My video (1).mp4\""));
+        for name in ["bad\r\nheader.mp4", "movie.html", "../../movie.mp4", ".mp4", "movie.MP4"] {
+            assert!(attachment_name(name, "video/mp4").is_none());
+        }
+        assert!(attachment_name("captions.mp4", "text/vtt").is_none());
     }
 }

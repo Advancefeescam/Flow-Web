@@ -20,24 +20,27 @@ The Containerfile builds the web UI and headless Rust server without desktop GUI
 | --- | --- |
 | Video search, metadata, channels, playlists, comments, explore | HTTP command adapters and web UI are connected; remote/browser verification pending |
 | Video/audio streaming, range requests, DASH, SABR | Relay and browser player integration are present; Safari and device playback remain unverified |
-| Live HLS | Not exposed until manifest and segment relay are hardened against SSRF |
+| Live HLS | Authenticated playlist, segment, and key relay is present with remote host and redirect restrictions; live playback and Safari/iPad verification pending |
 | YouTube Music | Browse/search/queue/lyrics/stream adapters are connected; remote verification pending |
 | History, preferences, library data | Shared SQLite migrations and storage adapters are connected; multi-user and recovery behavior need validation |
 | SponsorBlock, DeArrow, RYD | Read adapters are connected; custom upstreams and submissions remain incomplete |
 | FlowNeuro | Watch signals, onboarding, preference actions, taste overview and channel tools are connected to the headless service; full browser verification remains |
 | Personalized Home and Shorts | Original ranking and feed services are reused through web RPC; actual YouTube responses and browser sessions remain unverified |
 | Flow Sync and linked devices | Not yet ported to the headless runtime |
-| Profiles | Server-side profile switching and isolation are not yet ported |
-| Downloads, import/export, local media | Browser download and user-selected file equivalents are not yet implemented; no arbitrary host file access |
+| Profiles | The default profile has a compatibility view; creating, switching, and isolating multiple profiles are not yet ported |
+| Downloads | The browser can request a real file for an available direct video/audio stream. Adaptive muxing, tags, an offline library, and an actual remote stream test are pending |
+| User subtitle files | The player can read a chosen `.srt` or `.vtt` file in browser memory; select it again after reloading the page |
+| Import/export, local media | Theme, playlist, equalizer, and JSON exports have browser file paths where implemented. Full backup export/restore, other-app import, and local media need browser equivalents; no arbitrary host file access |
 | Desktop window, tray, updater, global OS shortcuts | Native-only; web equivalents where applicable |
 | PWA install and static asset cache | Manifest and service worker added; iPad install testing pending |
 
-The full frontend suite (504 files, 2,998 tests) and
-`pnpm build --mode web` pass locally. On 2026-11-26, GitHub Actions passed
-workflow checks, the complete headless web runtime checks (including
-`cargo check --all-targets` and `cargo test`), and the desktop quality workflow.
-The desktop platform matrix is skipped for this web-runtime branch. The shared
-migration directory is linked into the web crate so upstream SQLx test macros
-resolve the same schema. No complete browser playback, Miatoll container startup,
-or ARM64 deployment has been verified. Do not merge until media behavior and
-playback have been checked on the intended devices.
+At the last pushed commit, GitHub Actions passed the workflow, headless runtime,
+and desktop quality checks. The desktop platform matrix is skipped on this web
+branch. For the current local changes, `pnpm build --mode web`, 13 focused frontend
+tests, and 598 web-server tests passed (6 ignored). The broad frontend suite was
+stopped after it stalled, so it has no current pass result. The browser loaded the
+onboarding, home, watch page, and download dialog against a local server. Remote
+YouTube extraction and actual file transfer could not be checked in this environment
+because the outbound proxy refused the connection. No complete playback, iPad/Safari,
+container startup, or ARM64 deployment has been verified. Keep the PR draft until
+media and device behavior have been checked.

@@ -633,6 +633,8 @@
   "downloaded": "Downloaded",
   "download": "Download",
   "download_file_name": "File name",
+  "download_browser_unavailable": "No direct downloadable stream is available for this item.",
+  "download_browser_note": "The file will be saved by your browser. It will not appear in Flow's offline library.",
   "download_size_unknown": "Unknown",
   "download_resolution": "Resolution",
   "download_video_codec": "Video codec",

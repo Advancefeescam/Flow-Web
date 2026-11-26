@@ -1953,6 +1953,17 @@ export const Player: React.FC<PlayerProps> = ({
         : url;
 
     if (!Hls.isSupported()) {
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = hlsManifestUrl;
+        video.load();
+        if (desiredPlayingRef.current) void video.play().catch(() => {});
+        return () => {
+          if (video.src === hlsManifestUrl) {
+            video.removeAttribute("src");
+            video.load();
+          }
+        };
+      }
       logPlayerEventRef.current("hls-mse-unsupported", { hlsManifestUrl });
       fireRetrySourceRef.current("hls:mse-unsupported");
       return;

@@ -20,6 +20,7 @@ mod home_feed;
 mod subscription_feed;
 #[path = "../../src-tauri/src/services/music_service.rs"] mod music_service;
 mod media;
+mod hls;
 mod auth;
 mod foss;
 mod services;
@@ -86,6 +87,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/api/v1/rpc/{command}", post(rpc::handle))
         .route("/api/{*rest}", axum::routing::any(|| async { axum::http::StatusCode::NOT_FOUND }))
         .route("/media/stream/{token}", get(media::stream))
+        .route("/media/hls/{token}", get(hls::relay))
         .route("/media/sabr/{*path}", get(media::sabr))
         .route("/media/{*rest}", axum::routing::any(|| async { axum::http::StatusCode::NOT_FOUND }))
         .fallback_service(ServeDir::new(&dist).fallback(ServeFile::new(dist.join("index.html"))))

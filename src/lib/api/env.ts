@@ -5,6 +5,7 @@ let detectedTauri: boolean | null = null;
  * Waits up to 100ms to allow Tauri's IPC bridge to be injected, avoiding hydration race conditions.
  */
 export async function isTauriEnv(): Promise<boolean> {
+  if (isWebMode()) return false;
   if (detectedTauri !== null) {
     return detectedTauri;
   }

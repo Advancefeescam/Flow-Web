@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { invokeBackend } from "./api/errors";
-import { localCaptionUrl } from "./captionText";
-import { isTauriEnv } from "./api/env";
+import { forgetBrowserCaption, localCaptionUrl, registerBrowserCaption } from "./captionText";
+import { isTauriEnv, isWebMode } from "./api/env";
 import { pickFile } from "./dialogs";
 import { getString } from "./i18n/index";
 import { useLocalSubtitleStore, videoSubtitleState, type LocalSubtitleFile } from "../store/useLocalSubtitleStore";
@@ -11,6 +11,7 @@ import type { CaptionTrack } from "../types/video";
 import { parseCaptionCues } from "../components/player/SubtitleOverlay";
 
 export const SUBTITLE_FILE_EXTENSIONS = ["srt", "vtt"];
+const MAX_BROWSER_CAPTION_BYTES = 2 * 1024 * 1024;
 
 const localCaption = ({ name, path }: LocalSubtitleFile): CaptionTrack => ({
   id: localCaptionUrl(path),
@@ -47,9 +48,47 @@ export async function addSubtitleFile(videoId: string, path: string): Promise<bo
   return true;
 }
 
+async function addBrowserSubtitleFile(videoId: string, file: File): Promise<boolean> {
+  if (!isSubtitlePath(file.name) || file.size > MAX_BROWSER_CAPTION_BYTES) {
+    useUiStore.getState().showToast({ variant: "error", message: getString("subtitle_file_unreadable") });
+    return false;
+  }
+  try {
+    const text = await file.text();
+    if (parseCaptionCues(text, false).length === 0) throw new Error("No caption cues");
+    const path = registerBrowserCaption(text);
+    useLocalSubtitleStore.getState().addFile(videoId, { name: file.name, path });
+    return true;
+  } catch {
+    useUiStore.getState().showToast({ variant: "error", message: getString("subtitle_file_unreadable") });
+    return false;
+  }
+}
+
+export function removeSubtitleFile(videoId: string, path: string): void {
+  useLocalSubtitleStore.getState().removeFile(videoId, path);
+  if (path.startsWith("web:")) forgetBrowserCaption(path);
+}
+
+async function pickBrowserSubtitle(): Promise<File | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".srt,.vtt,text/vtt";
+    input.onchange = () => resolve(input.files?.[0] ?? null);
+    input.oncancel = () => resolve(null);
+    input.click();
+  });
+}
+
 export function usePickSubtitleFile(videoId: string | null | undefined): () => Promise<void> {
   return useCallback(async () => {
     if (!videoId) return;
+    if (isWebMode()) {
+      const file = await pickBrowserSubtitle();
+      if (file) await addBrowserSubtitleFile(videoId, file);
+      return;
+    }
     const path = await pickFile(getString("subtitle_file_pick_title"), [
       { name: getString("subtitle_file_type"), extensions: SUBTITLE_FILE_EXTENSIONS },
     ]);
