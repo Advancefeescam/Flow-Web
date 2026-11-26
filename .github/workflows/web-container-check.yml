@@ -1,0 +1,35 @@
+name: Web container smoke test
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Build container
+        run: docker build -f Containerfile -t flow-web:ci .
+      - name: Verify local HTTP service
+        run: |
+          set -euo pipefail
+          password="$(openssl rand -hex 24)"
+          echo "::add-mask::$password"
+          docker run --detach --rm --name flow-web-ci -p 127.0.0.1:8780:8780 -e FLOW_WEB_PASSWORD="$password" -e FLOW_WEB_ORIGIN=http://127.0.0.1:8780 flow-web:ci
+          trap 'docker logs flow-web-ci || true; docker stop flow-web-ci || true' EXIT
+          for i in $(seq 1 60); do
+            if curl -fsS -u "flow:$password" http://127.0.0.1:8780/ -o /tmp/flow-index.html; then
+              break
+            fi
+            sleep 2
+          done
+          test -s /tmp/flow-index.html
+          grep -q '<title>Flow Web</title>' /tmp/flow-index.html
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8780/)" = 401
+          curl -fsS -u "flow:$password" http://127.0.0.1:8780/manifest.webmanifest | python3 -c 'import json,sys; assert json.load(sys.stdin)["name"] == "Flow Web"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -u "flow:$password" -H 'Origin: https://example.invalid' -H 'Content-Type: application/json' -d '{}' http://127.0.0.1:8780/api/v1/rpc/get_settings)" = 403
