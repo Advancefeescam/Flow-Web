@@ -1,3 +1,4 @@
+import { isWebMode } from "./api/env";
 import { useEffect, useRef } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -43,6 +44,8 @@ export function usePipController() {
   const lostPopoutRef = useRef(false);
 
   useEffect(() => {
+    // Browser PiP keeps the original media element; no native window handoff.
+    if (isWebMode()) return;
     const subscriptions = [
       listen<{ source: string }>(PIP_EVENTS.claimed, ({ payload }) => {
         // Another window's video replaced ours in the pop-out, so ours has ended.
@@ -114,6 +117,8 @@ export function usePipController() {
   // queue being cleared, the watch page taking playback back — must also take
   // the pop-out window down with it.
   useEffect(() => {
+    // Browser PiP keeps the original media element; no native window handoff.
+    if (isWebMode()) return;
     let previousMode = usePlayerStore.getState().videoPlayerMode;
     return usePlayerStore.subscribe((state) => {
       const mode = state.videoPlayerMode;
@@ -127,6 +132,8 @@ export function usePipController() {
   }, []);
 
   useEffect(() => {
+    // Browser PiP keeps the original media element; no native window handoff.
+    if (isWebMode()) return;
     if (!popoutOnMinimize) return undefined;
 
     let disposed = false;

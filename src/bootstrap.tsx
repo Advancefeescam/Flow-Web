@@ -18,6 +18,7 @@ if (IS_LINUX_RUNTIME) document.documentElement.dataset.lightEffects = "true";
 // not an app, and mounting the full shell there would duplicate every global
 // controller the main window already owns.
 const isPopoutPlayerWindow = (() => {
+  if (isWebMode()) return false;
   try {
     return getCurrentWindow().label === PIP_WINDOW_LABEL;
   } catch {

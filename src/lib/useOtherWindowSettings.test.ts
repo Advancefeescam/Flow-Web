@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { createElement, act } from "react";
 import { createRoot } from "react-dom/client";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { listen } from "@tauri-apps/api/event";
 
 const handlers: Array<(event: { payload: unknown }) => void> = [];
 vi.mock("@tauri-apps/api/event", () => ({
@@ -25,6 +26,17 @@ function Probe() {
 }
 
 describe("useOtherWindowSettings", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("does not register a native listener in a web build", () => {
+    vi.stubEnv("VITE_FLOW_WEB", "true");
+    vi.mocked(listen).mockClear();
+    const root = createRoot(document.createElement("div"));
+    act(() => root.render(createElement(Probe)));
+    expect(listen).not.toHaveBeenCalled();
+    act(() => root.unmount());
+  });
+
   it("reloads settings another window wrote, and nothing else", () => {
     const root = createRoot(document.createElement("div"));
     act(() => root.render(createElement(Probe)));

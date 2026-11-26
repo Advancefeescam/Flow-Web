@@ -1,3 +1,5 @@
+import { isWebMode } from "./api/env";
+import { publishWebWindowEvent } from "./webWindowEvents";
 import { emit } from "@tauri-apps/api/event";
 import { CURRENT_WINDOW_LABEL } from "./appWindow";
 
@@ -45,15 +47,16 @@ export function announceSettingWrite(key: string): void {
   queueMicrotask(() => {
     const keys = [...pendingKeys];
     pendingKeys = new Set();
-    void emit(DATA_CHANGED_EVENT, { source: CURRENT_WINDOW_LABEL, keys } satisfies DataChangedPayload).catch(() => {});
+    const payload = { source: CURRENT_WINDOW_LABEL, keys } satisfies DataChangedPayload;
+    if (isWebMode()) publishWebWindowEvent(DATA_CHANGED_EVENT, payload);
+    else void emit(DATA_CHANGED_EVENT, payload).catch(() => {});
   });
 }
 
 /** Tells this window and the others that watch history changed, so progress bars follow it. */
 export function announceWatchHistoryWrite(write: WatchHistoryWrite): void {
   window.dispatchEvent(new CustomEvent<WatchHistoryWrite>(WATCH_HISTORY_WRITTEN_EVENT, { detail: write }));
-  void emit(WATCH_HISTORY_WRITTEN_EVENT, {
-    source: CURRENT_WINDOW_LABEL,
-    write,
-  } satisfies WatchHistoryWrittenPayload).catch(() => {});
+  const payload = { source: CURRENT_WINDOW_LABEL, write } satisfies WatchHistoryWrittenPayload;
+  if (isWebMode()) publishWebWindowEvent(WATCH_HISTORY_WRITTEN_EVENT, payload);
+  else void emit(WATCH_HISTORY_WRITTEN_EVENT, payload).catch(() => {});
 }

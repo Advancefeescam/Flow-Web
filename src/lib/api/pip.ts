@@ -1,3 +1,4 @@
+import { isWebMode } from "./env";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { StreamInfo, VideoSummary } from "../../types/video";
 import { invokeBackend } from "./errors";
@@ -7,6 +8,7 @@ export const PIP_WINDOW_LABEL = "pip";
 
 /** Whether this window is the pop-out player. False outside Tauri. */
 export function isPopOutWindow(): boolean {
+  if (isWebMode()) return false;
   try {
     return getCurrentWindow().label === PIP_WINDOW_LABEL;
   } catch {

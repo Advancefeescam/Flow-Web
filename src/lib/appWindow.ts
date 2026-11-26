@@ -1,3 +1,4 @@
+import { isWebMode } from "./api/env";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 /**
@@ -5,6 +6,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
  * pop-out player. Every window runs the same bundle in its own JS context.
  */
 export const CURRENT_WINDOW_LABEL = (() => {
+  if (isWebMode()) return "main";
   try {
     return getCurrentWindow().label;
   } catch {

@@ -1,3 +1,5 @@
+import { isWebMode } from "./api/env";
+import { publishWebWindowEvent, subscribeWebWindowEvent } from "./webWindowEvents";
 import { useEffect } from "react";
 import { emit, emitTo, listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { CURRENT_WINDOW_LABEL, IS_MAIN_WINDOW } from "./appWindow";
@@ -41,6 +43,22 @@ function forwardMusicToMainWindow(): () => void {
 /** Keeps this window's cached data and playback in step with the other Flow windows. */
 export function useCrossWindowSync(): void {
   useEffect(() => {
+    if (isWebMode()) {
+      const stopData = subscribeWebWindowEvent(DATA_CHANGED_EVENT, (payload) => {
+        void refreshForSettingKeys(payload.keys);
+      });
+      const stopPlayback = subscribeWebWindowEvent(PLAYBACK_CLAIMED_EVENT, () => {
+        pauseAllMediaSessionClients();
+      });
+      setMediaSessionClaimListener(() => {
+        publishWebWindowEvent(PLAYBACK_CLAIMED_EVENT, { source: CURRENT_WINDOW_LABEL });
+      });
+      return () => {
+        setMediaSessionClaimListener(null);
+        stopData();
+        stopPlayback();
+      };
+    }
     const subscriptions: Array<Promise<UnlistenFn>> = [
       listen<DataChangedPayload>(DATA_CHANGED_EVENT, ({ payload }) => {
         if (payload.source !== CURRENT_WINDOW_LABEL) void refreshForSettingKeys(payload.keys);

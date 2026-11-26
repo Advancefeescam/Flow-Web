@@ -1,3 +1,4 @@
+import { isWebMode } from "./api/env";
 import { useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { CURRENT_WINDOW_LABEL } from "./appWindow";
@@ -11,6 +12,7 @@ import { isSettingKey } from "./settings/values";
  */
 export function useOtherWindowSettings(): void {
   useEffect(() => {
+    if (isWebMode()) return;
     const subscription = listen<DataChangedPayload>(DATA_CHANGED_EVENT, ({ payload }) => {
       if (payload.source === CURRENT_WINDOW_LABEL) return;
       const settingKeys = payload.keys.filter(isSettingKey);

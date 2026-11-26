@@ -1,3 +1,4 @@
+import { isWebMode } from "./api/env";
 import { useCallback, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getCurrent, onOpenUrl } from "@tauri-apps/plugin-deep-link";
@@ -210,6 +211,8 @@ export function useDeepLinkHandoff() {
 
   // Subscribe exactly once — re-subscribing would double-handle a cold-start URL.
   useEffect(() => {
+    // Browser navigation is handled by the router, not an OS launch protocol.
+    if (isWebMode()) return;
     let unlistenOpen: (() => void) | undefined;
     let unlistenBridge: (() => void) | undefined;
 

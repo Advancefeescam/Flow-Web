@@ -159,10 +159,12 @@ export async function openPopoutPlayer(): Promise<boolean> {
  * window from here and guessing where playback got to.
  */
 export async function requestPopoutReturn(): Promise<void> {
+  if (isWebMode()) return;
   await emit(PIP_RETURN_REQUEST_EVENT).catch(() => {});
 }
 
 /** Closes the pop-out outright — used when this window takes over playback. */
 export async function dismissPopoutPlayer(): Promise<void> {
+  if (isWebMode()) return;
   await closePipWindow().catch(() => {});
 }

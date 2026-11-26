@@ -1,3 +1,5 @@
+import { isWebMode } from "../lib/api/env";
+import { subscribeWebWindowEvent } from "../lib/webWindowEvents";
 import { create } from "zustand";
 import { listen } from "@tauri-apps/api/event";
 import { getWatchProgress } from "../lib/api/db";
@@ -107,9 +109,11 @@ export function startWatchProgress(): () => void {
   const onHistoryUpdated = () => void store.load();
   window.addEventListener(WATCH_HISTORY_WRITTEN_EVENT, onLocalWrite);
   window.addEventListener(HISTORY_UPDATED_EVENT, onHistoryUpdated);
-  const unlisten = listen<WatchHistoryWrittenPayload>(WATCH_HISTORY_WRITTEN_EVENT, ({ payload }) => {
-    if (payload.source !== CURRENT_WINDOW_LABEL) store.apply(payload.write);
-  }).catch(() => null);
+  const unlisten = isWebMode()
+    ? Promise.resolve(subscribeWebWindowEvent(WATCH_HISTORY_WRITTEN_EVENT, (payload) => store.apply(payload.write)))
+    : listen<WatchHistoryWrittenPayload>(WATCH_HISTORY_WRITTEN_EVENT, ({ payload }) => {
+      if (payload.source !== CURRENT_WINDOW_LABEL) store.apply(payload.write);
+    }).catch(() => null);
   return () => {
     window.removeEventListener(WATCH_HISTORY_WRITTEN_EVENT, onLocalWrite);
     window.removeEventListener(HISTORY_UPDATED_EVENT, onHistoryUpdated);
