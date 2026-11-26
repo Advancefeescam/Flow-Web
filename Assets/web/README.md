@@ -10,3 +10,5 @@ The web mark adapts the original Flow slanted F into a browser-window silhouette
 | `install-*.svg`, `server-*.svg`, `license-*.svg` | Repository navigation badges |
 
 Use a GitHub `picture` element to select the dark variant with `prefers-color-scheme: dark`. The assets are editable SVG, and the original Flow logo and attribution are preserved. Flow Web is an unofficial fork, not an official Flow release.
+
+The web build uses `public/flow-web-logo.svg` for the favicon and PWA manifest, and matching paths in `src/lib/brand/logo.ts` for theme-aware in-app logos. Native Flow Desktop icons are unchanged.
