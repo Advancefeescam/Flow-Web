@@ -45,3 +45,11 @@ export function webScrubTime(clientX: number, left: number, width: number, durat
   if (![clientX, left, width, duration].every(Number.isFinite) || width <= 0 || duration <= 0) return null;
   return Math.min(1, Math.max(0, (clientX - left) / width)) * duration;
 }
+
+/** Identify the active transport without exposing signed URLs in logs or UI. */
+export function isWebDirectSource(info: WebStreamInfo | null, active: string | null): boolean {
+  return !!info && !!active && !info.isLive && (active === info.webDirectDashManifestUrl || !!info.webDirectMuxed?.some(file => file.directUrl === active));
+}
+
+export const WEB_DIRECT_STARTUP_TIMEOUT_MS = 6500;
+export const WEB_DIRECT_STALL_TIMEOUT_MS = 8000;
