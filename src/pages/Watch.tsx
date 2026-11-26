@@ -276,7 +276,7 @@ export function Watch() {
         )
       }
       comments={commentsEnabled && !offlineRecord && !isLocalFile && playbackSettled ? (
-        stackedWatch ? <MobileComments key={videoId} videoId={videoId} countText={videoDetails?.commentCountText}/> : (
+        stackedWatch ? <MobileComments key={videoId} videoId={videoId}/> : (
           <Suspense fallback={<div className="h-32" />}>
             <CommentsSection videoId={videoId} />
           </Suspense>

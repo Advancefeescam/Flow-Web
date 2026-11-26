@@ -1487,3 +1487,10 @@
   .flow-web-shell .flow-video-transport-actions::-webkit-scrollbar { display: none; }
   .flow-web-shell .flow-video-transport-actions > * { flex-shrink: 0; }
 }
+
+@media (max-width: 639px) {
+  .flow-web-shell .flow-video-transport-actions > [data-mobile-essential="true"] { order: -1; }
+  .flow-web-shell .flow-video-transport-actions > [data-mobile-essential="true"] { min-width: 34px; min-height: 34px; }
+  .flow-web-shell .flow-video-chapter { max-width: 3rem; padding-inline: .25rem; }
+  .flow-web-shell .flow-comments-sheet { margin-block-start: auto; margin-block-end: 0; max-height: 85dvh; }
+}

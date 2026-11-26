@@ -5,7 +5,7 @@ import { useVideoComments } from "../../lib/useVideoComments";
 const CommentsSection = lazy(() => import("./CommentsSection"));
 
 /** Keep the watch feed short; the existing shared thread powers both preview and sheet. */
-export function MobileComments({ videoId, countText }: { videoId: string; countText?: string | null }) {
+export function MobileComments({ videoId }: { videoId: string }) {
   const thread = useVideoComments(videoId);
   const first = thread.comments[0];
   const [open, setOpen] = useState(false);
@@ -17,8 +17,8 @@ export function MobileComments({ videoId, countText }: { videoId: string; countT
     if (element && !element.open) element.showModal();
     return () => { if (element?.open) element.close(); };
   }, [open]);
-  function close() { setOpen(false); trigger.current?.focus({ preventScroll: true }); }
-  const count = thread.totalCount?.toLocaleString() ?? thread.countText ?? countText;
+  function close() { dialog.current?.close(); setOpen(false); trigger.current?.focus({ preventScroll: true }); }
+  const count = thread.totalCount?.toLocaleString() ?? thread.countText;
   return <>
     <button ref={trigger} type="button" onClick={() => setOpen(true)} aria-haspopup="dialog"
       className="w-full rounded-2xl bg-surface-container p-3.5 text-start focus-visible:outline-2 focus-visible:outline-primary">

@@ -1039,6 +1039,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
                 type="button"
                 {...{ [PLAYER_MENU_OWNER_ATTR]: "" }}
                 title={getString("player_menu_captions")}
+                data-mobile-essential="true"
                 aria-label={getString("player_menu_captions")}
                 onClick={() => {
                   if (settingsOpen && settingsPane === "captions") {
@@ -1061,6 +1062,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
                 type="button"
                 {...{ [PLAYER_MENU_OWNER_ATTR]: "" }}
                 title={getString("player_menu_settings")}
+                data-mobile-essential="true"
                 aria-label={getString("player_menu_settings")}
                 aria-expanded={settingsOpen}
                 onClick={() => {
@@ -1111,6 +1113,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
                 <button
                   type="button"
                   title={getString('player_fullscreen')}
+                  data-mobile-essential="true"
                   onClick={toggleFullscreen}
                   className="grid h-7 w-7 place-items-center rounded-full hover:bg-chrome-white/10"
                 >

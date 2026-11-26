@@ -79,15 +79,16 @@ export function useRelatedLane(videoId: string | undefined, shown: boolean, fetc
     getMoreRelatedVideos(continuation)
       .then((page) => {
         if (videoRef.current !== videoId) return;
+        const nextToken = page.continuation && page.continuation !== continuation ? page.continuation : null;
         setItems((previous) => {
           const next = appendRelated(previous, page.items);
           usePlayerStore.getState().setWatchPageCache(videoId, {
             relatedVideos: next,
-            relatedContinuation: page.continuation ?? null,
+            relatedContinuation: nextToken,
           });
           return next;
         });
-        setContinuation(page.continuation && page.continuation !== continuation ? page.continuation : null);
+        setContinuation(nextToken);
       })
       .catch((error) => { if (videoRef.current === videoId) setLoadMoreFailed(true); console.warn("Failed to load more related content", error); })
       .finally(() => {
