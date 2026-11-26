@@ -1,12 +1,10 @@
 # Flow Web branding
 
-The web mark adapts the original Flow slanted F into a browser-window silhouette. The original logo is retained in its existing locations. The web-specific SVGs use Flow red and Material-inspired tonal surfaces, with no gradients or external fonts.
+The web mark adapts Flow's slanted F into a browser-window silhouette. The README header follows the original Flow Desktop Material-inspired style, using rounded shapes, tonal red surfaces, a blue music accent, and two rows of navigation and metadata badges. All SVGs are local vector artwork; the wordmark is drawn as paths.
 
-| Asset | Use |
-| --- | --- |
-| `logo.svg` | Standalone web mark; suitable as a source for favicons and app icons |
-| `logo-monochrome.svg` | Single-colour-style alternative on light backgrounds |
-| `banner-light.svg`, `banner-dark.svg` | Repository header |
-| `install-*.svg`, `server-*.svg`, `license-*.svg` | Repository navigation badges |
+- `logo.svg`, `logo-monochrome.svg`: standalone web marks.
+- `banner-{light,dark}.svg`: repository header.
+- `install-*`, `server-*`, `source-*`: large navigation pills.
+- `platform-*`, `stack-*`, `license-*`: split metadata badges.
 
-Use a GitHub `picture` element to select the dark variant with `prefers-color-scheme: dark`. The assets are editable SVG, and the original Flow logo and attribution are preserved. Flow Web is an unofficial fork, not an official Flow release.
+GitHub selects the variant using `prefers-color-scheme`. Original upstream marks are retained for native builds. Flow Web is an unofficial fork, not an official release.
