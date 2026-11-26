@@ -17,8 +17,10 @@ import {
   ShieldCheck,
   Hourglass,
   Languages,
+  UserRound,
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { isWebMode } from '../../lib/api/env';
 import { getString } from '../../lib/i18n/index';
 import { SETTINGS_CATEGORY_LABELS, SETTINGS_INDEX, type SettingEntry, type SettingsCategory } from '../../lib/settings/settingsIndex';
 import { searchSettings } from '../../lib/settings/settingsSearch';
@@ -42,6 +44,7 @@ interface CategoryDef {
 const categories: CategoryDef[] = [
   { id: 'appearance', icon: <Palette size={18} /> },
   { id: 'profiles', icon: <UsersRound size={18} /> },
+  ...(isWebMode() ? [{ id: 'webAccount' as const, icon: <UserRound size={18} /> }] : []),
   { id: 'player', icon: <PlayCircle size={18} /> },
   { id: 'keyboard', icon: <Keyboard size={18} /> },
   { id: 'music', icon: <Music2 size={18} /> },
@@ -73,7 +76,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
   const clearQuery = useSettingsSearchStore((state) => state.clearQuery);
   const [highlight, setHighlight] = useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 120);
-  const results = useMemo(() => searchSettings(debouncedQuery, SETTINGS_INDEX), [debouncedQuery]);
+  const results = useMemo(() => searchSettings(debouncedQuery, SETTINGS_INDEX.filter(entry => isWebMode() || entry.category !== 'webAccount')), [debouncedQuery]);
   const searching = debouncedQuery.trim().length > 0;
   const paneRef = useRef<HTMLDivElement>(null);
   usePageEnterMotion(paneRef, activeTab, true);

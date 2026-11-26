@@ -1,3 +1,5 @@
+import { SESSION_EXPIRED_EVENT } from "./webAuth";
+
 type RpcArgs = Record<string, unknown>;
 
 function resolveMediaUrls(value: unknown, origin: string): unknown {
@@ -34,6 +36,7 @@ export async function invokeWeb<T>(
   } catch {
     throw { kind: "network", message: "Cannot reach the Flow Web server." };
   }
+  if (response.status === 401 && typeof window !== "undefined") window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
   let data: unknown;
   try {
     data = await response.json();
