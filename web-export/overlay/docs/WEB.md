@@ -95,3 +95,7 @@ The second adaptive pass also reflows music queue and collection pages, makes ph
 - Verify Safari/iPad safe areas and PWA standalone behavior, then compare the desktop layout.
 
 These are intended behaviors and test targets, not a claim that physical devices have already been verified.
+
+### Browser artwork, downloads and shutdown
+
+YouTube artwork on supported HTTPS hosts is served through an authenticated same-origin raster image route. It does not forward arbitrary URLs, follow redirects or serve SVG/HTML. Other artwork hosts are loaded directly by the browser. The browser's own downloads are not a native offline library; the native download-list queries return empty lists. On Ctrl+C or SIGTERM, Flow Web stops accepting connections, allows up to five seconds for active HTTP requests and shuts down its runtime with a further two-second bound.
