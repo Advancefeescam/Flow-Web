@@ -119,7 +119,7 @@ export function PageWrapper() {
         <div
           data-open={isWatchSidebarOpen}
           inert={!isWatchSidebarOpen}
-          className={`fixed inset-x-0 bottom-0 top-[calc(var(--app-titlebar-height)+var(--flow-web-topbar-height,3.5rem))] z-50 flex ${
+          className={`flow-sidebar-overlay fixed inset-x-0 bottom-0 top-[calc(var(--app-titlebar-height)+var(--flow-web-topbar-height,3.5rem))] z-50 flex ${
             isWatchSidebarOpen ? '' : 'pointer-events-none'
           }`}
         >

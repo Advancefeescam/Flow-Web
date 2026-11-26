@@ -34,7 +34,7 @@ export function ShortMetadata({
   const openChannel = () => short.channelId && navigate(`/channel/${short.channelId}`);
 
   return (
-    <div className="mb-4 flex w-[260px] flex-col gap-4 lg:w-[280px]">
+    <div className="flow-short-meta mb-4 flex w-[260px] flex-col gap-4 lg:w-[280px]">
       <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2">
         <button
           type="button"
@@ -77,7 +77,7 @@ export function ShortMetadata({
 
       <button dir="auto"
         type="button"
-        className="line-clamp-4 text-base leading-relaxed text-chrome-neutral-200 transition-colors hover:text-chrome-white"
+        className="flow-short-caption line-clamp-4 text-base leading-relaxed text-chrome-neutral-200 transition-colors hover:text-chrome-white"
         onClick={onOpenDescription}
       >
         {title}

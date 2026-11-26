@@ -113,7 +113,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
   }, [highlight, searching]);
 
   return (
-    <div className={`mx-auto w-full h-[calc(100vh-64px)] flex ${isWebMode() ? "flex-col md:flex-row" : ""}`}>
+    <div className={`mx-auto w-full flex ${isWebMode() ? "h-full min-h-0 flex-col md:flex-row" : "h-[calc(100vh-64px)]"}`}>
       <nav className={isWebMode() ? "shrink-0 flex gap-1 overflow-x-auto border-b border-outline-soft p-2 md:w-56 md:flex-col md:border-b-0 md:border-e md:overflow-y-auto md:py-6 md:px-3" : "w-56 shrink-0 border-e border-outline-soft overflow-y-auto py-6 px-3 flex flex-col gap-1"}>
         <h2 className={`text-lg font-bold text-chrome-neutral-100 px-3 mb-4 ${isWebMode() ? "hidden md:block" : ""}`}>{getString('settings_title')}</h2>
         {categories.map((cat) => (

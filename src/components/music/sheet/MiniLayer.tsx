@@ -21,7 +21,8 @@ import { upgradeMusicImageUrl, youtubeThumbnailUrl } from "../../../lib/thumbnai
 import { useProxiedImageUrl } from "../../../lib/useProxiedImageUrl";
 import { useSheetDrag } from "../../../lib/useSheetDrag";
 import { useControlledDevice, useRemoteActive } from "../../../lib/live/usePlayOn";
-import { useMiniPlayerLook } from "../../../lib/music/miniPlayerLook";
+import { useMiniPlayerLook, type MiniPlayerLook } from "../../../lib/music/miniPlayerLook";
+import { useWebCompact } from "../../../lib/webAdaptive";
 import { useMiniBarSurface } from "../../../lib/music/miniBarSurface";
 import { useLyricsCover } from "../../../lib/lyrics/useLyricsCover";
 import { LyricsCoverBackground } from "../lyrics/LyricsCoverBackground";
@@ -48,7 +49,10 @@ export function useMiniPlayer() {
   const volume = useMusicPlayerStore((s) => s.volume);
   const { feedback: volumeFeedback, show: showVolumeFeedback } = useVolumeFeedback();
   const volumeWheelRef = useMusicWheelVolume<HTMLButtonElement>({ onFeedback: showVolumeFeedback });
-  const look = useMiniPlayerLook();
+  const preferredLook = useMiniPlayerLook();
+  const compact = useWebCompact();
+  // Compact windows keep transport and a dismiss action; the full player keeps the rest.
+  const look: MiniPlayerLook = compact ? { ...preferredLook, style: "pill", width: "compact", time: "off", buttons: ["play_pause", "next", "close"] } : preferredLook;
   const pill = look.style === "pill";
   const error = useMusicPlayerError();
   const [popover, setPopover] = useState<null | "eq" | "vol">(null);
@@ -108,7 +112,7 @@ export function useMiniPlayer() {
     volumeFeedback,
     hovered,
     setHovered,
-    widthClass: pill ? `h-16 ${PILL_WIDTH[look.width]}` : "h-[72px] w-[90%] max-w-5xl",
+    widthClass: compact ? "h-16 w-[calc(100%-16px)]" : pill ? `h-16 ${PILL_WIDTH[look.width]}` : "h-[72px] w-[90%] max-w-5xl",
     restRadius: pill ? 32 : 16,
   };
 }

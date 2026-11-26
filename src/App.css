@@ -1181,3 +1181,92 @@
 @media (max-width: 359px) {
   .flow-web-shell .flow-topbar-logo { display: none; }
 }
+
+
+/* Existing card and player components, rearranged only in narrow web windows. */
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-search-controls, .flow-web-shell .flow-search-control-inner {
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+  }
+  .flow-web-shell .short-stage { padding-block: 0; }
+  .flow-web-shell .flow-short-layout { padding: 0; gap: 0; align-items: center; }
+  .flow-web-shell .flow-short-placeholder { display: none; }
+  .flow-web-shell .short-frame {
+    position: relative;
+    height: 100%;
+    max-height: 100%;
+    width: min(100%, calc(100cqh * 9 / 16));
+    flex-shrink: 0;
+    border-radius: 0;
+  }
+  .flow-web-shell .flow-short-video { width: 100%; aspect-ratio: auto; }
+  .flow-web-shell .flow-short-meta {
+    position: absolute;
+    z-index: 25;
+    inset-inline-start: .75rem;
+    bottom: 2rem;
+    width: min(17rem, calc(100% - 5.5rem));
+    max-height: 52%;
+    overflow-y: auto;
+    margin: 0;
+    gap: .5rem;
+    padding: .5rem;
+    border-radius: 1rem;
+    background: rgb(0 0 0 / .55);
+    text-shadow: 0 1px 3px #000;
+  }
+  .flow-web-shell .flow-short-meta button, .flow-web-shell .flow-short-meta span { color: #fff; }
+  .flow-web-shell .flow-short-caption { -webkit-line-clamp: 2; text-align: start; font-size: .875rem; }
+  .flow-web-shell .flow-short-actions {
+    position: absolute;
+    z-index: 26;
+    inset-inline-end: .5rem;
+    bottom: 2rem;
+    margin: 0;
+    gap: .25rem;
+    width: 4rem;
+    align-items: center;
+  }
+  .flow-web-shell .flow-short-action-button { width: 2.75rem; height: 2.75rem; }
+  .flow-web-shell .flow-short-actions span { color: #fff; margin-block: .125rem .25rem; }
+  .flow-web-shell .flow-short-panel {
+    position: absolute;
+    z-index: 40;
+    inset-inline: 0;
+    bottom: 0;
+    height: min(78%, 34rem);
+    width: 100% !important;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+  .flow-web-shell .flow-short-panel[data-panel-open="false"] { display: none; }
+  .flow-web-shell .short-stage:has(.flow-short-panel[data-panel-open="true"]) .flow-short-meta,
+  .flow-web-shell .short-stage:has(.flow-short-panel[data-panel-open="true"]) .flow-short-actions { visibility: hidden; }
+  .flow-web-shell .flow-short-more { inset-inline-end: 3rem; max-width: calc(100vw - 5rem); }
+  .flow-web-shell .flow-short-arrows { inset-inline-end: .75rem; top: .75rem; transform: none; flex-direction: row; }
+  .flow-web-shell .flow-short-arrows button { width: 2.25rem; height: 2.25rem; }
+}
+@media (max-width: 639px) {
+  .flow-web-shell .flow-search-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: .5rem;
+    padding-inline: 0;
+  }
+  .flow-web-shell .flow-search-thumb { width: 100%; grid-column: 1 / -1; }
+  .flow-web-shell .flow-search-meta { grid-column: 1; }
+  .flow-web-shell .flow-watch-frame { border-radius: 0; }
+  .flow-web-shell .flow-floating-video { max-width: min(60vw, 260px); }
+  .flow-web-shell .flow-web-dock-position { bottom: calc(var(--flow-web-nav-space) + .5rem); }
+  .flow-web-shell .flow-web-dock-position.fixed { inset-inline-end: .5rem; }
+}
+@media (pointer: coarse) {
+  .flow-web-shell .flow-card-menu-button { opacity: 1; }
+}
+@media (max-height: 480px) and (max-width: 1023px) {
+  .flow-web-shell .flow-short-actions { bottom: .5rem; gap: 0; }
+  .flow-web-shell .flow-short-action-button { width: 2rem; height: 2rem; }
+  .flow-web-shell .flow-short-action-button svg { width: 1rem; height: 1rem; }
+  .flow-web-shell .flow-short-meta { bottom: .5rem; }
+}
