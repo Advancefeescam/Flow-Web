@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Web runtime documentation
+    url: https://github.com/Advancefeescam/Flow-Web/blob/main/docs/WEB.md
+    about: Check setup instructions, known limitations and the parity tracker before reporting a problem.
+  - name: Security policy
+    url: https://github.com/Advancefeescam/Flow-Web/security/policy
+    about: Report vulnerabilities privately, not in public issues.
+  - name: Original Flow Desktop
+    url: https://github.com/Flow-Tube/Flow-Desktop
+    about: For issues unrelated to the web port, use the original project.

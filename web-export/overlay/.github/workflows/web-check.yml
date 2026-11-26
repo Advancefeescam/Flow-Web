@@ -1,0 +1,37 @@
+name: Web runtime checks
+on:
+  push:
+    branches: [main, refactor/web-only, 'web-export/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify the pinned web export
+        if: github.event_name != 'pull_request'
+        run: python3 scripts/export-web.py "$(python3 -c 'import json; print(json.load(open("UPSTREAM.lock"))["integration_commit"])')" --verify HEAD
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
+        with:
+          toolchain: stable
+      - run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev cmake clang
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm build --mode web
+      - run: cargo check --all-targets
+        working-directory: web-server
+      - run: cargo test
+        working-directory: web-server
