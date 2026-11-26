@@ -27,7 +27,7 @@ use serde::de::{DeserializeOwned, Error as DeError};
 use serde::{Deserialize, Deserializer};
 use serde_json::{Map, Value};
 
-use crate::sync::brainmap;
+use crate::sync::bucket;
 use crate::sync::canonical::{
     BrainCounters, BrainFlags, BrainLwwMaps, BrainPerVideo, BrainSets, BrainVectors,
     ContentVectorWire, FlowNeuroBrainSnapshot, GCounter, Hlc, Lww, OrSet,
@@ -198,7 +198,7 @@ impl<'de> Deserialize<'de> for BrainVectors {
         let raw: BTreeMap<String, ContentVectorWire> = field(obj, CTX, "timeVectors")?;
         let mut entries: Vec<(String, bool, ContentVectorWire)> = raw
             .into_iter()
-            .map(|(key, vector)| match brainmap::canonical_bucket_key(&key) {
+            .map(|(key, vector)| match bucket::canonical_bucket_key(&key) {
                 Some(canonical) => {
                     let already_canonical = canonical == key;
                     (canonical, already_canonical, vector)

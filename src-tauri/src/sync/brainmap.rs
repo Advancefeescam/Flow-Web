@@ -17,7 +17,7 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use crate::flow_neuro::scoring::{
-    ChannelStrike, ContentVector, FeedEntry, RejectionSignal, TimeBucket, TopicEvidence, UserBrain,
+    ChannelStrike, ContentVector, FeedEntry, RejectionSignal, TopicEvidence, UserBrain,
 };
 use crate::music_brain::model::{Affinity, MusicBrain, TrackMeta};
 use crate::sync::canonical::{
@@ -25,6 +25,8 @@ use crate::sync::canonical::{
     ChannelStrikeWire, ContentVectorWire, FeedEntryWire, FlowNeuroBrainSnapshot, GCounter, Hlc,
     Lww, MusicBrainSnapshot, OrSet, RejectionSignalWire, TopicEvidenceWire, TrackMetaWire,
 };
+use crate::sync::bucket::{bucket_to_string, string_to_bucket};
+pub use crate::sync::bucket::canonical_bucket_key;
 use crate::sync::merge::DeviceVectors;
 use crate::sync::merge::{MergedFlowNeuroBrain, MergedMusicBrain};
 
@@ -41,39 +43,6 @@ fn to_btree_f32(m: &HashMap<String, f32>) -> BTreeMap<String, f32> {
 }
 fn to_hash_f32(m: &BTreeMap<String, f32>) -> HashMap<String, f32> {
     m.iter().map(|(k, v)| (k.clone(), *v)).collect()
-}
-
-fn bucket_to_string(b: &TimeBucket) -> String {
-    serde_json::to_value(b)
-        .ok()
-        .and_then(|v| v.as_str().map(String::from))
-        .unwrap_or_default()
-}
-fn string_to_bucket(s: &str) -> Option<TimeBucket> {
-    if let Ok(bucket) = serde_json::from_value(serde_json::Value::String(s.to_string())) {
-        return Some(bucket);
-    }
-    let normalized: String = s
-        .chars()
-        .filter(|c| *c != '_')
-        .flat_map(char::to_lowercase)
-        .collect();
-    match normalized.as_str() {
-        "weekdaymorning" => Some(TimeBucket::WeekdayMorning),
-        "weekdayafternoon" => Some(TimeBucket::WeekdayAfternoon),
-        "weekdayevening" => Some(TimeBucket::WeekdayEvening),
-        "weekdaynight" => Some(TimeBucket::WeekdayNight),
-        "weekendmorning" => Some(TimeBucket::WeekendMorning),
-        "weekendafternoon" => Some(TimeBucket::WeekendAfternoon),
-        "weekendevening" => Some(TimeBucket::WeekendEvening),
-        "weekendnight" => Some(TimeBucket::WeekendNight),
-        _ => None,
-    }
-}
-
-#[must_use]
-pub fn canonical_bucket_key(key: &str) -> Option<String> {
-    string_to_bucket(key).map(|bucket| bucket_to_string(&bucket))
 }
 
 // ---- ContentVector ⇄ ContentVectorWire -------------------------------------------------------

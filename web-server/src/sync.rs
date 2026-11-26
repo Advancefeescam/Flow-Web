@@ -3,3 +3,6 @@ pub const PROTOCOL_VERSION: u8 = 1;
 #[path = "../../src-tauri/src/sync/canonical.rs"] pub mod canonical;
 #[path = "../../src-tauri/src/sync/crypto.rs"] pub mod crypto;
 #[path = "../../src-tauri/src/sync/qr.rs"] pub mod qr;
+
+#[path = "../../src-tauri/src/sync/bucket.rs"] pub mod bucket;
+#[path = "../../src-tauri/src/sync/compat.rs"] pub mod compat;
