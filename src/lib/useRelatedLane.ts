@@ -9,6 +9,7 @@ export interface RelatedLane {
   loading: boolean;
   hasMore: boolean;
   loadingMore: boolean;
+  loadMoreFailed: boolean;
   loadMore: () => void;
 }
 
@@ -22,6 +23,8 @@ export function useRelatedLane(videoId: string | undefined, shown: boolean, fetc
   const [continuation, setContinuation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
+  const loadingRef = useRef(false);
   const videoRef = useRef(videoId);
 
   useEffect(() => {
@@ -31,6 +34,8 @@ export function useRelatedLane(videoId: string | undefined, shown: boolean, fetc
     setItems(cached?.relatedVideos ?? []);
     setContinuation(cached?.relatedContinuation ?? null);
     setLoadingMore(false);
+    setLoadMoreFailed(false);
+    loadingRef.current = false;
     setLoading(shown && !cached?.relatedVideos?.length);
   }, [videoId, shown]);
 
@@ -67,26 +72,29 @@ export function useRelatedLane(videoId: string | undefined, shown: boolean, fetc
   }, [videoId, shown, fetchEnabled, retryNonce]);
 
   const loadMore = useCallback(() => {
-    if (!videoId || !continuation || loadingMore) return;
+    if (!videoId || !continuation || loadingRef.current) return;
+    loadingRef.current = true;
     setLoadingMore(true);
+    setLoadMoreFailed(false);
     getMoreRelatedVideos(continuation)
       .then((page) => {
         if (videoRef.current !== videoId) return;
+        const nextToken = page.continuation && page.continuation !== continuation ? page.continuation : null;
         setItems((previous) => {
           const next = appendRelated(previous, page.items);
           usePlayerStore.getState().setWatchPageCache(videoId, {
             relatedVideos: next,
-            relatedContinuation: page.continuation ?? null,
+            relatedContinuation: nextToken,
           });
           return next;
         });
-        setContinuation(page.continuation ?? null);
+        setContinuation(nextToken);
       })
-      .catch((error) => console.warn("Failed to load more related content", error))
+      .catch((error) => { if (videoRef.current === videoId) setLoadMoreFailed(true); console.warn("Failed to load more related content", error); })
       .finally(() => {
-        if (videoRef.current === videoId) setLoadingMore(false);
+        if (videoRef.current === videoId) { loadingRef.current = false; setLoadingMore(false); }
       });
-  }, [videoId, continuation, loadingMore]);
+  }, [videoId, continuation]);
 
-  return { items, loading, hasMore: Boolean(continuation), loadingMore, loadMore };
+  return { items, loading, hasMore: Boolean(continuation), loadingMore, loadMoreFailed, loadMore };
 }

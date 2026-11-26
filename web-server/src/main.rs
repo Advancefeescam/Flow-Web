@@ -22,6 +22,7 @@ mod subscription_feed;
 mod media;
 mod hls;
 mod auth;
+mod artwork;
 mod foss;
 mod services;
 
@@ -41,14 +42,32 @@ struct AppState {
     streams: StreamingManager,
     relay: reqwest::Client,
     requests: Arc<tokio::sync::Semaphore>,
+    image_requests: Arc<tokio::sync::Semaphore>,
     recommendations: Arc<services::recommendation_service::RecommendationService>,
     home: home::HomeService,
     shorts: Arc<services::shorts_service::ShortsService>,
     blocked_channel_names: Arc<services::blocked_channel_names::BlockedChannelNames>,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let runtime = tokio::runtime::Builder::new_multi_thread().enable_all().build()?;
+    let result = runtime.block_on(run());
+    runtime.shutdown_timeout(std::time::Duration::from_secs(2));
+    result
+}
+
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        if let Ok(mut term) = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+            tokio::select! { _ = tokio::signal::ctrl_c() => {}, _ = term.recv() => {} }
+            return;
+        }
+    }
+    let _ = tokio::signal::ctrl_c().await;
+}
+
+async fn run() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt().with_env_filter(
         tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())
     ).init();
@@ -81,11 +100,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(std::time::Duration::from_secs(5))
         .build()?;
-    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)), recommendations, home: home::HomeService::new(), shorts: Arc::new(services::shorts_service::ShortsService::new()), blocked_channel_names: Arc::new(services::blocked_channel_names::BlockedChannelNames::default()) };
+    let state = AppState { youtube, music, pool, writes: Arc::new(tokio::sync::Mutex::new(())), streams, relay, requests: Arc::new(tokio::sync::Semaphore::new(8)), image_requests: Arc::new(tokio::sync::Semaphore::new(8)), recommendations, home: home::HomeService::new(), shorts: Arc::new(services::shorts_service::ShortsService::new()), blocked_channel_names: Arc::new(services::blocked_channel_names::BlockedChannelNames::default()) };
     let app = Router::new()
         .route("/api/v1/health", get(|| async { axum::Json(serde_json::json!({"status":"ok","protocol":1,"experimental":true})) }))
         .route("/api/v1/rpc/{command}", post(rpc::handle))
         .route("/api/{*rest}", axum::routing::any(|| async { axum::http::StatusCode::NOT_FOUND }))
+        .route("/media/image", get(artwork::get))
         .route("/media/stream/{token}", get(media::stream))
         .route("/media/hls/{token}", get(hls::relay))
         .route("/media/sabr/{*path}", get(media::sabr))
@@ -96,6 +116,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(bind).await?;
     tracing::info!(%bind, "Experimental Flow Web listening");
-    axum::serve(listener, app).with_graceful_shutdown(async { let _ = tokio::signal::ctrl_c().await; }).await?;
+    let (stop, stopped) = tokio::sync::oneshot::channel::<()>();
+    let mut server = tokio::spawn(async move {
+        axum::serve(listener, app).with_graceful_shutdown(async { let _ = stopped.await; }).await
+    });
+    tokio::select! {
+        result = &mut server => { result??; }
+        _ = shutdown_signal() => {
+            tracing::info!("Stopping Flow Web (up to 5 seconds for active requests)");
+            let _ = stop.send(());
+            match tokio::time::timeout(std::time::Duration::from_secs(5), &mut server).await {
+                Ok(result) => { result??; }
+                Err(_) => {
+                    tracing::warn!("Active connections did not finish; stopping server");
+                    server.abort();
+                }
+            }
+        }
+    }
     Ok(())
 }

@@ -161,7 +161,13 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
         "get_original_title" => Ok(json!(crate::api::original_title::original_title(&video(args)?).await)),
         "get_dearrow_override" => output!(crate::api::dearrow::fetch_dearrow_override_api(&video(args)?)),
         "get_return_youtube_dislike" => Ok(json!(crate::api::ryd::fetch_ryd_votes(&video(args)?).await)),
-        "image_proxy_base" => Ok(Value::Null),
+        "image_proxy_base" => Ok(json!("/media/image")),
+        "proxy_image_url" => {
+            let url: String = arg(args, "url")?;
+            Ok(json!(crate::artwork::proxy_url(&url)))
+        },
+        // Browser downloads are saved by the browser, not in Flow's native offline library.
+        "list_downloads" | "get_downloaded_video_ids" | "list_download_collections" => Ok(json!([])),
         _ => Err(unsupported(command)),
     }
 }

@@ -1382,9 +1382,18 @@ pub fn prepare_web(manager: &StreamingManager, id: &str, refresh: bool, info: St
     } else {
         build_direct_dash(&info)
     };
+    let direct_files: Vec<Option<String>> = info.variants.iter().map(|variant| {
+        (!info.is_live && !matches!(std::env::var("FLOW_WEB_DIRECT_MEDIA").as_deref(), Ok("0"))
+            && variant.is_playable && variant.has_audio && !variant.is_video_only
+            && allowed_direct_media(&variant.local_url)).then(|| variant.local_url.clone())
+    }).collect();
     let prepared = prepare(manager, id, refresh, info)?;
+    let muxed: Vec<_> = prepared.variants.iter().zip(direct_files).filter_map(|(variant, direct)| {
+        direct.filter(|_| variant.is_playable && !variant.local_url.is_empty()).map(|url| serde_json::json!({"proxyUrl":variant.local_url,"directUrl":url}))
+    }).collect();
     let has_proxy_dash = prepared.dash_manifest_url.is_some();
     let mut response = serde_json::to_value(prepared)?;
+    if !muxed.is_empty() { response["webDirectMuxed"] = serde_json::json!(muxed); }
     if let Some(xml) = direct.filter(|_| has_proxy_dash) {
         let token = uuid::Uuid::new_v4().to_string();
         manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());

@@ -1,3 +1,4 @@
+import { isWebMode } from "./env";
 import { invokeBackend } from "./errors";
 import type { MusicAudioQuality } from "./music";
 import type { CaptionTrack } from "../../types/video";
@@ -227,10 +228,12 @@ export interface DownloadRecord {
 }
 
 export function listDownloads(): Promise<DownloadRecord[]> {
+  if (isWebMode()) return Promise.resolve([]);
   return invokeBackend<DownloadRecord[]>("list_downloads");
 }
 
 export function getDownloadedVideoIds(): Promise<string[]> {
+  if (isWebMode()) return Promise.resolve([]);
   return invokeBackend<string[]>("get_downloaded_video_ids");
 }
 
@@ -318,6 +321,7 @@ export function createDownloadCollection(
 }
 
 export function listDownloadCollections(): Promise<DownloadCollectionRecord[]> {
+  if (isWebMode()) return Promise.resolve([]);
   return invokeBackend<DownloadCollectionRecord[]>("list_download_collections");
 }
 
