@@ -94,7 +94,7 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
                     return Err(err);
                 }
             };
-            Ok(serde_json::to_value(crate::media::prepare(&state.streams, &id, refresh.unwrap_or(false), info)?)?)
+            crate::media::prepare_web(&state.streams, &id, refresh.unwrap_or(false), info)
         },
         "get_channel_details" => output!(y.get_channel_details(&channel(args)?)),
         "get_channel_page" => output!(y.get_channel_page(&channel(args)?)),

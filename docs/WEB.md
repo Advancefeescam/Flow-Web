@@ -44,3 +44,27 @@ YouTube extraction and actual file transfer could not be checked in this environ
 because the outbound proxy refused the connection. No complete playback, iPad/Safari,
 container startup, or ARM64 deployment has been verified. Keep the PR draft until
 media and device behavior have been checked.
+
+## Playback transport and seeking
+
+On the main watch player, non-live synthetic DASH can try a direct Google Video CDN manifest. The same-origin authenticated proxy manifest stays available with identical representation IDs; a direct playback failure switches back at the recovery position before another extraction. The browser avoids direct attempts for five minutes after a failure (per page runtime). CORS, CDN client/URL restrictions and different client IPs may prevent direct playback. Set `FLOW_WEB_DIRECT_MEDIA=0` on the server to disable the experiment. Other playback surfaces, SABR, live HLS and downloads continue to use the existing transport. Dragging the browser's non-live seek bar previews locally and commits one seek on pointer release; touch is included. This does not download the full video or guarantee instant unbuffered seeks.
+
+Test direct versus proxy using DevTools Network (media requests to `*.googlevideo.com` versus `/media/stream/`); compare first frame and a long unbuffered seek. Check 1080p/4K, quality changes, audio, pause, touch, pointer cancellation and fallback. Never share signed media URLs in logs. Actual CDN and Safari/iPad results are still unverified.
+
+## Updating from Flow Desktop
+
+Keep shared Flow UI, extraction, streaming and database code as close to upstream as practical. Web-only code belongs in `web-server/` and narrow frontend adapters such as `src/lib/api/webTransport.ts` and `src/lib/webPlayback.ts`. Shared player changes should remain small and guarded by web-specific behavior. Avoid copying upstream modules into independent forks or replacing the full UI.
+
+To update after a new Flow Desktop release (from a clean checkout):
+
+```bash
+git remote add upstream https://github.com/Flow-Tube/Flow-Desktop.git # once per clone
+git fetch upstream --tags
+git remote set-head upstream -a
+git switch feat/web-runtime
+git pull --ff-only origin feat/web-runtime
+git switch -c update/flow-upstream
+git merge --no-ff upstream/HEAD
+````
+
+For a particular release, use its actual tag instead of `upstream/HEAD`. Resolve conflicts deliberately in shared adapters; do not overwrite web files wholesale. Run `pnpm install --frozen-lockfile`, `pnpm build --mode web`, frontend tests and `cargo test --manifest-path web-server/Cargo.toml`, then test real playback and open a PR into the active web branch. Keep upstream updates separate from web feature commits. No guarantee of conflict-free merges: upstream Tauri commands, player APIs and database schema can evolve.

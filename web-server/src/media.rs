@@ -1337,6 +1337,62 @@ pub(crate) fn register(manager: &StreamingManager, id: &str, url: &str, mime: &s
     manager.register_video_stream(id, token.clone(), url.into(), mime.into(), agent.into());
     format!("/media/stream/{token}")
 }
+/// Direct DASH is an optional browser transport, never a replacement for the
+/// original proxy. Only use signed HTTPS media URLs issued by the CDN.
+fn allowed_direct_media(raw: &str) -> bool {
+    allowed_remote(raw) && reqwest::Url::parse(raw).is_ok_and(|url| {
+        url.fragment().is_none() && url.path() == "/videoplayback"
+            && url.host_str().is_some_and(|host| host == "googlevideo.com" || host.ends_with(".googlevideo.com"))
+    })
+}
+
+fn build_direct_dash(info: &StreamInfo) -> Option<String> {
+    if info.is_live || info.hls_manifest_url.is_some() {
+        return None;
+    }
+    // Preserve the original representations and range metadata. If any URL
+    // that the proxy could serve is not a direct CDN URL, use the proxy for
+    // this whole manifest rather than silently dropping a quality/language.
+    let urls = info.variants.iter().filter(|v| v.is_video_only && v.is_playable)
+        .map(|v| v.local_url.as_str())
+        .chain(info.audio_tracks.iter().map(|a| a.local_url.as_str()));
+    if urls.filter(|url| allowed_remote(url)).any(|url| !allowed_direct_media(url)) {
+        return None;
+    }
+    let mut direct = info.clone();
+    for variant in &mut direct.variants {
+        if !allowed_direct_media(&variant.local_url) {
+            variant.local_url.clear();
+            variant.is_playable = false;
+        }
+    }
+    for track in &mut direct.audio_tracks {
+        if !allowed_direct_media(&track.local_url) {
+            track.local_url.clear();
+        }
+    }
+    crate::streaming::dash_manifest::build_synthetic_dash_manifest(&direct)
+}
+
+/// Add the browser-specific manifest without changing upstream StreamInfo or
+/// its existing proxy URLs (also used for downloads and fallback).
+pub fn prepare_web(manager: &StreamingManager, id: &str, refresh: bool, info: StreamInfo) -> AppResult<serde_json::Value> {
+    let direct = if matches!(std::env::var("FLOW_WEB_DIRECT_MEDIA").as_deref(), Ok("0")) {
+        None
+    } else {
+        build_direct_dash(&info)
+    };
+    let prepared = prepare(manager, id, refresh, info)?;
+    let has_proxy_dash = prepared.dash_manifest_url.is_some();
+    let mut response = serde_json::to_value(prepared)?;
+    if let Some(xml) = direct.filter(|_| has_proxy_dash) {
+        let token = uuid::Uuid::new_v4().to_string();
+        manager.register_inline_session(token.clone(), xml.into_bytes(), "application/dash+xml".into());
+        response["webDirectDashManifestUrl"] = serde_json::Value::String(format!("/media/stream/{token}"));
+    }
+    Ok(response)
+}
+
 pub fn prepare(manager: &StreamingManager, id: &str, refresh: bool, mut info: StreamInfo) -> AppResult<StreamInfo> {
     let agent = stream_user_agent(&info);
     info.expires_at = info.expires_at.split('|').next().unwrap_or_default().to_string();
@@ -1462,6 +1518,39 @@ mod tests {
         assert!(allowed_remote("https://rr1.googlevideo.com/videoplayback"));
         for url in ["http://127.0.0.1", "https://googlevideo.com.evil.test/", "https://user@youtube.com/", "https://youtube.com:1234/"] {
             assert!(!allowed_remote(url));
+        }
+    }
+    #[test]
+    fn direct_dash_only_uses_cdn_media_and_preserves_ranges() {
+        let mut info: StreamInfo = serde_json::from_value(serde_json::json!({
+            "streamId":"test", "localUrl":"", "expiresAt":"never", "captions":[],
+            "variants":[{"id":"137", "qualityLabel":"1080p", "localUrl":"https://rr1.googlevideo.com/videoplayback?a=1&b=2",
+                "mimeType":"video/mp4; codecs=\"avc1.640028\"", "isDefault":true, "isPlayable":true, "hasAudio":false,
+                "isVideoOnly":true, "deliveryMethod":"dash", "initRangeStart":0, "initRangeEnd":99,
+                "indexRangeStart":100, "indexRangeEnd":199, "approxDurationMs":10000}],
+            "audioTracks":[{"id":"140", "label":"Original", "localUrl":"https://rr2.googlevideo.com/videoplayback?a=2",
+                "mimeType":"audio/mp4; codecs=\"mp4a.40.2\"", "isDefault":true, "available":true,
+                "initRangeStart":0, "initRangeEnd":99, "indexRangeStart":100, "indexRangeEnd":199, "approxDurationMs":10000}]
+        })).unwrap();
+        let xml = build_direct_dash(&info).expect("direct DASH");
+        assert!(xml.contains("https://rr1.googlevideo.com/videoplayback?a=1&amp;b=2"));
+        assert!(xml.contains("https://rr2.googlevideo.com/videoplayback"));
+        assert!(xml.contains("100-199"));
+        info.is_live = true;
+        assert!(build_direct_dash(&info).is_none());
+        info.is_live = false;
+        info.audio_tracks[0].local_url = "https://youtube.com/videoplayback".into();
+        assert!(build_direct_dash(&info).is_none());
+        info.audio_tracks[0].local_url = "https://googlevideo.com.evil.test/videoplayback".into();
+        assert!(build_direct_dash(&info).is_none());
+    }
+    #[test]
+    fn direct_media_rejects_non_media_and_untrusted_urls() {
+        assert!(allowed_direct_media("https://rr1.googlevideo.com/videoplayback?x=1"));
+        for url in ["https://googlevideo.com.evil.test/videoplayback", "https://youtube.com/videoplayback",
+                    "https://googlevideo.com/other", "http://googlevideo.com/videoplayback",
+                    "https://user@googlevideo.com/videoplayback", "https://googlevideo.com/videoplayback#x"] {
+            assert!(!allowed_direct_media(url));
         }
     }
     #[test]

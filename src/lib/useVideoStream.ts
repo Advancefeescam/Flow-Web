@@ -29,6 +29,7 @@ import type {
   VideoSummary,
 } from "../types/video";
 import { profileStorage } from "./storage/profileStorage";
+import { chooseWebDashManifest, fallbackWebDashManifest } from "./webPlayback";
 
 export type SourceMode = "hls" | "dash-native" | "sabr-dash" | "direct" | "unavailable";
 
@@ -439,8 +440,9 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
           setStreamUrl(null);
         } else if (initialMode === "dash-native") {
           setHlsManifestUrl(null);
-          setDashManifestUrl(info.dashManifestUrl || null);
-          setStreamUrl(info.dashManifestUrl || null);
+          const manifest = chooseWebDashManifest(info);
+          setDashManifestUrl(manifest);
+          setStreamUrl(manifest);
         } else if (initialMode === "sabr-dash") {
           setHlsManifestUrl(null);
           setDashManifestUrl(info.sabr?.manifestUrl || null);
@@ -545,6 +547,17 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
       const available = computeAvailableSourceModes(info);
       const resumeAt = positionNow();
 
+      // The direct CDN transport is just another route to the same DASH
+      // representations. Fall back before re-extracting or changing quality.
+      const proxyManifest = fallbackWebDashManifest(info, dashManifestUrl);
+      if (sourceMode === "dash-native" && proxyManifest) {
+        recordPlayerEvent("web direct DASH unavailable; using server relay");
+        handResumeToSource(resumeAt);
+        setDashManifestUrl(proxyManifest);
+        setStreamUrl(proxyManifest);
+        return;
+      }
+
       attemptedModesRef.current.add(sourceMode);
       const next = available.find((mode) => !attemptedModesRef.current.has(mode));
 
@@ -610,7 +623,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
         setStreamUrl(pickDirectVariantUrl(info, selectedQualityId || "auto", preferredCodec));
       }
     },
-    [sourceMode, selectedQualityId, preferredCodec, handResumeToSource],
+    [sourceMode, selectedQualityId, preferredCodec, handResumeToSource, dashManifestUrl],
   );
 
   const onHardRetry = useCallback(() => {
