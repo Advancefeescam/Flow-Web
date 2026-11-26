@@ -1399,7 +1399,7 @@
   .flow-web-shell .flow-now-playing { flex-direction: row; gap: 1rem; }
   .flow-web-shell .flow-now-art { max-width: 25vw; }
   .flow-web-shell .flow-now-details { margin: 0; gap: .5rem; }
-  .flow-web-shell .flow-auth-center { justify-content: flex-start; }
+  .flow-web-auth-surface .flow-auth-center { justify-content: flex-start; }
 }
 
 
@@ -1492,7 +1492,7 @@
   .flow-web-shell .flow-video-transport-actions > [data-mobile-essential="true"] { order: -1; }
   .flow-web-shell .flow-video-transport-actions > [data-mobile-essential="true"] { min-width: 34px; min-height: 34px; }
   .flow-web-shell .flow-video-chapter { max-width: 3rem; padding-inline: .25rem; }
-  .flow-web-shell .flow-comments-sheet { margin-block-start: auto; margin-block-end: 0; max-height: 85dvh; }
+
 }
 
 
@@ -1520,3 +1520,9 @@
   .flow-web-shell .flow-watch-grid[data-theater] > .flow-watch-related { padding-inline: .75rem; }
   .flow-web-shell .flow-watch-frame [data-player-content] { border-radius: 0; }
 }
+
+/* Browser-only comments use the active theme, including true black in AMOLED. */
+.flow-comments-sheet { overscroll-behavior: contain; }
+.flow-comments-sheet [class*="overflow-y-auto"] { overscroll-behavior: contain; }
+@media (prefers-reduced-motion: reduce) { .flow-comments-sheet { transition: none !important; } }
+@media (max-height: 480px) { .flow-web-auth-surface .flow-auth-center { justify-content: flex-start; padding-block: 1.25rem; } }

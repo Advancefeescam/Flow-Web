@@ -17,12 +17,36 @@ function AuthSurface({ children }: { children: ReactNode }) {
   const variant = systemDark ? "dark" : "light";
   const style = snapshot ? undefined : { ...scopeVariables(DEFAULT_THEME, variant), colorScheme: variant } as CSSProperties;
   return <main style={style} className="flow-web-auth-surface h-dvh w-full overflow-y-auto bg-background text-on-surface">
-    <div className="flow-auth-center min-h-full flex flex-col items-center justify-center px-4 py-8 sm:px-8">
-      <motion.section initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }} className="flow-auth-card w-full max-w-[420px] rounded-[28px] border border-outline-soft bg-surface-container px-6 py-7 sm:px-9 sm:py-9">
-        {children}
-      </motion.section>
-      <p className="mt-5 flex items-center justify-center gap-2 text-xs text-chrome-neutral-400"><ShieldCheck size={14}/> Your private Flow Web instance</p>
+    <div className="mx-auto grid min-h-full w-full max-w-[1440px] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <aside className="relative m-5 hidden min-h-[480px] flex-col justify-between overflow-hidden rounded-[32px] bg-surface-container p-10 lg:flex xl:m-8 xl:p-14">
+        <div className="relative z-10 flex items-center gap-2">
+          <Logo size={42} className="[&_svg]:!cursor-default [&_svg]:!transform-none"/>
+          <span className="text-xl font-bold tracking-tight">Flow Web</span>
+        </div>
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden">
+          <div className="absolute h-[76%] w-[76%] max-h-[450px] max-w-[450px] rotate-[-12deg] rounded-[26%] border border-primary/15 bg-surface-container-high/50"/>
+          <div className="absolute h-[55%] w-[55%] max-h-[320px] max-w-[320px] rotate-[10deg] rounded-[28%] border border-primary/20 bg-surface-container-highest/60"/>
+          <Logo size={160} className="relative [&_svg]:!cursor-default [&_svg]:!transform-none"/>
+        </div>
+        <div className="relative z-10">
+          <h2 className="max-w-[360px] text-4xl font-semibold leading-[1.08] tracking-tight xl:text-5xl">Your library, on your terms.</h2>
+          <p className="mt-4 max-w-[320px] text-sm leading-relaxed text-on-surface-variant">Video, music and the things you save. All in your own Flow instance.</p>
+        </div>
+      </aside>
+      <div className="flow-auth-center flex min-w-0 flex-col items-center justify-center px-6 py-10 sm:px-10 lg:px-14">
+        <motion.section initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22 }} className="flow-auth-card w-full max-w-[400px]">
+          <div className="mb-10 flex items-center gap-2 lg:hidden">
+            <Logo size={42} className="[&_svg]:!cursor-default [&_svg]:!transform-none"/>
+            <span className="text-xl font-bold tracking-tight">Flow Web</span>
+          </div>
+          {children}
+          <div className="mt-8 flex items-center gap-2 border-t border-outline-soft pt-5 text-xs text-on-surface-variant">
+            <ShieldCheck size={16} className="shrink-0"/> Private self-hosted instance
+          </div>
+          {window.location.protocol !== "https:" && <p className="mt-2 text-xs leading-relaxed text-on-surface-variant">Local HTTP connection. Use HTTPS for remote access.</p>}
+        </motion.section>
+      </div>
     </div>
   </main>;
 }
@@ -46,17 +70,16 @@ function Login({ session, onSuccess }: { session: WebSession; onSuccess: (sessio
     } finally { setBusy(false); }
   }
   return <AuthSurface>
-    <header className="flex flex-col items-center text-center mb-7">
-      <Logo size={64} className="mb-4 [&_svg]:!cursor-default [&_svg]:!transform-none"/>
-      <h1 className="text-[28px] font-bold leading-tight tracking-tight text-chrome-neutral-100">Sign in to Flow</h1>
-      <p className="mt-2 text-sm leading-relaxed text-chrome-neutral-400">Sign in to your self-hosted library.</p>
+    <header className="mb-8">
+      <h1 className="text-[34px] font-semibold leading-tight tracking-tight text-on-surface sm:text-[40px]">Sign in</h1>
+      <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">Welcome back to your Flow library.</p>
     </header>
     <form className="space-y-5" onSubmit={submit}>
       <AuthUsernameField value={username} onChange={setUsername} disabled={busy}/>
       <AuthPasswordField value={password} onChange={setPassword} disabled={busy} autoFocus={!window.matchMedia?.("(pointer: coarse)")?.matches}/>
       {session.totpEnabled && <AuthCodeField value={code} onChange={setCode} disabled={busy}/>}
       <AuthError message={error}/>
-      <Button type="submit" size="lg" className="w-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"
+      <Button type="submit" size="lg" className="w-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         disabled={busy || !password || !username || (session.totpEnabled && code.length !== 6)}>
         {busy && <LoaderCircle size={18} className="animate-spin"/>}{busy ? "Signing in…" : "Sign in"}
       </Button>
