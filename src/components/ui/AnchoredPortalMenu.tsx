@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isWebMode } from "../../lib/api/env";
 import { useExitGhost } from "../../lib/useExitGhost";
 
 export interface MenuAnchor {
@@ -34,6 +35,7 @@ export function AnchoredPortalMenu({
     top: anchor.top,
     left: anchor.left ?? 0,
     visibility: "hidden",
+    ...(isWebMode() ? { maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100dvh - 16px)", overflowY: "auto" } : {}),
   });
 
   useLayoutEffect(() => {
@@ -56,7 +58,7 @@ export function AnchoredPortalMenu({
     // Grows from the corner nearest the button: the side it was anchored by, and above when flipped.
     const vertical = top < anchor.top ? "bottom" : "top";
     const horizontal = anchor.right != null ? "right" : "left";
-    setStyle({ position: "fixed", top, left, visibility: "visible", transformOrigin: `${vertical} ${horizontal}` });
+    setStyle({ position: "fixed", top, left, visibility: "visible", ...(isWebMode() ? { maxWidth: "calc(100vw - 16px)", maxHeight: "calc(100dvh - 16px)", overflowY: "auto" } : {}), transformOrigin: `${vertical} ${horizontal}` });
   }, [anchor.top, anchor.left, anchor.right, anchor.flipBottom]);
 
   useExitGhost(ref);

@@ -74,7 +74,7 @@ export function MusicCollectionHeader({
   ].filter((part): part is string => Boolean(part?.trim()));
 
   return (
-    <header className="relative flex h-[45vh] min-h-[350px] w-full items-end overflow-hidden bg-surface px-8 pb-8">
+    <header className="flow-collection-hero relative flex h-[45vh] min-h-[350px] w-full items-end overflow-hidden bg-surface px-8 pb-8">
       {thumbnailUrl ? (
         <SoftBackdrop
           src={thumbnailUrl}
@@ -90,8 +90,8 @@ export function MusicCollectionHeader({
         className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-[var(--color-surface)]/60 to-[var(--color-surface)]"
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1600px] flex-row items-end gap-8">
-        <div className="aspect-square h-48 w-48 shrink-0 overflow-hidden rounded-xl shadow-2xl ring-1 ring-chrome-white/10 md:h-56 md:w-56 xl:h-64 xl:w-64">
+      <div className="flow-collection-hero-content relative z-10 mx-auto flex w-full max-w-[1600px] flex-row items-end gap-8">
+        <div className="flow-collection-art aspect-square h-48 w-48 shrink-0 overflow-hidden rounded-xl shadow-2xl ring-1 ring-chrome-white/10 md:h-56 md:w-56 xl:h-64 xl:w-64">
           <Cover src={thumbnailUrl} alt={meta.title} />
         </div>
 
@@ -101,7 +101,7 @@ export function MusicCollectionHeader({
             {meta.explicit && <ExplicitBadge />}
           </span>
 
-          <h1 dir="auto" className="line-clamp-2 text-5xl font-extrabold leading-tight tracking-tighter text-chrome-white lg:text-7xl">
+          <h1 dir="auto" className="flow-collection-title line-clamp-2 text-5xl font-extrabold leading-tight tracking-tighter text-chrome-white lg:text-7xl">
             {meta.title}
           </h1>
 

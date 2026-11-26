@@ -13,3 +13,10 @@ export function useWebMedium(): boolean {
   const medium = useMediaQuery(WEB_MEDIUM_QUERY);
   return isWebMode() && medium;
 }
+
+/** iPad landscape and smaller desktop web windows keep the rail compact. */
+export const WEB_RAIL_QUERY = "(min-width: 640px) and (max-width: 1199px)";
+export function useWebRail(): boolean {
+  const rail = useMediaQuery(WEB_RAIL_QUERY);
+  return isWebMode() && rail;
+}

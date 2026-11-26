@@ -5,6 +5,7 @@ import { Heart, MoreHorizontal } from "lucide-react";
 import { getString } from "../../../lib/i18n/index";
 import { SETTINGS } from "../../../lib/settings/schema";
 import { useBoolPref } from "../../../lib/usePreference";
+import { useWebCompact } from "../../../lib/webAdaptive";
 import { useElementSize } from "../../../lib/useElementSize";
 import { useLikesStore } from "../../../store/useLikesStore";
 import { useMusicPlayerStore } from "../../../store/useMusicPlayerStore";
@@ -49,7 +50,8 @@ interface NowPlayingColumnProps {
 export function NowPlayingColumn({ track, compact, artworkHidden, onOpenEqualizer }: NowPlayingColumnProps) {
   const columnRef = useRef<HTMLDivElement>(null);
   const { width, height } = useElementSize(columnRef);
-  const artSize = Math.round(Math.max(MIN_ART, Math.min(MAX_ART, height - DETAILS_HEIGHT, width)));
+  const phone = useWebCompact();
+  const artSize = Math.round(phone ? Math.max(0, Math.min(MAX_ART, height - 250, width)) : Math.max(MIN_ART, Math.min(MAX_ART, height - DETAILS_HEIGHT, width)));
 
   const [hideArtwork] = useBoolPref(SETTINGS.MUSIC_HIDE_ARTWORK);
   const loading = useMusicPlayerStore((s) => s.isBuffering || s.loadingStreamId !== null);
@@ -74,12 +76,12 @@ export function NowPlayingColumn({ track, compact, artworkHidden, onOpenEqualize
       ref={columnRef}
       layout
       transition={LAYOUT_SPRING}
-      className="flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center"
+      className="flow-now-playing flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center"
     >
       <motion.div
         layout
         transition={LAYOUT_SPRING}
-        className={`relative aspect-square shrink-0 overflow-hidden rounded-2xl ${artworkHidden ? "invisible" : ""}`}
+        className={`flow-now-art relative aspect-square shrink-0 overflow-hidden rounded-2xl ${artworkHidden ? "invisible" : ""}`}
         style={{ width: artSize }}
       >
         {hideArtwork ? (
@@ -99,8 +101,8 @@ export function NowPlayingColumn({ track, compact, artworkHidden, onOpenEqualize
       </motion.div>
 
       {/* Its own layout lets framer undo the column's resize scale. Position only, so a change in its own width can't squash the text either. */}
-      <motion.div layout="position" transition={LAYOUT_SPRING} className="mt-8 flex w-full max-w-2xl flex-col gap-5">
-        <div ref={menu.cardRef} onContextMenu={menu.openMenuFromContext} className="flex items-start justify-between gap-4">
+      <motion.div layout="position" transition={LAYOUT_SPRING} className="flow-now-details mt-8 flex w-full max-w-2xl flex-col gap-5">
+        <div ref={menu.cardRef} onContextMenu={menu.openMenuFromContext} className="flow-now-meta flex items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 dir="auto"
               title={track.title}
@@ -134,7 +136,7 @@ export function NowPlayingColumn({ track, compact, artworkHidden, onOpenEqualize
         </div>
 
         <MusicScrubber size="lg" showTimes countdown expressive />
-        <PlayerTransport />
+        <PlayerTransport size={phone ? "md" : "lg"} />
       </motion.div>
     </motion.div>
   );

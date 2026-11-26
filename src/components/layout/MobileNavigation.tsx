@@ -28,13 +28,14 @@ export function MobileNavigation() {
   return <nav data-flow-mobile-nav aria-label={getString("sidebar_menu")} className="flow-web-bottom-nav shrink-0 border-t border-outline-soft bg-surface-container">
     {destinations.map(({ to, label, icon }) => (
       <NavLink key={to} to={to} end={to === "/"} onClick={() => { if (to === "/" && location.pathname === "/") announceHomeReselected(); }}
+        aria-label={getString(label)}
         className={({ isActive }) => "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary " + (isActive ? "text-primary" : "text-chrome-neutral-400")}>
         {({ isActive }) => <>
           <span className={"grid h-8 w-14 max-w-full place-items-center rounded-full transition-colors " + (isActive ? "bg-surface-container-high" : "")}>
             {icon === "shorts" ? (isActive ? <ShortsAIcon className="h-6 w-6"/> : <ShortsIcon className="h-6 w-6"/>)
               : <SidebarNavIcon name={icon} variant={isActive ? "filled" : "outline"} className="h-6 w-6"/>}
           </span>
-          <span className="w-full truncate px-0.5 text-center text-[11px] font-medium leading-tight">{getString(label)}</span>
+          <span className="w-full overflow-hidden text-ellipsis whitespace-nowrap px-0.5 text-center text-[11px] font-medium leading-tight">{getString(label)}</span>
         </>}
       </NavLink>
     ))}
