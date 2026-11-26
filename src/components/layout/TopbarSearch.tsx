@@ -294,7 +294,7 @@ export function TopbarSearch() {
           }}
           onKeyDown={onKeyDown}
           onChange={(event) => onInputChange(event.target.value)}
-          className="h-10 min-w-0 flex-1 bg-transparent text-sm text-chrome-neutral-100 outline-none placeholder:text-chrome-neutral-500"
+          className="flow-search-input h-10 min-w-0 flex-1 bg-transparent text-sm text-chrome-neutral-100 outline-none placeholder:text-chrome-neutral-500"
         />
         {currentValue ? (
           <button

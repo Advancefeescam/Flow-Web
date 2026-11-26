@@ -41,12 +41,12 @@ export function Topbar() {
 
   return (
     <header
-      className={`sticky top-0 z-40 flex h-14 items-center justify-between border-b border-transparent px-3 ${
+      className={`flow-adaptive-topbar sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-transparent px-3 ${
         seeThrough ? 'bg-transparent transition-colors duration-200 ease-out' : 'bg-background'
       }`}
     >
       {/* Left */}
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flow-topbar-leading flex min-w-0 items-center gap-2">
         <IconButton
           id={SIDEBAR_MENU_BUTTON_ID}
           aria-label={getString('sidebar_menu')}
@@ -67,7 +67,7 @@ export function Topbar() {
           </IconButton>
         )}
         {showAppLogo && (
-          <div className="cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flow-topbar-logo cursor-pointer" onClick={() => navigate('/')}>
             <Logo size={36} showText={true} />
           </div>
         )}
@@ -94,12 +94,12 @@ export function Topbar() {
       </div>
 
       {/* Center - Search */}
-      <div className="flex max-w-[720px] flex-1 items-center justify-center px-4 md:px-8">
+      <div className="flow-topbar-search flex min-w-0 max-w-[720px] flex-1 items-center justify-center px-4 md:px-8">
         <TopbarSearch />
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-2">
+      <div className="flow-topbar-actions flex shrink-0 items-center gap-2">
         <NotificationsBell />
         <IconButton
           onClick={() => {

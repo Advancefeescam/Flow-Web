@@ -30,10 +30,10 @@ export function WatchLayout({ player, metadata, description, comments, sidebar }
   usePageEnterMotion(sideRef, layoutKey, false);
 
   return (
-    <div className="min-h-screen bg-background pb-32 text-chrome-neutral-100">
+    <div className="flow-watch-page min-h-screen bg-background pb-32 text-chrome-neutral-100">
       <div
         className={cx(
-          "mx-auto grid w-full grid-cols-1 items-start gap-x-6 gap-y-5 lg:grid-rows-[auto_1fr]",
+          "flow-watch-grid mx-auto grid w-full grid-cols-1 items-start gap-x-6 gap-y-5 lg:grid-rows-[auto_1fr]",
           isTheaterMode
             ? "max-w-full px-0 pt-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1100px)_400px_minmax(0,1fr)]"
             : "max-w-[1800px] px-4 pt-4 md:px-6 md:pt-6 lg:grid-cols-[1fr_400px]",
@@ -41,7 +41,7 @@ export function WatchLayout({ player, metadata, description, comments, sidebar }
       >
         <div
           className={cx(
-            "w-full min-w-0 lg:row-start-1",
+            "flow-watch-player w-full min-w-0 lg:row-start-1",
             isTheaterMode ? "z-10 bg-chrome-black lg:col-span-full" : "lg:col-start-1",
           )}
         >
@@ -51,7 +51,7 @@ export function WatchLayout({ player, metadata, description, comments, sidebar }
         <div
           ref={mainRef}
           className={cx(
-            "relative z-[31] flex w-full min-w-0 flex-col gap-5 lg:row-start-2",
+            "flow-watch-details relative z-[31] flex w-full min-w-0 flex-col gap-5 lg:row-start-2",
             isTheaterMode ? "lg:col-start-2" : "lg:col-start-1",
           )}
         >
@@ -63,7 +63,7 @@ export function WatchLayout({ player, metadata, description, comments, sidebar }
         <div
           ref={sideRef}
           className={cx(
-            "relative z-[31] flex w-full min-h-0 flex-col gap-5 overscroll-contain lg:sticky lg:top-6 lg:max-h-[calc(100vh-6.5rem)] lg:self-start lg:overflow-y-auto lg:p-2",
+            "flow-watch-related relative z-[31] flex w-full min-w-0 min-h-0 flex-col gap-5 overscroll-contain lg:sticky lg:top-6 lg:max-h-[calc(100vh-6.5rem)] lg:self-start lg:overflow-y-auto lg:p-2",
             isTheaterMode ? "lg:col-start-3 lg:row-start-2" : "lg:col-start-2 lg:row-span-2 lg:row-start-1",
           )}
         >
