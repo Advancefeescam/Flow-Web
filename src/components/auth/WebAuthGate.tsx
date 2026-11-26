@@ -5,6 +5,7 @@ import { AuthUsernameField, AuthPasswordField, AuthCodeField, AuthError } from "
 import { DEFAULT_THEME, scopeVariables } from "../../lib/themes";
 import { useSystemDarkMode } from "../../lib/useSystemDarkMode";
 import { Button } from "../ui/Button";
+import { Logo } from "../common/Logo";
 import { getWebSession, signIn, SESSION_EXPIRED_EVENT, type WebSession } from "../../lib/api/webAuth";
 
 function AuthSurface({ children }: { children: ReactNode }) {
@@ -46,7 +47,7 @@ function Login({ session, onSuccess }: { session: WebSession; onSuccess: (sessio
   }
   return <AuthSurface>
     <header className="flex flex-col items-center text-center mb-7">
-      <img src="/flow-web-logo.svg" alt="" className="w-16 h-16 mb-4" draggable={false}/>
+      <Logo size={64} className="mb-4 [&_svg]:!cursor-default [&_svg]:!transform-none"/>
       <h1 className="text-[28px] font-bold leading-tight tracking-tight text-chrome-neutral-100">Sign in to Flow</h1>
       <p className="mt-2 text-sm leading-relaxed text-chrome-neutral-400">Sign in to your self-hosted library.</p>
     </header>
@@ -87,7 +88,7 @@ export function WebAuthGate({ children }: { children: ReactNode }) {
   if (session) return <Login session={session} onSuccess={setSession}/>;
   return <AuthSurface>
     <div className="flex flex-col items-center gap-4 text-center py-4">
-      <img src="/flow-web-logo.svg" className="w-16 h-16" alt="Flow Web"/>
+      <Logo size={64} className="[&_svg]:!cursor-default [&_svg]:!transform-none"/>
       {failed ? <>
         <WifiOff size={24} className="text-chrome-neutral-400"/>
         <h1 className="text-lg font-semibold">Unable to connect</h1>
