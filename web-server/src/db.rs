@@ -13,6 +13,8 @@
 #[path = "../../src-tauri/src/db/cache.rs"] pub mod cache;
 #[path = "../../src-tauri/src/db/video_kind_checks.rs"] pub mod video_kind_checks;
 
+#[path = "../../src-tauri/src/db/music_queue.rs"] pub mod music_queue;
+
 use std::{path::Path, time::Duration};
 use sqlx::{SqlitePool, sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions}};
 use crate::errors::{AppError, AppResult};

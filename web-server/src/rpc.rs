@@ -53,6 +53,7 @@ fn unsupported(command: &str) -> AppError {
 
 async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Value> {
     if let Some(value) = crate::profiles::dispatch(command) { return Ok(value); }
+    if let Some(value) = crate::notes::dispatch(state, command, args).await? { return Ok(value); }
     if let Some(value) = crate::library::dispatch(state, command, args).await? { return Ok(value); }
     if let Some(value) = crate::music::dispatch(state, command, args).await? { return Ok(value); }
     if let Some(value) = crate::neuro::dispatch(state, command, args).await? { return Ok(value); }

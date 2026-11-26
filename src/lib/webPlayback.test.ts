@@ -49,11 +49,12 @@ describe("web direct muxed files", () => {
 
 describe("direct transport detection", () => {
   it("only identifies the current direct manifest or direct muxed file", () => {
-    const source = {...info, webDirectMuxed: [{proxyUrl: "/media/stream/a", directUrl: "https://rr1.googlevideo.com/videoplayback"}]};
+    const file = {proxyUrl: "/media/stream/a", directUrl: "https://rr1.googlevideo.com/videoplayback"};
+    const source = {...info, webDirectMuxed: [file]};
     expect(isWebDirectSource(source, source.webDirectDashManifestUrl)).toBe(true);
-    expect(isWebDirectSource(source, source.webDirectMuxed[0].directUrl)).toBe(true);
+    expect(isWebDirectSource(source, file.directUrl)).toBe(true);
     expect(isWebDirectSource(source, source.dashManifestUrl)).toBe(false);
-    expect(isWebDirectSource(source, source.webDirectMuxed[0].proxyUrl)).toBe(false);
+    expect(isWebDirectSource(source, file.proxyUrl)).toBe(false);
     expect(isWebDirectSource(null, "anything")).toBe(false);
     expect(isWebDirectSource({...source, isLive: true}, source.webDirectDashManifestUrl)).toBe(false);
     expect(WEB_DIRECT_STARTUP_TIMEOUT_MS).toBeLessThan(10000);

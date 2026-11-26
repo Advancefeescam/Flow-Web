@@ -11,6 +11,7 @@ mod security { pub(crate) use crate::validation; }
 mod rpc;
 mod db;
 mod library;
+mod notes;
 mod music;
 mod profiles;
 mod neuro;
