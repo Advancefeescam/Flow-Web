@@ -2,6 +2,7 @@ import { getString } from "../../lib/i18n/index";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useWebCompact, useWebMedium } from "../../lib/webAdaptive";
 import { useShortsFeed, type ShortsQueueEnd } from "../../lib/useShortsFeed";
 import { listenForShortsKeys } from "../../lib/shortsKeys";
 import { sendWatchCommand } from "../../lib/watchCommands";
@@ -45,6 +46,11 @@ export function ShortsFeed() {
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [panelState, setPanelState] = useState<ShortsPanelState>("none");
+  const compact = useWebCompact();
+  const medium = useWebMedium();
+  const mobilePanelOpen = (compact || medium) && panelState !== "none";
+  const mobilePanelOpenRef = useRef(mobilePanelOpen);
+  mobilePanelOpenRef.current = mobilePanelOpen;
   const [muted, setMuted] = useState(true);
   const volume = usePlayerStore((state) => state.volume);
   const setVolume = usePlayerStore((state) => state.setVolume);
@@ -169,6 +175,7 @@ export function ShortsFeed() {
   }, []);
 
   const advanceToNext = useCallback(() => {
+    if (mobilePanelOpenRef.current) return;
     const { activeIndex: current, itemCount } = feedStateRef.current;
     if (itemCount === 0) return;
     if (current >= itemCount - 1) {
@@ -191,6 +198,7 @@ export function ShortsFeed() {
           return true;
         }
         if (action.type !== "page") return false;
+        if (mobilePanelOpenRef.current) return true;
         if (action.offset > 0) advanceToNext();
         else scrollToIndex(feedStateRef.current.activeIndex - 1);
         return true;
@@ -228,10 +236,10 @@ export function ShortsFeed() {
   }
 
   return (
-    <div className="relative h-full w-full bg-background" data-panel={panelState}>
+    <div className="relative h-full w-full bg-background" data-panel={panelState} data-mobile-shorts-panel={mobilePanelOpen || undefined}>
       <div
         ref={containerRef}
-        className="h-full w-full snap-y snap-mandatory overflow-y-auto"
+        className="flow-shorts-scroll h-full w-full snap-y snap-mandatory overflow-y-auto"
       >
         {items.map((short, index) => {
           const distance = Math.abs(index - activeIndex);

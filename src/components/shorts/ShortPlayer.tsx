@@ -16,6 +16,8 @@ import { ShortVideoSurface } from "./ShortVideoSurface";
 import { ShortMetadata } from "./ShortMetadata";
 import { ShortActionBar } from "./ShortActionBar";
 import { ShortSidePanel } from "./ShortSidePanel";
+import { ShortMobileSheet } from "./ShortMobileSheet";
+import { SHORT_SHEET_DEFAULT } from "../../lib/shortSheet";
 import { Slider } from "../ui/Slider";
 import { useWheelVolume } from "../../lib/useWheelVolume";
 import type { ShortItem, ShortsPanelState } from "../../types/shorts";
@@ -63,6 +65,12 @@ export function ShortPlayer({
   const medium = useWebMedium();
   const adaptive = compact || medium;
   const panelOpen = active && panelState !== "none";
+  const mobilePanelOpen = adaptive && panelOpen;
+  const [sheetShare, setSheetShare] = useState(SHORT_SHEET_DEFAULT);
+  const [sheetDragging, setSheetDragging] = useState(false);
+  useEffect(() => {
+    if (!mobilePanelOpen) { setSheetShare(SHORT_SHEET_DEFAULT); setSheetDragging(false); }
+  }, [mobilePanelOpen]);
   const { details } = useShortDetails(short.id, active);
   const { countText: fetchedCommentCountText } = useVideoComments(active ? short.id : undefined);
   const rytdEnabled = useSettingsStore((s) => s.rytdEnabled);
@@ -124,7 +132,9 @@ export function ShortPlayer({
   return (
     <div
       className="short-stage relative h-full w-full overflow-hidden flex items-end justify-center py-6"
-      style={{ "--short-panel": panelOpen ? `${SIDE_PANEL_WIDTH}px` : "0px" } as CSSProperties}
+      data-mobile-panel={mobilePanelOpen || undefined}
+      data-sheet-dragging={sheetDragging || undefined}
+      style={{ "--short-panel": panelOpen ? `${SIDE_PANEL_WIDTH}px` : "0px", "--short-sheet-size": `${sheetShare * 100}%` } as CSSProperties}
     >
       {ambient.enabled && thumbnail && active && !IS_LINUX_RUNTIME && (
         <img
@@ -224,7 +234,7 @@ export function ShortPlayer({
             )}
           </div>
 
-          <motion.div
+          {!adaptive && <motion.div
             layout={active && !adaptive}
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: panelOpen ? SIDE_PANEL_WIDTH : 0, opacity: 1 }}
@@ -244,8 +254,16 @@ export function ShortPlayer({
                 onClose={() => onRequestPanel("none")}
               />
             )}
-          </motion.div>
+          </motion.div>}
         </motion.div>
+
+        {mobilePanelOpen && <ShortMobileSheet
+          share={sheetShare} onShare={setSheetShare} onDragging={setSheetDragging}
+          onClose={() => onRequestPanel("none")}>
+          <ShortSidePanel short={short} details={details} rydData={rydData}
+            commentCountText={commentCountText} panelState={panelState}
+            onClose={() => onRequestPanel("none")} mobile />
+        </ShortMobileSheet>}
 
         {active ? (
           <ShortActionBar

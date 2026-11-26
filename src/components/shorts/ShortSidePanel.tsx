@@ -16,6 +16,7 @@ interface ShortSidePanelProps {
   commentCountText?: string | null;
   panelState: ShortsPanelState;
   onClose: () => void;
+  mobile?: boolean;
 }
 
 export function ShortSidePanel({
@@ -25,9 +26,16 @@ export function ShortSidePanel({
   commentCountText,
   panelState,
   onClose,
+  mobile = false,
 }: ShortSidePanelProps) {
   const isComments = panelState === "comments";
   const headerCountText = isComments ? formatCount(commentCountText ?? short.commentCountText) : "";
+
+  if (mobile && isComments) {
+    return <div className="h-full min-h-0 px-4 pb-[max(.75rem,env(safe-area-inset-bottom))]">
+      <CommentsSection videoId={short.id} short fill onClose={onClose} />
+    </div>;
+  }
 
   return (
     <div className="flex h-full w-full min-w-0 flex-col">
