@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Hourglass,
   Languages,
-  UserRound,
+  LockKeyhole,
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { isWebMode } from '../../lib/api/env';
@@ -44,7 +44,7 @@ interface CategoryDef {
 const categories: CategoryDef[] = [
   { id: 'appearance', icon: <Palette size={18} /> },
   { id: 'profiles', icon: <UsersRound size={18} /> },
-  ...(isWebMode() ? [{ id: 'webAccount' as const, icon: <UserRound size={18} /> }] : []),
+  ...(isWebMode() ? [{ id: 'webAccount' as const, icon: <LockKeyhole size={18} /> }] : []),
   { id: 'player', icon: <PlayCircle size={18} /> },
   { id: 'keyboard', icon: <Keyboard size={18} /> },
   { id: 'music', icon: <Music2 size={18} /> },

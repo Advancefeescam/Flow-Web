@@ -4,7 +4,7 @@ import { getWebSession, signIn, beginTotp, signOut } from "./webAuth";
 afterEach(() => vi.unstubAllGlobals());
 describe("Flow Web auth transport", () => {
   it("uses a same-origin cookie session without local token storage", async () => {
-    const fetch = vi.fn().mockResolvedValue(Response.json({ authenticated: true, username: "flow", totpEnabled: false, sessionCount: 1 }));
+    const fetch = vi.fn().mockImplementation(async () => Response.json({ authenticated: true, username: "flow", totpEnabled: false, sessionCount: 1 }));
     vi.stubGlobal("fetch", fetch);
     await expect(getWebSession()).resolves.toMatchObject({ authenticated: true });
     expect(fetch).toHaveBeenCalledWith("/api/v1/auth/session", expect.objectContaining({ method: "GET", credentials: "same-origin", cache: "no-store" }));
