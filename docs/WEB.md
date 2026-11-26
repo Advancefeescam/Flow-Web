@@ -30,13 +30,13 @@ The Containerfile builds the web UI and headless Rust server without desktop GUI
 | Profiles | The default profile has a compatibility view; creating, switching, and isolating multiple profiles are not yet ported |
 | Downloads | The browser can request a real file for an available direct video/audio stream. Adaptive muxing, tags, an offline library, and an actual remote stream test are pending |
 | User subtitle files | The player can read a chosen `.srt` or `.vtt` file in browser memory; select it again after reloading the page |
-| Import/export, local media | Theme, playlist, equalizer, and JSON exports have browser file paths where implemented. Full backup export/restore, other-app import, and local media need browser equivalents; no arbitrary host file access |
+| Import/export, local media | Theme, playlist, equalizer, watch-history, and NewPipe subscription exports have browser file paths where implemented. Full backup export/restore, other-app import, and local media need browser equivalents; no arbitrary host file access |
 | Desktop window, tray, updater, global OS shortcuts | Native-only; web equivalents where applicable |
 | PWA install and static asset cache | Manifest and service worker added; iPad install testing pending |
 
 At the last pushed commit, GitHub Actions passed the workflow, headless runtime,
 and desktop quality checks. The desktop platform matrix is skipped on this web
-branch. For the current local changes, `pnpm build --mode web`, 13 focused frontend
+branch. For the current branch, `pnpm build --mode web`, 15 focused frontend
 tests, and 598 web-server tests passed (6 ignored). The broad frontend suite was
 stopped after it stalled, so it has no current pass result. The browser loaded the
 onboarding, home, watch page, and download dialog against a local server. Remote
