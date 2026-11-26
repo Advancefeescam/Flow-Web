@@ -1,19 +1,22 @@
 <div align="center">
-  <img src="Assets/logo.png" alt="Flow logo" width="112">
-
-  <h1>Flow Web</h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Assets/web/banner-dark.svg">
+    <img src="Assets/web/banner-light.svg" alt="Flow Web — YouTube and YouTube Music in your browser" width="100%">
+  </picture>
 
   **A privacy-respecting YouTube and YouTube Music client, right in your browser.**
 
   An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop).
 
   <p>
-    <a href="#installation"><img alt="Self-hosted" src="https://img.shields.io/badge/Self--hosted-Web-6750A4?style=flat-square"></a>
-    <a href="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml?query=branch%3Afeat%2Fweb-runtime"><img alt="Web runtime checks" src="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml/badge.svg?branch=feat%2Fweb-runtime"></a>
-    <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/badge/License-GPL--3.0-6750A4?style=flat-square"></a>
+    <a href="#installation"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/install-dark.svg"><img src="Assets/web/install-light.svg" alt="Get started" height="42"></picture></a>
+    <a href="#how-it-works"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/server-dark.svg"><img src="Assets/web/server-light.svg" alt="Self-hosted" height="42"></picture></a>
+    <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/license-dark.svg"><img src="Assets/web/license-light.svg" alt="GPL-3.0" height="42"></picture></a>
   </p>
 
-  [**Installation**](#installation) · [**Features**](#features) · [**Development**](#development) · [**Original Flow**](#the-flow-project) · [**Support Flow**](#support--donations)
+  [**Features**](#features) · [**Development**](#development) · [**Original Flow**](#the-flow-project) · [**Support Flow**](#support--donations)
+
+  <a href="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml?query=branch%3Afeat%2Fweb-runtime"><img alt="Web runtime checks" src="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml/badge.svg?branch=feat%2Fweb-runtime"></a>
 </div>
 
 ---
