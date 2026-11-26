@@ -1,181 +1,159 @@
 <div align="center">
-  <img src="Assets/logo.png" alt="Flow logo" width="104">
+  <img src="Assets/logo.png" alt="Flow logo" width="112">
 
   <h1>Flow Web</h1>
 
-  <p><strong>Flow, wherever you have a browser.</strong></p>
-  <p>A self-hosted YouTube and YouTube Music client based on <a href="https://github.com/Flow-Tube/Flow-Desktop">Flow Desktop</a>.<br>Same familiar interface. Your own server. No native app required.</p>
+  **A privacy-respecting YouTube and YouTube Music client, right in your browser.**
+
+  An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop).
 
   <p>
-    <a href="#getting-started"><img alt="Self-hosted" src="https://img.shields.io/badge/Self--hosted-Web-6750A4?style=flat-square"></a>
+    <a href="#installation"><img alt="Self-hosted" src="https://img.shields.io/badge/Self--hosted-Web-6750A4?style=flat-square"></a>
     <a href="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml?query=branch%3Afeat%2Fweb-runtime"><img alt="Web runtime checks" src="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml/badge.svg?branch=feat%2Fweb-runtime"></a>
-    <a href="LICENSE"><img alt="GPL-3.0" src="https://img.shields.io/badge/License-GPL--3.0-6750A4?style=flat-square"></a>
-    <a href="https://github.com/Advancefeescam/Flow-Web/pull/1"><img alt="Experimental preview" src="https://img.shields.io/badge/Status-Experimental-9A6700?style=flat-square"></a>
+    <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/badge/License-GPL--3.0-6750A4?style=flat-square"></a>
   </p>
 
-  [**Get started**](#getting-started) · [**Features**](#features) · [**Architecture**](#architecture) · [**Development**](#development) · [**Support Flow**](#support--donations)
+  [**Installation**](#installation) · [**Features**](#features) · [**Development**](#development) · [**Original Flow**](#the-flow-project) · [**Support Flow**](#support--donations)
 </div>
 
-> [!NOTE]
-> Flow Web is an independent, unofficial port, not an official Flow release. A working experimental runtime is being developed in [PR #1](https://github.com/Advancefeescam/Flow-Web/pull/1) on the [`feat/web-runtime` branch](https://github.com/Advancefeescam/Flow-Web/tree/feat/web-runtime). The default branch does not yet contain that runtime. There is no stable web release or public hosted instance.
+---
 
-## Flow beyond the desktop
+## About
 
-Flow Web brings the existing Flow interface to devices where installing Flow Desktop or Flow for Android is not possible or desirable. Run the server on a computer, home server or NAS and use it from a modern browser — including the iPad you already own.
+Flow Web started because I wanted to use Flow on my iPad, where there was no native client. I also liked the idea of having a regular YouTube website experience with Flow's interface and features, without having to install an app on every device.
 
-- **No native client required.** Open your own instance on a phone, tablet or computer.
-- **Your server, your library.** Keep history, preferences and recommendation data on infrastructure you control.
-- **The real Flow codebase.** Reuse the original React interface and Rust services, rather than build a separate imitation.
-- **Designed to complement Flow.** Native clients remain the recommended choice on supported platforms.
+Instead of writing another YouTube frontend from scratch, Flow Web uses the existing Flow Desktop codebase. The React interface and Rust backend are adapted to run as a self-hosted web application.
+
+Run Flow on a home server, NAS or computer and open it from your browser. Your library, history, settings and recommendations stay on your instance, so you can access them from different devices.
 
 ## Features
 
-The experimental branch connects the original interface to a headless Rust runtime. The following reflects the implementation, not a claim of complete browser compatibility.
+- YouTube video search and playback, channel pages, comments, Explore and Shorts.
+- YouTube Music, with artists, albums, playlists, queues and lyrics.
+- A personal library with subscriptions, playlists, likes, Watch Later and watch history.
+- FlowNeuro recommendations without a Google account.
+- SponsorBlock, DeArrow and Return YouTube Dislike integrations.
+- Video and audio downloads for supported direct streams.
+- Browser access on desktop and mobile, with PWA support in development.
 
-| Area | Web preview |
-| --- | --- |
-| Video | Search, watch pages, channels, comments and streaming adapters |
-| YouTube Music | Browse, search, queues, lyrics and streaming adapters |
-| Library | Shared SQLite storage for history, subscriptions, playlists and preferences |
-| Recommendations | FlowNeuro and personalized feed adapters |
-| Integrations | SponsorBlock, DeArrow and Return YouTube Dislike read adapters |
-| Downloads | Browser file downloads for supported direct streams; adaptive muxing pending |
-| Browser player | DASH/SABR/HLS transport, experimental direct CDN playback and local seek previews |
-| Web app | Manifest and service worker; installation and device testing pending |
-
-Flow Sync, multiple isolated profiles, complete backup/restore and native-only integrations are not yet fully ported. For detailed limitations and validation results, see the [web runtime parity tracker](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md#parity-tracker).
+Flow Web is under active development. Some Flow Desktop features, including Flow Sync, multiple profiles and full backup/restore, are not available in the web runtime yet. Browser and device compatibility is still being tested. See the [feature parity tracker](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md#parity-tracker) for details.
 
 ### FlowNeuro
 
-Flow's recommendation engine learns from viewing habits and preferences without requiring a Google account. Flow Web reuses the original recommendation services and stores their state on your own instance, rather than on the browsing device.
+FlowNeuro is Flow's own recommendation engine. It learns from what you watch, skip, like and search for, along with your topic preferences. Flow Web reuses the original Rust engine, with recommendation data stored on your server rather than on the device you are watching from.
 
-### Where to use it
+---
 
-| Browser clients | Server targets |
-| --- | --- |
-| Safari on iPhone and iPad | Linux x86-64 / amd64 |
-| Chrome, Firefox and other modern Android browsers | Linux ARM64 / aarch64 |
-| Desktop browsers on Windows, macOS and Linux | Docker or Podman on compatible Linux hosts |
+## Installation
 
-These are target environments. Full playback, Safari/iPadOS and container/ARM64 compatibility still need validation.
+Flow Web runs as a headless server and serves its own web interface. Docker and Podman are supported as build targets for Linux on amd64 and ARM64.
 
-## Getting started
+### Docker / Podman
 
-The preview is intended for developers and early testers. Clone the active web branch, not the current default branch.
+The current web runtime is available on [`feat/web-runtime`](https://github.com/Advancefeescam/Flow-Web/tree/feat/web-runtime) while [PR #1](https://github.com/Advancefeescam/Flow-Web/pull/1) is in development. Build the image locally from source:
 
-### Run in a container
-
-Requires Git and Docker Compose or Podman Compose. The image is built locally from source; no official prebuilt Flow Web image is published by this project.
-
-```sh
+```bash
 git clone --branch feat/web-runtime https://github.com/Advancefeescam/Flow-Web.git
 cd Flow-Web
+
 export FLOW_WEB_ORIGIN=http://127.0.0.1:8780
-read -r -s -p "Instance password (at least 16 characters): " FLOW_WEB_PASSWORD; echo
+read -r -s -p "Password (at least 16 characters): " FLOW_WEB_PASSWORD; echo
 export FLOW_WEB_PASSWORD
+
 docker compose -f compose.web.yml up --build
 ```
 
-For Podman, replace the final command with `podman compose -f compose.web.yml up --build`.
+For Podman, use `podman compose -f compose.web.yml up --build` instead.
 
-Open **http://127.0.0.1:8780** on the host. The server uses HTTP Basic authentication; sign in as `flow` with your configured password. The Compose configuration binds to loopback and keeps instance data in a persistent volume.
+Open **http://127.0.0.1:8780** and sign in with the username `flow` and your chosen password. The Compose file uses a persistent data volume and binds to localhost by default.
 
-> [!IMPORTANT]
-> For access from an iPad or another device, use a trusted HTTPS reverse proxy and set `FLOW_WEB_ORIGIN` to the exact external origin. Do not expose the experimental server directly to the internet. Use a separate data volume from Flow Desktop and Flow Sync.
+For access from other devices, put the instance behind a trusted HTTPS reverse proxy and set `FLOW_WEB_ORIGIN` to the address you use in your browser. Do not expose the development server directly to the internet or share its data volume with Flow Desktop or Flow Sync.
 
-See [deployment and development notes](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md) before deploying. Container startup and remote media delivery have not been comprehensively verified.
+See [docs/WEB.md](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md) for deployment notes and current compatibility limitations.
 
-## Architecture
+---
 
-Flow Web preserves the shared frontend, extraction code, streaming services and database migrations of Flow Desktop. A thin browser transport replaces Tauri IPC for web builds; the headless runtime serves the UI and exposes authenticated commands and media endpoints.
+## How it works
+
+The main difference between Flow Desktop and Flow Web is how the frontend communicates with the backend. Instead of running inside Tauri, the interface runs in a normal browser and communicates with a Rust HTTP server.
 
 ```mermaid
 flowchart LR
-    subgraph Client["Browser"]
-        UI["Flow UI"]
-        Player["Browser player"]
+    B["Browser · Flow UI"] --> A["Flow Web · Rust API"]
+    subgraph S["Self-hosted server"]
+        A --> C["Flow services"]
+        C --> D[("SQLite")]
+        A --> P["Media relay"]
     end
-    subgraph Server["Your Flow Web instance"]
-        API["Rust HTTP runtime"]
-        Core["Shared Flow services"]
-        DB[("SQLite")]
-        Proxy["Media relay"]
-        API --> Core
-        Core --> DB
-        API --> Proxy
-    end
-    UI --> API
-    Player --> Proxy
-    Core --> Y["YouTube"]
-    Proxy --> Y
-    Player -. "Direct CDN when supported" .-> Y
+    C --> Y["YouTube"]
+    P --> Y
+    B -. "Direct media when supported" .-> Y
 ```
 
-Media decoding happens on the client where supported. Direct CDN playback is experimental and can fall back to the authenticated relay. The aim is to keep web-specific changes small so future Flow Desktop releases remain easier to integrate.
+Most of the original Flow code is shared, including the interface, YouTube extraction, streaming services and recommendation engines. Media is decoded by the browser; direct CDN playback is being tested alongside the server relay.
 
-## Privacy and security
+The aim is to stay close to Flow Desktop so new upstream releases can be brought over without maintaining an entirely separate application.
 
-Flow Web shares the privacy goals of Flow Desktop, but self-hosting changes the trust model. The operator of an instance controls the server and its stored data. Use an instance you trust, protect its credentials and use HTTPS for remote access.
+### Privacy
 
-Flow still contacts YouTube and optional third-party services when their features are used. Avoid sharing signed media URLs, cookies, passwords or authentication headers in logs or bug reports.
+No Google account is required for ordinary use. Your library and recommendation data are stored on your own instance. Flow still communicates with YouTube and optional third-party services when you use their features.
+
+Unlike Flow Desktop, which stores data directly on your device, Flow Web stores it on the server. Only use instances you operate yourself or trust.
+
+---
 
 ## Development
 
-Requirements: Node.js 24, pnpm 11.9, stable Rust and the Linux build dependencies described in the [web runtime documentation](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md).
+Requirements: Node.js 24, pnpm 11.9, stable Rust and the Linux build dependencies listed in [docs/WEB.md](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md).
 
-From the web branch:
+From the web runtime branch:
 
-```sh
+```bash
 pnpm install --frozen-lockfile
 pnpm build --mode web
+
 export FLOW_WEB_ORIGIN=http://127.0.0.1:8780
-read -r -s -p "Instance password (at least 16 characters): " FLOW_WEB_PASSWORD; echo
+read -r -s -p "Password (at least 16 characters): " FLOW_WEB_PASSWORD; echo
 export FLOW_WEB_PASSWORD
+
 cd web-server
 cargo run
 ```
 
-Open http://127.0.0.1:8780. For contributions, keep web-only code in `web-server/` and narrow frontend adapters wherever possible. Preserve upstream behavior for the native desktop build.
+- [Web runtime documentation](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md)
+- [Updating from Flow Desktop](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md#updating-from-flow-desktop)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
-| Documentation | Purpose |
-| --- | --- |
-| [Web runtime](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md) | Deployment, parity tracker, media testing and upstream updates |
-| [Active pull request](https://github.com/Advancefeescam/Flow-Web/pull/1) | Implementation and review |
-| [GitHub Actions](https://github.com/Advancefeescam/Flow-Web/actions) | Automated checks |
-| [Security policy](SECURITY.md) | Private vulnerability reporting |
+---
 
 ## The Flow project
 
-Flow Web is made possible by [A-EDev](https://github.com/A-EDev) and the original Flow contributors. This project is not affiliated with or endorsed by the upstream project.
+Flow Web is based on the work of [A-EDev](https://github.com/A-EDev) and the original Flow contributors. It is an independent fork, not an official Flow release.
 
-| Original project | Purpose |
-| --- | --- |
-| [Flow](https://github.com/Flow-Tube/Flow) | Native Android client |
-| [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop) | Windows, macOS and Linux |
-| [Flow Sync](https://github.com/Flow-Tube/Flow-Sync) | Self-hosted synchronization |
-| [Flow website](https://flow-tube.org) | Official Flow ecosystem |
-| [Flow community](https://www.reddit.com/r/Flow_Official/) | Community discussions |
+If you prefer a native application or want to explore the original projects:
 
-Please keep web-port-specific feedback in this repository rather than reporting it as an upstream Flow Desktop bug.
+- [Flow for Android](https://github.com/Flow-Tube/Flow)
+- [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop) — Windows, macOS and Linux
+- [Flow Sync](https://github.com/Flow-Tube/Flow-Sync) — self-hosted synchronization
+- [Official website](https://flow-tube.org) · [Community](https://www.reddit.com/r/Flow_Official/)
+
+Please report problems specific to Flow Web in this repository.
 
 ---
 
 <a id="support--donations"></a>
 ## Support & donations
 
-If you enjoy Flow Web, consider supporting the original developer and contributors who make it possible.
+Flow Web wouldn't exist without the original Flow project. If you enjoy using it, consider supporting A-EDev and the upstream development of Flow.
 
-<a href="https://opencollective.com/flow-tube"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-dark.svg"><img alt="Support the original Flow project on Open Collective" src="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-light.svg" height="60"></picture></a>
-<a href="https://patreon.com/A_EDev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-dark.svg"><img alt="Support the original Flow developer on Patreon" src="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-light.svg" height="60"></picture></a>
+<a href="https://opencollective.com/flow-tube"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-dark.svg"><img alt="Support Flow on Open Collective" src="https://assets.flow-tube.org/v1/badges/pill/support-opencollective-light.svg" height="60"></picture></a>
+<a href="https://patreon.com/A_EDev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-dark.svg"><img alt="Support Flow on Patreon" src="https://assets.flow-tube.org/v1/badges/pill/support-patreon-tonal-light.svg" height="60"></picture></a>
 
 ## License
 
-Flow Web is derived from Flow Desktop and licensed under the [GNU General Public License v3.0](LICENSE) (GPL-3.0-only).
+Flow Web is free and open-source software licensed under the [GNU General Public License v3.0](LICENSE) (GPL-3.0-only).
 
-Original Flow Desktop copyright © 2025–2026 A-EDev. Original attribution and copyright notices are retained.
+Original Flow Desktop copyright © 2025–2026 A-EDev.
 
----
-
-<div align="center">
-  <sub>Built on <a href="https://github.com/Flow-Tube/Flow-Desktop">Flow Desktop</a> · Unofficial community project · Free and open source</sub>
-</div>
+Modified for browser and server use by Flow Web contributors, November 2026.
