@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { SidebarNavIcon, type SidebarNavIconName } from "../ui/SidebarNavIcon";
 import { ShortsIcon, ShortsAIcon } from "../ui/ShortsIcon";
 import { useAppSettingsStore } from "../../store/useAppSettingsStore";
@@ -19,6 +19,7 @@ export function mobileDestinations(shorts: boolean, music: boolean): MobileDesti
   ];
 }
 export function MobileNavigation() {
+  const location = useLocation();
   const shortsEnabled = useShortsEnabled();
   const musicEnabled = useMusicEnabled();
   const shortsNav = useAppSettingsStore(s => s.values[SETTINGS.SHORTS_NAVIGATION_ENABLED] !== "false");
@@ -26,7 +27,7 @@ export function MobileNavigation() {
   const destinations = mobileDestinations(shortsEnabled && shortsNav, musicEnabled && musicNav);
   return <nav data-flow-mobile-nav aria-label={getString("sidebar_menu")} className="flow-web-bottom-nav shrink-0 border-t border-outline-soft bg-surface-container">
     {destinations.map(({ to, label, icon }) => (
-      <NavLink key={to} to={to} end={to === "/"} onClick={() => { if (to === "/" && window.location.pathname === "/") announceHomeReselected(); }}
+      <NavLink key={to} to={to} end={to === "/"} onClick={() => { if (to === "/" && location.pathname === "/") announceHomeReselected(); }}
         className={({ isActive }) => "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary " + (isActive ? "text-primary" : "text-chrome-neutral-400")}>
         {({ isActive }) => <>
           <span className={"grid h-8 w-14 max-w-full place-items-center rounded-full transition-colors " + (isActive ? "bg-surface-container-high" : "")}>

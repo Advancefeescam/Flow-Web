@@ -1270,3 +1270,44 @@
   .flow-web-shell .flow-short-action-button svg { width: 1rem; height: 1rem; }
   .flow-web-shell .flow-short-meta { bottom: .5rem; }
 }
+
+
+/* Mobile Safari / installed PWA: keep controls inside the physical display. */
+.flow-web-shell {
+  --flow-web-topbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.flow-web-shell .flow-adaptive-topbar {
+  height: var(--flow-web-topbar-height);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.flow-web-shell .flow-sidebar-overlay {
+  left: env(safe-area-inset-left, 0px);
+  right: env(safe-area-inset-right, 0px);
+}
+.flow-web-auth-surface {
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-adaptive-page { padding-inline: 1rem; }
+  .flow-web-shell .flow-short-arrows { top: 4.25rem; }
+}
+@media (max-width: 639px) {
+  .flow-web-shell {
+    --flow-web-topbar-height: calc(6.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: 0;
+  }
+  .flow-web-shell .flow-adaptive-topbar { padding-inline: .5rem; }
+  .flow-web-shell .flow-web-bottom-nav { padding-inline: .25rem; }
+  .flow-web-shell .flow-topbar-leading > button, .flow-web-shell .flow-topbar-actions > button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .flow-web-shell .flow-search-suggestions { max-height: min(60dvh, 30rem); }
+  .flow-web-shell .flow-library-page { gap: 1.5rem; padding-top: 1rem; }
+  .flow-web-shell .flow-library-header { flex-wrap: wrap; gap: .75rem; }
+  .flow-web-shell .flow-short-arrows { top: .5rem; inset-inline-end: auto; inset-inline-start: .5rem; flex-direction: column; }
+  .flow-web-shell .flow-short-arrows button { width: 2rem; height: 2rem; }
+}

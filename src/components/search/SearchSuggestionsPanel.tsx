@@ -182,7 +182,7 @@ export function SearchSuggestionsPanel({
       ref={panelRef}
       id="search-suggestions"
       role="listbox"
-      className={`animate-menu-in absolute inset-x-0 top-[calc(100%+6px)] z-50 max-h-[70vh] overflow-y-auto overscroll-contain rounded-2xl border border-outline-soft bg-surface-container-high p-1.5 ${
+      className={`flow-search-suggestions animate-menu-in absolute inset-x-0 top-[calc(100%+6px)] z-50 max-h-[70vh] overflow-y-auto overscroll-contain rounded-2xl border border-outline-soft bg-surface-container-high p-1.5 ${
         hasSide ? "md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-1.5": ""
       }`}
     >
