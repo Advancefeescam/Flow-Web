@@ -1,22 +1,25 @@
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="Assets/web/banner-dark.svg">
-    <img src="Assets/web/banner-light.svg" alt="Flow Web — YouTube and YouTube Music in your browser" width="100%">
+    <img alt="Flow Web. Privacy-first YouTube and YouTube Music in your browser." src="Assets/web/banner-light.svg" width="100%">
   </picture>
 
   **A privacy-respecting YouTube and YouTube Music client, right in your browser.**
 
-  An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop).
+  An unofficial, self-hosted web port of [Flow Desktop](https://github.com/Flow-Tube/Flow-Desktop), built with Rust, React and TypeScript.
 
   <p>
-    <a href="#installation"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/install-dark.svg"><img src="Assets/web/install-light.svg" alt="Get started" height="42"></picture></a>
-    <a href="#how-it-works"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/server-dark.svg"><img src="Assets/web/server-light.svg" alt="Self-hosted" height="42"></picture></a>
-    <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/license-dark.svg"><img src="Assets/web/license-light.svg" alt="GPL-3.0" height="42"></picture></a>
+  <a href="#installation"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/install-dark.svg"><img src="Assets/web/install-light.svg" alt="Run in your browser" height="70"></picture></a>
+  <a href="#docker--podman"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/server-dark.svg"><img src="Assets/web/server-light.svg" alt="Deploy with Docker or Podman" height="70"></picture></a>
+  <a href="#development"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/source-dark.svg"><img src="Assets/web/source-light.svg" alt="Build from source" height="70"></picture></a>
+  </p>
+  <p>
+  <a href="#about"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/platform-dark.svg"><img src="Assets/web/platform-light.svg" alt="Web: any browser" height="38"></picture></a>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/stack-dark.svg"><img src="Assets/web/stack-light.svg" alt="Built with Rust and React" height="38"></picture>
+  <a href="LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="Assets/web/license-dark.svg"><img src="Assets/web/license-light.svg" alt="License: GPL-3.0" height="38"></picture></a>
   </p>
 
-  [**Features**](#features) · [**Development**](#development) · [**Original Flow**](#the-flow-project) · [**Support Flow**](#support--donations)
-
-  <a href="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml?query=branch%3Afeat%2Fweb-runtime"><img alt="Web runtime checks" src="https://github.com/Advancefeescam/Flow-Web/actions/workflows/web-check.yml/badge.svg?branch=feat%2Fweb-runtime"></a>
+  [**Installation**](#installation) · [**Features**](#features) · [**Original Flow**](#the-flow-project) · [**Support development**](#support--donations)
 </div>
 
 ---
