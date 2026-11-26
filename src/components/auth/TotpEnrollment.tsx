@@ -27,7 +27,7 @@ export function TotpEnrollment({ enrollment }: { enrollment: Enrollment }) {
         className="w-full flex items-center justify-between gap-2 px-4 py-3 text-start text-sm font-medium text-chrome-neutral-200 hover:bg-surface-container-highest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary">
         Enter a setup key instead <ChevronDown size={18} className={manual ? "rotate-180 transition-transform" : "transition-transform"}/>
       </button>
-      {manual && <div id="totp-manual" className="space-y-3 px-4 pb-4">
+      <div id="totp-manual" hidden={!manual} className="space-y-3 px-4 pb-4">{manual && <>
         <p className="text-xs leading-relaxed text-chrome-neutral-400">Account: flow · Time-based · 6 digits · 30 seconds</p>
         <div className="flex items-start gap-2 rounded-xl border border-outline-soft bg-surface-container p-3">
           <code dir="ltr" className="min-w-0 flex-1 select-all break-all font-mono text-sm leading-relaxed text-chrome-neutral-100">{enrollment.secret.match(/.{1,4}/g)?.join(" ")}</code>
@@ -39,7 +39,8 @@ export function TotpEnrollment({ enrollment }: { enrollment: Enrollment }) {
         {copied && <p role="status" className="text-xs text-chrome-neutral-400">Setup key copied.</p>}
         {copyFailed && <p role="alert" className="text-xs text-error">Copy the key manually, without spaces.</p>}
         <a href={enrollment.uri} className="inline-flex items-center justify-center gap-2 rounded-full bg-surface-container px-3 py-2 text-xs font-medium text-chrome-neutral-200 hover:bg-surface-container-highest focus-visible:ring-2 focus-visible:ring-primary"><ExternalLink size={14}/> Open authenticator</a>
-      </div>}
+      </>}
+      </div>
     </div>
     <p className="text-xs text-center leading-relaxed text-chrome-neutral-400">Setup expires in five minutes. Keep this key private.</p>
   </div>;

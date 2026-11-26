@@ -101,17 +101,17 @@ export function WebAccountTab() {
             <p className="mt-1 text-xs text-chrome-neutral-400">{action === "setup" ? enrollment ? "Step 2 of 2 · Add authenticator" : "Step 1 of 2 · Confirm password" : "Confirm your identity"}</p>
           </div>
         </header>
-        <div className="space-y-4 px-6 pb-5">
+        <div className="space-y-4 px-5 sm:px-6 pb-5">
           {action === "setup" && !enrollment && <p className="text-sm leading-relaxed text-chrome-neutral-400">Confirm your password to add an authenticator app to your account.</p>}
           {action === "disable" && <p className="text-sm leading-relaxed text-chrome-neutral-400">Your account will no longer require a verification code. Other sessions will be signed out.</p>}
           {action === "revoke" && <p className="text-sm leading-relaxed text-chrome-neutral-400">All other browsers will need to sign in again. This browser stays signed in.</p>}
           {enrollment && <TotpEnrollment enrollment={enrollment}/>}
-          <AuthPasswordField label="Administrator password" value={password} onChange={setPassword} disabled={busy}/>
+          <AuthPasswordField key={enrollment ? "verify" : "password"} label={enrollment ? "Confirm administrator password" : "Administrator password"} value={password} onChange={setPassword} disabled={busy}/>
           {needsCode && <AuthCodeField value={code} onChange={setCode} disabled={busy}/>}
           <AuthError message={error}/>
           {enrollment && <p className="text-xs leading-relaxed text-chrome-neutral-400">If you lose your authenticator, server-owner recovery is required.</p>}
         </div>
-        <footer className="flex flex-wrap justify-end gap-2 border-t border-outline-soft bg-surface-container-low px-6 py-4">
+        <footer className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-outline-soft bg-surface-container-low px-5 sm:px-6 py-4">
           <Button type="button" variant="ghost" onClick={() => void cancel()} disabled={busy}>{getString("cancel")}</Button>
           <Button type="submit" variant={action === "disable" ? "destructive" : "primary"} disabled={busy || !password || (needsCode && code.length !== 6)}>
             {busy && <LoaderCircle size={16} className="animate-spin"/>}
