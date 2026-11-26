@@ -1,7 +1,7 @@
 name: Web runtime checks
 on:
   push:
-    branches: [feat/web-runtime]
+    branches: [main, refactor/web-only, 'web-export/**']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -13,6 +13,12 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify the pinned web export
+        if: github.event_name != 'pull_request'
+        run: python3 scripts/export-web.py "$(python3 -c 'import json; print(json.load(open("UPSTREAM.lock"))["integration_commit"])')" --verify HEAD
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:

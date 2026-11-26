@@ -4,9 +4,9 @@ Flow Web is an unofficial browser port of [Flow Desktop](https://github.com/Flow
 
 ## Getting started
 
-The web runtime is currently developed on [`feat/web-runtime`](https://github.com/Advancefeescam/Flow-Web/tree/feat/web-runtime). See [docs/WEB.md](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md) for setup, the parity tracker and upstream update instructions.
+See [docs/WEB.md](docs/WEB.md) for setup and [docs/UPSTREAM.md](docs/UPSTREAM.md) for the branch and export workflow.
 
-For web changes, branch from the active web branch and target it in your pull request until PR #1 is merged. For changes confined to the default branch's documentation, target main. Keep changes focused and search existing pull requests and issues first.
+Develop source changes against `integration/desktop`. The public `main` branch is generated from a pinned integration commit; do not make manual changes to generated files there. Keep changes focused and search existing pull requests and issues first.
 
 ## Design and engineering
 
@@ -18,7 +18,7 @@ For web changes, branch from the active web branch and target it in your pull re
 
 ## Validation
 
-From the active web branch, with the prerequisites in the web runtime guide:
+From the integration or web branch, with the prerequisites in the web runtime guide:
 
 ```sh
 pnpm install --frozen-lockfile

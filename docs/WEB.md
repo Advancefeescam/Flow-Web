@@ -1,6 +1,6 @@
-# Experimental web runtime
+# Web runtime
 
-This branch keeps the original Flow frontend, extraction, streaming and SQLite code. It is not yet a validated release. The desktop app remains available through the existing build path.
+Flow Web reuses the original Flow frontend, extraction, streaming and SQLite code. The web runtime is under active development. Native desktop builds remain on the integration branch.
 
 ## Development
 
@@ -53,18 +53,4 @@ Test direct versus proxy using DevTools Network (media requests to `*.googlevide
 
 ## Updating from Flow Desktop
 
-Keep shared Flow UI, extraction, streaming and database code as close to upstream as practical. Web-only code belongs in `web-server/` and narrow frontend adapters such as `src/lib/api/webTransport.ts` and `src/lib/webPlayback.ts`. Shared player changes should remain small and guarded by web-specific behavior. Avoid copying upstream modules into independent forks or replacing the full UI.
-
-To update after a new Flow Desktop release (from a clean checkout):
-
-```bash
-git remote add upstream https://github.com/Flow-Tube/Flow-Desktop.git # once per clone
-git fetch upstream --tags
-git remote set-head upstream -a
-git switch feat/web-runtime
-git pull --ff-only origin feat/web-runtime
-git switch -c update/flow-upstream
-git merge --no-ff upstream/HEAD
-````
-
-For a particular release, use its actual tag instead of `upstream/HEAD`. Resolve conflicts deliberately in shared adapters; do not overwrite web files wholesale. Run `pnpm install --frozen-lockfile`, `pnpm build --mode web`, frontend tests and `cargo test --manifest-path web-server/Cargo.toml`, then test real playback and open a PR into the active web branch. Keep upstream updates separate from web feature commits. No guarantee of conflict-free merges: upstream Tauri commands, player APIs and database schema can evolve.
+See [UPSTREAM.md](UPSTREAM.md) for the integration branch and reproducible export procedure.
