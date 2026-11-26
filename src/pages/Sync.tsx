@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { isWebMode } from "../lib/api/env";
+import { WebSyncReadiness } from "../components/sync/WebSyncReadiness";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDownToLine, Send } from "lucide-react";
 
@@ -72,6 +74,10 @@ function SyncHome({ onTask }: { onTask: (task: Task) => void }) {
 }
 
 export default function Sync() {
+  return isWebMode() ? <WebSyncReadiness /> : <NativeSync />;
+}
+
+function NativeSync() {
   const initTransfer = useSyncStore((state) => state.init);
   const transferPhase = useSyncStore((state) => state.status.phase);
   const transferError = useSyncStore((state) => state.error);

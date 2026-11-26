@@ -36,7 +36,7 @@ The Containerfile builds the web UI and headless Rust server without desktop GUI
 | SponsorBlock, DeArrow, RYD | Read adapters are connected; custom upstreams and submissions remain incomplete |
 | FlowNeuro | Watch signals, onboarding, preference actions, taste overview and channel tools are connected to the headless service; full browser verification remains |
 | Personalized Home and Shorts | Original ranking and feed services are reused through web RPC; actual YouTube responses and browser sessions remain unverified |
-| Flow Sync and linked devices | Not yet ported to the headless runtime |
+| Flow Sync and linked devices | Shared FLOW-SYNC/2 crypto and server transport compiled into the headless runtime; authenticated read-only `/v1/info` probe for an operator-configured server; pairing, key storage, data merge and background sync not yet connected |
 | Profiles | The default profile has a compatibility view; creating, switching, and isolating multiple profiles are not yet ported |
 | Downloads | The browser can request a real file for an available direct video/audio stream. Adaptive muxing, tags, an offline library, and an actual remote stream test are pending |
 | User subtitle files | The player can read a chosen `.srt` or `.vtt` file in browser memory; select it again after reloading the page |
@@ -117,3 +117,10 @@ On stacked web watch layouts, a comments preview opens a bounded sheet with the 
 The stacked watch player now fills its measured slot instead of retaining the desktop theater minimum height. Slot tracking observes the top bar and page scrollport as well as the slot. The main video player logs `transport: cdn-direct` or `transport: server-relay` in the source-mode-selected diagnostics without exposing signed URLs. Direct playback receives a 6.5 second startup budget and an 8 second stall threshold; the standard relay keeps its previous timing. These are watchdog thresholds, not a guarantee of total startup latency.
 
 Music queue persistence and long-track resume positions use the existing upstream SQLite helpers. Notes can be listed, saved, edited, reordered, deleted and restored locally against the original schema. Linked-device synchronization is not implemented; automatic catch-up is skipped in web mode. These local writes do not record linked-device sync tombstones. The current HTTP RPC body limit is 256 KiB.
+
+
+## Flow Sync readiness (not paired)
+
+Set `FLOW_WEB_SYNC_URL` to your existing Flow Sync server's base URL (HTTPS or a private HTTP address as permitted by the original protocol). Open **Sync** in the browser to check server reachability, advertised protocols and live support. The destination is configured by the operator, not supplied by an RPC request. The check calls the original client’s unauthenticated `GET /v1/info` endpoint; it does not claim, reset, join or upload to the server. No admin token is needed.
+
+The next implementation gates are a durable server-side credential store, adapting the original linked-device state and profile mapping, joining with the existing confirmation protocol, collection apply/push transactions and change notifications, then a real Android/Desktop interoperability and restart test. Do not claim compatibility until those pass. A Flow Web instance should be one device, not one member per browser tab.

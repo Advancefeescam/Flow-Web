@@ -62,6 +62,7 @@ async fn dispatch(state: &AppState, command: &str, args: &Value) -> AppResult<Va
     let y = &state.youtube;
     macro_rules! output { ($expr:expr) => { Ok(serde_json::to_value($expr.await?)?) }; }
     match command {
+        "web_sync_status" => crate::linked_probe::status().await,
         "search_videos" => {
             let request: SearchVideosRequest = arg(args, "request")?;
             if let Some(ref page) = request.page_token { validate_page_token(page)?; }

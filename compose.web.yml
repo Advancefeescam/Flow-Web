@@ -4,10 +4,12 @@ services:
       context: .
       dockerfile: Containerfile
     ports:
-      - "127.0.0.1:8780:8780"
+      - "${FLOW_WEB_PUBLISH_HOST:-127.0.0.1}:${FLOW_WEB_PORT:-8780}:8780"
     environment:
       FLOW_WEB_PASSWORD: ${FLOW_WEB_PASSWORD:?Set a strong private password}
       FLOW_WEB_ORIGIN: ${FLOW_WEB_ORIGIN:-http://127.0.0.1:8780}
+      FLOW_WEB_DIRECT_MEDIA: ${FLOW_WEB_DIRECT_MEDIA:-1}
+      FLOW_WEB_SYNC_URL: ${FLOW_WEB_SYNC_URL:-}
     volumes:
       - flow-data:/data
     security_opt:

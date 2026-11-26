@@ -26,6 +26,9 @@ mod auth;
 mod artwork;
 mod foss;
 mod services;
+mod sync;
+mod sync2;
+mod linked_probe;
 
 use std::{net::SocketAddr, path::PathBuf, sync::Arc};
 use axum::{Router, extract::DefaultBodyLimit, middleware, routing::{get, post}};
