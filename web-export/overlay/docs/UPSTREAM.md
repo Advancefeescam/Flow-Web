@@ -49,7 +49,9 @@ python3 scripts/export-web.py "$(python3 -c 'import json; print(json.load(open("
 
 The exporter works directly with Git blobs and preserves executable modes, symbolic links, source history and license. It removes native distribution workflows, signing, packaging and selected packaging scripts. Files in `web-export/overlay/` replace the matching paths in the public tree; update these templates on the integration branch rather than editing generated files.
 
-The shared `src-tauri/` tree and changelog files intentionally remain in this first migration. The headless server imports Rust modules by relative path, migrations are linked, and the UI imports upstream changelogs. Moving or pruning the native tree requires a separate dependency audit and successful builds; it is not done blindly.
+Shared desktop source is exported byte-for-byte into `vendor/flow-desktop/`; the root `src-tauri` is a relative compatibility symlink, not another source directory. Android/iOS launcher icons and Linux native package metadata are excluded from the vendored tree. Existing Rust, SQLx and frontend references continue to resolve through the link. The container copies the vendor directory explicitly. The integration branch retains the original directory layout for upstream merges. Changelogs, native source and tests that may be needed by shared code remain available.
+
+Build from a Linux/WSL checkout with working symlinks. Further removal of native modules requires a separate dependency audit and green builds. Export format 2 records this layout change.
 
 ## Automated updates
 

@@ -2,6 +2,10 @@
 
 Flow Web reuses the original Flow frontend, extraction, streaming and SQLite code. The web runtime is under active development. Native desktop builds remain on the integration branch.
 
+## Source layout
+
+The web export retains shared Flow Desktop source in `vendor/flow-desktop/`. Its root `src-tauri` symlink and the migration symlink require a Linux/WSL checkout with symlinks enabled. The integration branch keeps the original upstream layout.
+
 ## Development
 
 - Install Node 24, the repository's pnpm version, stable Rust, and Linux build dependencies.

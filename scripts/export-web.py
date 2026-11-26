@@ -25,6 +25,9 @@ DROP_FILES = {
     "scripts/smoke-test-linux.sh",
 }
 OVERLAY = "web-export/overlay/"
+NATIVE_ROOT = "src-tauri/"
+VENDOR_ROOT = "vendor/flow-desktop/"
+NATIVE_DROP_DIRS = ("icons/android/", "icons/ios/", "linux/")
 
 def git(*args, data=None, env=None):
     return subprocess.check_output(["git", *args], input=data, env=env)
@@ -46,25 +49,40 @@ def project(commit):
     output = {
         name: value for name, value in source.items()
         if name not in DROP_FILES and not name.startswith(DROP_DIRS)
-        and name != "UPSTREAM.lock"
+        and not name.startswith(NATIVE_ROOT) and name != "UPSTREAM.lock"
     }
+    # Keep upstream files byte-identical and preserve their relative layout.
+    # A legacy symlink avoids rewriting every cross-runtime import and SQLx path.
+    if any(name.startswith(VENDOR_ROOT) or name == "src-tauri" for name in source):
+        raise ValueError("Integration source already contains the projected layout")
+    for name, value in source.items():
+        if name.startswith(NATIVE_ROOT):
+            relative = name[len(NATIVE_ROOT):]
+            if not relative.startswith(NATIVE_DROP_DIRS):
+                output[VENDOR_ROOT + relative] = value
+    alias_oid = git("hash-object", "-w", "--stdin", data=VENDOR_ROOT.rstrip("/").encode()).strip()
+    output["src-tauri"] = (b"120000", alias_oid)
     for name, value in source.items():
         if name.startswith(OVERLAY):
             target = name[len(OVERLAY):]
-            if not target or target == "UPSTREAM.lock" or target.startswith("web-export/"):
+            if (not target or target in ("UPSTREAM.lock", "src-tauri")
+                    or target.startswith(("web-export/", NATIVE_ROOT, VENDOR_ROOT))):
                 raise ValueError(f"Invalid overlay destination: {target}")
             output[target] = value
     required = ("LICENSE", "README.md", "package.json", "pnpm-lock.yaml",
                 "Containerfile", "compose.web.yml", "web-server/Cargo.toml",
-                "web-server/migrations", "src-tauri/src/api/mod.rs",
+                "web-server/migrations", "vendor/flow-desktop/src/api/mod.rs",
+                "src-tauri",
                 "scripts/export-web.py", ".github/workflows/web-check.yml")
     missing = [name for name in required if name not in output]
+    if not any(name.startswith(VENDOR_ROOT + "migrations/") for name in output):
+        missing.append(VENDOR_ROOT + "migrations/")
     if missing:
         raise ValueError(f"Missing required web paths: {', '.join(missing)}")
     if not any(name.startswith(OVERLAY) for name in source):
         raise ValueError("Source must be a full integration commit, not a web export")
     lock = {
-        "format": 1,
+        "format": 2,
         "upstream_repository": "https://github.com/Flow-Tube/Flow-Desktop",
         "integration_commit": commit,
     }
