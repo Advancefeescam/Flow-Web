@@ -1,39 +1,28 @@
 ## Summary
 
-<!-- Explain what changed and why. Keep this focused on observable behavior and important implementation decisions. -->
-
-## Related issue
-
-<!-- Use "Closes #123" when this PR should close an issue. -->
-
-## Change type
-
-- [ ] Bug fix
-- [ ] Feature
-- [ ] Refactor or maintenance
-- [ ] Documentation
-- [ ] Build, packaging, or CI
+<!-- What changed and why? Link relevant issues. -->
 
 ## Validation
 
-<!-- List the exact checks you ran and their results. Include the operating systems and architectures used for native behavior. -->
+<!-- Report actual results; leave untested items unchecked. -->
 
 - [ ] `pnpm test`
-- [ ] `pnpm build`
-- [ ] `cargo fmt --manifest-path src-tauri/Cargo.toml --all -- --check`
-- [ ] `cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features`
-- [ ] `cargo test --manifest-path src-tauri/Cargo.toml --all-targets --all-features`
-- [ ] I smoke-tested the affected desktop behavior.
+- [ ] `pnpm build --mode web`
+- [ ] `cargo check --manifest-path web-server/Cargo.toml --all-targets`
+- [ ] `cargo test --manifest-path web-server/Cargo.toml`
+- [ ] Browser/device smoke test where applicable
+- [ ] Native desktop smoke test where shared behavior changes
+
+Browser, OS and server architecture:
 
 ## Screenshots or recordings
 
-<!-- Required for visible UI changes. Remove this section when it does not apply. -->
+<!-- For visible changes; remove sensitive details. -->
 
-## Risk and compatibility
+## Compatibility and security
 
-<!-- Note migrations, database changes, permissions, network behavior, platform-specific code, package format changes, or known limitations. -->
+- [ ] Web-specific changes are isolated where practical.
+- [ ] No secrets, signed URLs, telemetry or broad permissions introduced.
+- [ ] Documentation, migration and compatibility notes updated where needed.
 
-- [ ] No new secrets, private data, telemetry, or broad Tauri permissions were introduced.
-- [ ] User-facing documentation was updated where needed.
-- [ ] Dependency and lockfile changes are intentional and limited to this PR.
-- [ ] Breaking changes and upgrade steps are clearly documented.
+<!-- List known limitations, skipped tests and follow-up work. -->

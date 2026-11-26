@@ -78,7 +78,7 @@ docker compose -f compose.web.yml up --build
 
 For Podman, replace the final command with `podman compose -f compose.web.yml up --build`.
 
-Open **http://127.0.0.1:8780** on the host. The server uses HTTP Basic authentication; enter your configured password when prompted. The Compose configuration binds to loopback and keeps instance data in a persistent volume.
+Open **http://127.0.0.1:8780** on the host. The server uses HTTP Basic authentication; sign in as `flow` with your configured password. The Compose configuration binds to loopback and keeps instance data in a persistent volume.
 
 > [!IMPORTANT]
 > For access from an iPad or another device, use a trusted HTTPS reverse proxy and set `FLOW_WEB_ORIGIN` to the exact external origin. Do not expose the experimental server directly to the internet. Use a separate data volume from Flow Desktop and Flow Sync.
