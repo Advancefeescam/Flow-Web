@@ -97,6 +97,7 @@ import {
 import { useSubtitleSettingsSync } from "../../lib/useSubtitleSettingsSync";
 import { openPopoutPlayer } from "../../lib/pipHandoff";
 import { isWebMode } from "../../lib/api/env";
+import { WEB_DIRECT_STARTUP_TIMEOUT_MS, WEB_DIRECT_STALL_TIMEOUT_MS } from "../../lib/webPlayback";
 import { sleepTimerTakesEnd } from "../../lib/useSleepTimerDriver";
 import { usePlaybackStartSpeed } from "../../lib/playbackStartSpeed";
 import { VIDEO_FIT_CLASS, VIDEO_FITS } from "../../lib/videoFit";
@@ -173,6 +174,7 @@ type PlayerProps = {
   badge?: React.ReactNode;
   onRetrySource?: (reason: string) => void;
   sourceMode?: string;
+  webDirectTransport?: boolean;
   className?: string;
   chapters?: VideoChapter[];
   heatmap?: HeatmapMarker[];
@@ -362,6 +364,7 @@ export const Player: React.FC<PlayerProps> = ({
   badge,
   onRetrySource,
   sourceMode,
+  webDirectTransport = false,
   className,
   chapters = NO_CHAPTERS,
   heatmap,
@@ -1173,10 +1176,31 @@ export const Player: React.FC<PlayerProps> = ({
     playbackStartAtRef.current = null;
     logPlayerEventRef.current("source-mode-selected", {
       sourceMode,
+      transport: webDirectTransport ? "cdn-direct" : isWebMode() ? "server-relay" : "native",
       hasDash: isDashPlayback,
       hasHls: isHlsPlayback,
     });
-  }, [src, dashManifestUrl, hlsManifestUrl, isDashPlayback, isHlsPlayback, sourceMode]);
+  }, [src, dashManifestUrl, hlsManifestUrl, isDashPlayback, isHlsPlayback, sourceMode, webDirectTransport]);
+
+  // CDN URLs can be IP-bound or rejected by browser CORS. Do not spend the
+  // normal proxy startup budget waiting for an experimental transport.
+  useEffect(() => {
+    if (!webDirectTransport || !mediaIdentity || !isPlaying || error) return;
+    const video = videoRef.current;
+    if (!video) return;
+    let timer: number | undefined;
+    const ready = () => { if (timer !== undefined) window.clearTimeout(timer); };
+    if (video.readyState < 3) {
+      timer = window.setTimeout(() => {
+        if (videoRef.current !== video || video.readyState >= 3 || !desiredPlayingRef.current) return;
+        logPlayerEventRef.current("web-direct-startup-timeout", { waitedMs: WEB_DIRECT_STARTUP_TIMEOUT_MS });
+        fireRetrySourceRef.current("web-direct-startup-timeout");
+      }, WEB_DIRECT_STARTUP_TIMEOUT_MS);
+    }
+    video.addEventListener("playing", ready);
+    video.addEventListener("canplay", ready);
+    return () => { ready(); video.removeEventListener("playing", ready); video.removeEventListener("canplay", ready); };
+  }, [webDirectTransport, mediaIdentity, isPlaying, error]);
 
   // Detect the WebKitGTK "audio plays, video frozen" state (missing system video codecs)
   // so the user gets an actionable hint instead of an endless spinner. Non-destructive:
@@ -1234,7 +1258,7 @@ export const Player: React.FC<PlayerProps> = ({
       if (!video || isScrubbing) return;
 
       const sinceSeek = lastSeekAtRef.current ? Date.now() - lastSeekAtRef.current : Infinity;
-      if (sinceSeek < 12000) return;
+      if (sinceSeek < (webDirectTransport ? WEB_DIRECT_STALL_TIMEOUT_MS : 12000)) return;
 
       let bufferedAhead = 0;
       const t = video.currentTime;
@@ -1251,7 +1275,7 @@ export const Player: React.FC<PlayerProps> = ({
       // (one TCP connection per request) and can take well over 12s before
       // the first frame without anything being wrong.
       const started = playbackStartAtRef.current !== null;
-      const stallThresholdMs = started ? 12000 : 45000;
+      const stallThresholdMs = webDirectTransport ? (started ? WEB_DIRECT_STALL_TIMEOUT_MS : WEB_DIRECT_STARTUP_TIMEOUT_MS) : started ? 12000 : 45000;
       const stalledLongEnough = waitingSince !== null && Date.now() - waitingSince > stallThresholdMs;
 
       if (stalledLongEnough && bufferedAhead < 0.5 && video.readyState < 3) {
@@ -1266,7 +1290,7 @@ export const Player: React.FC<PlayerProps> = ({
       }
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [isPlaying, error, isScrubbing]);
+  }, [isPlaying, error, isScrubbing, webDirectTransport]);
 
   const canAutoHideChrome = canAutoHidePlayerChrome({
     isPlaying,

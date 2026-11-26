@@ -29,7 +29,7 @@ import type {
   VideoSummary,
 } from "../types/video";
 import { profileStorage } from "./storage/profileStorage";
-import { chooseWebDashManifest, fallbackWebDashManifest, chooseWebDirectFile, fallbackWebDirectFile } from "./webPlayback";
+import { chooseWebDashManifest, fallbackWebDashManifest, chooseWebDirectFile, fallbackWebDirectFile, isWebDirectSource } from "./webPlayback";
 
 export type SourceMode = "hls" | "dash-native" | "sabr-dash" | "direct" | "unavailable";
 
@@ -197,6 +197,7 @@ export interface VideoStream {
   hlsManifestUrl: string | null;
   isLive: boolean;
   sourceMode: SourceMode;
+  webDirectTransport?: boolean;
   selectedQualityId: string;
   resumeTime: number;
   loadingStream: boolean;
@@ -754,6 +755,7 @@ export function useVideoStream(videoId: string | undefined): VideoStream {
     hlsManifestUrl,
     isLive,
     sourceMode,
+    webDirectTransport: isWebDirectSource(streamInfoRef.current, dashManifestUrl || streamUrl),
     selectedQualityId,
     resumeTime,
     loadingStream,

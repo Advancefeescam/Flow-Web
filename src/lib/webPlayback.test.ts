@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { StreamInfo } from "../types/video";
-import { createWebDashPolicy, webScrubTime } from "./webPlayback";
+import { createWebDashPolicy, webScrubTime, isWebDirectSource, WEB_DIRECT_STARTUP_TIMEOUT_MS } from "./webPlayback";
 
 const info = {streamId: "id", localUrl: "/media/stream/video", expiresAt: "", variants: [], captions: [], audioTracks: [],
   dashManifestUrl: "/media/stream/proxy", webDirectDashManifestUrl: "/media/stream/direct"} satisfies StreamInfo & {webDirectDashManifestUrl: string};
@@ -43,5 +43,19 @@ describe("web direct muxed files", () => {
     expect(policy.fallbackFile(source, directUrl, 1)).toBe(proxyUrl);
     expect(policy.chooseFile(source, proxyUrl, 2)).toBe(proxyUrl);
     expect(policy.chooseFile(source, proxyUrl, 300002)).toBe(directUrl);
+  });
+});
+
+
+describe("direct transport detection", () => {
+  it("only identifies the current direct manifest or direct muxed file", () => {
+    const source = {...info, webDirectMuxed: [{proxyUrl: "/media/stream/a", directUrl: "https://rr1.googlevideo.com/videoplayback"}]};
+    expect(isWebDirectSource(source, source.webDirectDashManifestUrl)).toBe(true);
+    expect(isWebDirectSource(source, source.webDirectMuxed[0].directUrl)).toBe(true);
+    expect(isWebDirectSource(source, source.dashManifestUrl)).toBe(false);
+    expect(isWebDirectSource(source, source.webDirectMuxed[0].proxyUrl)).toBe(false);
+    expect(isWebDirectSource(null, "anything")).toBe(false);
+    expect(isWebDirectSource({...source, isLive: true}, source.webDirectDashManifestUrl)).toBe(false);
+    expect(WEB_DIRECT_STARTUP_TIMEOUT_MS).toBeLessThan(10000);
   });
 });

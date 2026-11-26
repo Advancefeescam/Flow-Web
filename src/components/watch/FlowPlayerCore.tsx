@@ -365,6 +365,7 @@ export function FlowPlayerCore({ videoId, videoDetails, onEnded }: FlowPlayerCor
       selectedQualityId={stream.selectedQualityId}
       resumeTime={stream.resumeTime}
       sourceMode={stream.sourceMode}
+      webDirectTransport={stream.webDirectTransport}
       chapters={videoDetails?.chapters}
       heatmap={videoDetails?.heatmap}
       storyboard={stream.storyboard}
