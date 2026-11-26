@@ -131,6 +131,7 @@ import {
   watchNativeFullscreen,
   type WindowFullscreenController,
 } from "../../lib/windowFullscreen";
+import { createWebFullscreenController } from "../../lib/webFullscreen";
 import {
   SOURCE_SWITCH_TIMEOUT_MS,
   hasMediaPlaybackProgressed,
@@ -1509,11 +1510,21 @@ export const Player: React.FC<PlayerProps> = ({
     windowFullscreenControllerRef.current = createWindowFullscreenController();
   }
 
+  const webFullscreenControllerRef = useRef<ReturnType<typeof createWebFullscreenController> | null>(null);
+  if (isWebMode() && !webFullscreenControllerRef.current) {
+    webFullscreenControllerRef.current = createWebFullscreenController(document);
+  }
+
   const syncNativeFullscreen = useCallback((active: boolean) => {
+    if (webFullscreenControllerRef.current) return webFullscreenControllerRef.current.sync(active);
     return windowFullscreenControllerRef.current?.sync(active) ?? Promise.resolve(false);
   }, []);
 
   useEffect(() => {
+    const web = webFullscreenControllerRef.current;
+    if (web) {
+      return web.watch(() => usePlayerStore.getState().setIsVideoFullscreen(false));
+    }
     const controller = windowFullscreenControllerRef.current;
     if (!controller) return;
 
@@ -1541,6 +1552,13 @@ export const Player: React.FC<PlayerProps> = ({
 
   const toggleFullscreen = useCallback(() => {
     const active = !isFullscreen;
+    if (isWebMode()) {
+      // Invoke the browser API directly in the gesture, not a queued native
+      // transition. The existing fullscreen frame is also the CSS fallback.
+      void syncNativeFullscreen(active);
+      setIsFullscreen(active);
+      return;
+    }
     // The layout follows the native window rather than leading it: flipping the
     // CSS first showed the video stretched across the pre-transition viewport,
     // and on Windows the unmaximize step of the transition flashed a restored
