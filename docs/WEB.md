@@ -33,4 +33,11 @@ The Containerfile builds the web UI and headless Rust server without desktop GUI
 | PWA install and static asset cache | Manifest and service worker added; iPad install testing pending |
 
 The full frontend suite (504 files, 2,998 tests) and
-`pnpm build --mode web` pass locally and in the latest web runtime workflow. Rust formatting and compilation are being checked in GitHub Actions; desktop CI has exposed a missing `StreamVariant` import that is being corrected. No complete browser playback or ARM64 deployment has been verified yet. Do not merge until the server compiles, media behavior has been reviewed, and playback has been tested on the intended devices.
+`pnpm build --mode web` pass locally. On 2026-11-26, GitHub Actions passed
+workflow checks, the complete headless web runtime checks (including
+`cargo check --all-targets` and `cargo test`), and the desktop quality workflow.
+The desktop platform matrix is skipped for this web-runtime branch. The shared
+migration directory is linked into the web crate so upstream SQLx test macros
+resolve the same schema. No complete browser playback, Miatoll container startup,
+or ARM64 deployment has been verified. Do not merge until media behavior and
+playback have been checked on the intended devices.
