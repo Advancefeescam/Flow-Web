@@ -51,4 +51,14 @@ The exporter works directly with Git blobs and preserves executable modes, symbo
 
 The shared `src-tauri/` tree and changelog files intentionally remain in this first migration. The headless server imports Rust modules by relative path, migrations are linked, and the UI imports upstream changelogs. Moving or pruning the native tree requires a separate dependency audit and successful builds; it is not done blindly.
 
-Automated upstream release detection, container publication and further pruning are follow-up steps. A successful export proves tree reproducibility, not browser compatibility or release readiness.
+## Automated updates
+
+The **Prepare Flow Desktop update** workflow checks the latest stable upstream release daily and accepts an optional exact release tag. It creates a draft PR to `integration/desktop`, never merges automatically, and stops on merge conflicts, diverged history or downgrade. If the revision is already recorded, it does nothing.
+
+After the initial migration, **Prepare web export** runs after integration branch updates or manual dispatch. It generates an immutable candidate branch and opens a draft PR to `main`. Its source and target commits are pinned. It skips work while the initial migration is unmerged. It explicitly dispatches web checks, since pushes made by the default Actions token may not trigger CI.
+
+Repository owners must enable scheduled workflows if disabled on this fork and allow GitHub Actions to create pull requests (Settings → Actions → General). The workflows use the repository token, not a personal token. If creating a PR or dispatching CI is denied, use the manual commands above and manually run the web checks. Integration update PRs created by the Actions token may also need manually dispatched checks.
+
+Web CI verifies the pinned integration ancestry and generated tree on pull requests. A separate container check builds the image and verifies authenticated local startup, manifest and origin rejection. These tests are not a substitute for real media or device testing.
+
+Container publication and further pruning remain follow-up steps.
