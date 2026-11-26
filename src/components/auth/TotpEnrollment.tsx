@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, ChevronDown, ExternalLink } from "lucide-react";
-import { Button } from "../ui/Button";
 import { copyText } from "../../lib/clipboard";
 import type { Enrollment } from "../../lib/api/webAuth";
 
@@ -39,7 +38,7 @@ export function TotpEnrollment({ enrollment }: { enrollment: Enrollment }) {
         </div>
         {copied && <p role="status" className="text-xs text-chrome-neutral-400">Setup key copied.</p>}
         {copyFailed && <p role="alert" className="text-xs text-error">Copy the key manually, without spaces.</p>}
-        <Button type="button" size="sm" variant="tonal" onClick={() => { window.location.href = enrollment.uri; }}><ExternalLink size={14}/> Open authenticator</Button>
+        <a href={enrollment.uri} className="inline-flex items-center justify-center gap-2 rounded-full bg-surface-container px-3 py-2 text-xs font-medium text-chrome-neutral-200 hover:bg-surface-container-highest focus-visible:ring-2 focus-visible:ring-primary"><ExternalLink size={14}/> Open authenticator</a>
       </div>}
     </div>
     <p className="text-xs text-center leading-relaxed text-chrome-neutral-400">Setup expires in five minutes. Keep this key private.</p>
