@@ -10,6 +10,7 @@ import { SubscribeButton } from "../ui/SubscribeButton";
 import type { ShortItem } from "../../types/shorts";
 import type { VideoDetails } from "../../types/video";
 import { useOriginalTitle } from "../../lib/useOriginalTitle";
+import { isWebMode } from "../../lib/api/env";
 
 interface ShortMetadataProps {
   short: ShortItem;
@@ -70,7 +71,7 @@ export function ShortMetadata({
             channelName={channelName}
             avatarUrl={avatar || undefined}
             size="sm"
-            className="!bg-chrome-white !px-4 !py-1.5 !text-sm !font-bold !text-chrome-black hover:!bg-chrome-neutral-200"
+            className={isWebMode() ? "flow-short-subscribe !px-4 !py-1.5 !text-sm !font-bold" : "!bg-chrome-white !px-4 !py-1.5 !text-sm !font-bold !text-chrome-black hover:!bg-chrome-neutral-200"}
           />
         )}
       </div>

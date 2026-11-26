@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from "react";
-import { Copy } from "lucide-react";
+import { ChevronUp, Copy } from "lucide-react";
+import { isWebMode } from "../../lib/api/env";
 import { formatCount } from "../../lib/utils";
 import { getString } from "../../lib/i18n/index";
 import { hasTextSelection } from "../../lib/textSelection";
@@ -75,6 +76,12 @@ export function DescriptionCard({ currentVideo, videoData }: DescriptionCardProp
   const published = videoData?.publishedText || currentVideo.publishedText || "";
   const factoids = videoData?.descriptionExtras?.factoids ?? [];
   const showFactoids = expanded && factoids.length > 0;
+  const collapseAtTop = expanded && isWebMode() ? (
+    <IconButton size="sm" aria-label={getString("watch_show_less")} title={getString("watch_show_less")} aria-expanded={true}
+      onClick={(event) => { event.stopPropagation(); setExpanded(false); }}>
+      <ChevronUp className="h-4 w-4" />
+    </IconButton>
+  ) : null;
 
   return (
     <div
@@ -95,6 +102,7 @@ export function DescriptionCard({ currentVideo, videoData }: DescriptionCardProp
             ))}
           </div>
           {description && <CopyButton description={description} />}
+          {collapseAtTop}
         </div>
       ) : (
         <div className="flex items-start gap-2">
@@ -108,6 +116,7 @@ export function DescriptionCard({ currentVideo, videoData }: DescriptionCardProp
             {!expanded && description && <span className="font-bold text-chrome-neutral-100"> {getString("description_more")}</span>}
           </p>
           {expanded && description && <CopyButton description={description} />}
+          {collapseAtTop}
         </div>
       )}
 

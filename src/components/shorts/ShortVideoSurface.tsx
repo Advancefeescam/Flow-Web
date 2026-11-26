@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as dashjs from "dashjs";
 import { createProxiedDashPlayer } from "../../lib/dashSetup";
+import { isWebMode } from "../../lib/api/env";
 import {
   AudioLines,
   Bug,
@@ -689,6 +690,9 @@ export function ShortVideoSurface({
       <video
         ref={videoRef}
         crossOrigin="anonymous"
+        // Firefox adds its own PiP badge over the action rail. On browsers
+        // with no standard PiP API, ask it not to overlay the Shorts surface.
+        disablePictureInPicture={isWebMode() && !document.pictureInPictureEnabled}
         poster={poster}
         className={`h-full w-full bg-chrome-black ${fit === "cover" ? "object-cover" : "object-contain"}`}
         playsInline

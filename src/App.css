@@ -1217,6 +1217,10 @@
     text-shadow: 0 1px 3px #000;
   }
   .flow-web-shell .flow-short-meta button, .flow-web-shell .flow-short-meta span { color: #fff; }
+  /* The caption needs white text over video, but the subscription control owns its own palette. */
+  .flow-web-shell .flow-short-meta .flow-short-subscribe { color: var(--color-on-primary); text-shadow: none; }
+  .flow-web-shell .flow-short-meta .flow-short-subscribe[aria-haspopup="menu"] { color: var(--color-on-surface); background: var(--color-surface-container-high); }
+  .flow-web-shell .flow-short-meta .flow-short-subscribe span, .flow-web-shell .flow-short-meta .flow-short-subscribe svg { color: inherit; }
   .flow-web-shell .flow-short-caption { -webkit-line-clamp: 2; text-align: start; font-size: .875rem; }
   .flow-web-shell .flow-short-actions {
     position: absolute;
@@ -1292,7 +1296,7 @@
 }
 @media (max-width: 1023px) {
   .flow-web-shell .flow-adaptive-page { padding-inline: 1rem; }
-  .flow-web-shell .flow-short-arrows { top: 4.25rem; }
+  .flow-web-shell .flow-short-arrows { top: .75rem; inset-inline-start: 50%; inset-inline-end: auto; transform: translateX(-50%); }
 }
 @media (max-width: 639px) {
   .flow-web-shell {
@@ -1308,8 +1312,8 @@
   .flow-web-shell .flow-search-suggestions { max-height: min(60dvh, 30rem); }
   .flow-web-shell .flow-library-page { gap: 1.5rem; padding-top: 1rem; }
   .flow-web-shell .flow-library-header { flex-wrap: wrap; gap: .75rem; }
-  .flow-web-shell .flow-short-arrows { top: .5rem; inset-inline-end: auto; inset-inline-start: .5rem; flex-direction: column; }
-  .flow-web-shell .flow-short-arrows button { width: 2rem; height: 2rem; }
+  /* Phones navigate Shorts by swiping, scrolling or keyboard, not overlay arrows. */
+  .flow-web-shell .flow-short-arrows { display: none; }
 }
 
 
