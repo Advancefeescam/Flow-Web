@@ -72,7 +72,7 @@ export function ShortPlayer({
     if (!mobilePanelOpen) { setSheetShare(SHORT_SHEET_DEFAULT); setSheetDragging(false); }
   }, [mobilePanelOpen]);
   const { details } = useShortDetails(short.id, active);
-  const { countText: fetchedCommentCountText } = useVideoComments(active ? short.id : undefined);
+  const { countText: fetchedCommentCountText } = useVideoComments(active ? short.id : undefined, { short: true });
   const rytdEnabled = useSettingsStore((s) => s.rytdEnabled);
   const ambient = useAmbientSettings();
   const [rydData, setRydData] = useState<RydData | null>(null);
@@ -258,6 +258,7 @@ export function ShortPlayer({
         </motion.div>
 
         {mobilePanelOpen && <ShortMobileSheet
+          label={getString(panelState === "comments" ? "shorts_comments_title" : "shorts_description_title")}
           share={sheetShare} onShare={setSheetShare} onDragging={setSheetDragging}
           onClose={() => onRequestPanel("none")}>
           <ShortSidePanel short={short} details={details} rydData={rydData}

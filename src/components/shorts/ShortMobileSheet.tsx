@@ -1,8 +1,8 @@
 import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
-import { getString } from "../../lib/i18n/index";
 import { SHORT_SHEET_DEFAULT, SHORT_SHEET_STOPS, shortSheetShare, shortSheetTarget } from "../../lib/shortSheet";
 
 interface Props {
+  label: string;
   share: number;
   onShare: (share: number) => void;
   onDragging: (dragging: boolean) => void;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 /** A grip-only drag keeps vertical comment scrolling independent from the reel. */
-export function ShortMobileSheet({ share, onShare, onDragging, onClose, children }: Props) {
+export function ShortMobileSheet({ label, share, onShare, onDragging, onClose, children }: Props) {
   const grip = useRef<HTMLButtonElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -71,7 +71,7 @@ export function ShortMobileSheet({ share, onShare, onDragging, onClose, children
     onDragging(false);
     onShare(shortSheetTarget(start) ?? SHORT_SHEET_DEFAULT);
   };
-  return <section role="dialog" aria-label={getString("shorts_comments_title")}
+  return <section role="dialog" aria-label={label}
     className="flow-short-mobile-sheet flex flex-col rounded-t-[24px] border-t border-outline-soft bg-background text-on-surface">
     <button ref={grip} type="button" aria-label={share >= SHORT_SHEET_DEFAULT ? "Resize or collapse panel" : "Expand panel"}
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={finish} onPointerCancel={cancel} onLostPointerCapture={cancel}
