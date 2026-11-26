@@ -1311,3 +1311,93 @@
   .flow-web-shell .flow-short-arrows { top: .5rem; inset-inline-end: auto; inset-inline-start: .5rem; flex-direction: column; }
   .flow-web-shell .flow-short-arrows button { width: 2rem; height: 2rem; }
 }
+
+
+/* Second adaptive pass: preserve the same component tree, make real room for
+   the iPad's portrait layout, phone queues and short landscape viewports. */
+@media (min-width: 640px) and (max-width: 1199px) {
+  .flow-web-shell .flow-topbar-logo span { display: none; }
+  .flow-web-shell .flow-topbar-search { padding-inline: .5rem; }
+  .flow-web-shell .flow-topbar-leading, .flow-web-shell .flow-topbar-actions { gap: .25rem; }
+}
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .flow-web-shell .flow-watch-grid[data-theater="false"] { grid-template-columns: minmax(0, 1fr) minmax(270px, 32%); gap: 1rem; }
+  .flow-web-shell .flow-watch-grid[data-theater="true"] { grid-template-columns: minmax(0, 1fr) minmax(270px, 32%); }
+  .flow-web-shell .flow-watch-grid[data-theater="true"] .flow-watch-details { grid-column: 1; padding-inline: 1rem 0; }
+  .flow-web-shell .flow-watch-grid[data-theater="true"] .flow-watch-related { grid-column: 2; }
+}
+@media (min-width: 640px) and (max-width: 1199px) and (orientation: portrait) {
+  .flow-web-shell .flow-watch-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; gap: 1rem; }
+  .flow-web-shell .flow-watch-grid > .flow-watch-player,
+  .flow-web-shell .flow-watch-grid > .flow-watch-details,
+  .flow-web-shell .flow-watch-grid > .flow-watch-related { grid-column: 1; grid-row: auto; }
+  .flow-web-shell .flow-watch-grid > .flow-watch-related { position: relative; top: auto; max-height: none; overflow: visible; }
+  .flow-web-shell .flow-theater-slot { min-height: 0; }
+}
+.flow-web-shell .flow-music-full {
+  height: calc(100dvh - var(--app-titlebar-height));
+}
+.flow-web-shell .flow-music-topbar {
+  padding-top: max(1.5rem, env(safe-area-inset-top, 0px));
+}
+.flow-web-shell .flow-music-content {
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 639px) {
+  .flow-web-shell .flow-topbar-history { display: flex; margin-inline-start: 0; }
+  .flow-web-shell .flow-topbar-history .flow-history-forward { display: none; }
+  .flow-web-shell .flow-topbar-history .flow-history-back:disabled { display: none; }
+  .flow-web-shell .flow-topbar-logo { min-width: 0; }
+  .flow-web-shell .flow-topbar-leading > * { flex-shrink: 0; }
+  .flow-web-shell .flow-topbar-leading { overflow: hidden; }
+  .flow-web-shell .flow-topbar-actions > button { flex-shrink: 0; }
+  .flow-web-shell .flow-web-bottom-nav a { min-height: 56px; }
+  .flow-web-shell .flow-web-bottom-nav a[aria-current="page"] > span:first-child { background: var(--color-surface-container-highest); }
+  .flow-web-shell .flow-web-toast { inset-inline-end: .5rem; max-width: calc(100vw - 1rem); }
+  .flow-web-shell .flow-music-topbar {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .25rem;
+    padding: calc(.5rem + env(safe-area-inset-top, 0px)) .5rem .25rem;
+  }
+  .flow-web-shell .flow-music-topbar > :first-child { grid-column: 1; grid-row: 1; }
+  .flow-web-shell .flow-music-actions { grid-column: 2; grid-row: 1; gap: .125rem; }
+  .flow-web-shell .flow-music-actions > [data-pressed],
+  .flow-web-shell .flow-music-actions > .relative.h-11 { width: 40px !important; }
+  .flow-web-shell .flow-music-source { grid-column: 1 / -1; grid-row: 2; justify-self: center; max-width: 100%; padding: .25rem .75rem; font-size: .75rem; }
+  .flow-web-shell .flow-music-content {
+    padding: calc(5.5rem + env(safe-area-inset-top, 0px)) .75rem calc(1rem + env(safe-area-inset-bottom, 0px));
+    gap: .75rem;
+  }
+  .flow-web-shell .flow-now-details { margin-top: 1rem; gap: .75rem; }
+  .flow-web-shell .flow-now-meta { gap: .25rem; }
+  .flow-web-shell .flow-now-meta h1 { font-size: 1.375rem; }
+  .flow-web-shell .flow-now-meta > div:last-of-type { gap: 0; }
+  .flow-web-shell .flow-music-transport { gap: .25rem; }
+  .flow-web-shell .flow-music-transport > button { flex-shrink: 0; width: 40px; }
+  .flow-web-shell .flow-music-transport > div { min-width: 0; flex-shrink: 1; }
+  .flow-web-shell .flow-music-transport-core { gap: .5rem; }
+  .flow-web-shell .flow-music-phone-queue { flex-direction: column; }
+  .flow-web-shell .flow-music-phone-queue .flow-music-track-column { flex: 0 0 auto; width: 100%; }
+  .flow-web-shell .flow-music-phone-queue .flow-now-art { display: none; }
+  .flow-web-shell .flow-music-phone-queue .flow-now-details { margin: 0; }
+  .flow-web-shell .flow-music-phone-queue .flow-music-queue-pane { width: 100%; flex: 1 1 0; padding: .75rem; }
+  .flow-web-shell .flow-music-lyrics-controls { padding-inline: .75rem; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 380px) {
+  .flow-web-shell .flow-topbar-logo { display: none; }
+  .flow-web-shell .flow-music-actions > .relative.h-11 { width: 36px !important; }
+  .flow-web-shell .flow-music-actions button svg { width: 18px; height: 18px; }
+  .flow-web-shell .flow-now-meta button { width: 36px; }
+}
+@media (max-height: 480px) and (min-width: 500px) and (max-width: 1023px) {
+  .flow-web-shell { --flow-web-topbar-height: calc(3.5rem + env(safe-area-inset-top, 0px)); }
+  .flow-web-shell .flow-adaptive-topbar { display: flex; padding-block-end: 0; }
+  .flow-web-shell .flow-topbar-logo span { display: none; }
+  .flow-web-shell .flow-topbar-search { flex: 1 1 0; padding-inline: .25rem; }
+  .flow-web-shell .flow-topbar-history { display: none; }
+  .flow-web-shell .flow-music-content { padding-top: 4.5rem; padding-bottom: .5rem; }
+  .flow-web-shell .flow-now-playing { flex-direction: row; gap: 1rem; }
+  .flow-web-shell .flow-now-art { max-width: 25vw; }
+  .flow-web-shell .flow-now-details { margin: 0; gap: .5rem; }
+  .flow-web-shell .flow-auth-center { justify-content: flex-start; }
+}

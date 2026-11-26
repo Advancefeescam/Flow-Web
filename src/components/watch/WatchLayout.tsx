@@ -32,6 +32,7 @@ export function WatchLayout({ player, metadata, description, comments, sidebar }
   return (
     <div className="flow-watch-page min-h-screen bg-background pb-32 text-chrome-neutral-100">
       <div
+        data-theater={isTheaterMode}
         className={cx(
           "flow-watch-grid mx-auto grid w-full grid-cols-1 items-start gap-x-6 gap-y-5 lg:grid-rows-[auto_1fr]",
           isTheaterMode

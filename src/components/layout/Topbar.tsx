@@ -71,13 +71,13 @@ export function Topbar() {
             <Logo size={36} showText={true} />
           </div>
         )}
-        <div className="hidden ms-1 items-center sm:flex">
+        <div className="flow-topbar-history hidden ms-1 items-center sm:flex">
           <IconButton
             title={getString('topbar_back')}
             aria-label={getString('topbar_back')}
             onClick={() => navigate(-1)}
             disabled={!canGoBack}
-            className="text-chrome-neutral-300 hover:text-chrome-neutral-100"
+            className="flow-history-back text-chrome-neutral-300 hover:text-chrome-neutral-100"
           >
             <ArrowLeft className="rtl:-scale-x-100" />
           </IconButton>
