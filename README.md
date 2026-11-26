@@ -71,7 +71,7 @@ docker compose -f compose.web.yml up --build
 
 For Podman, use `podman compose -f compose.web.yml up --build` instead.
 
-Open **http://127.0.0.1:8780** and sign in with the username `flow` and your chosen password. The Compose file uses a persistent data volume and binds to localhost by default.
+Open **http://127.0.0.1:8780** and sign in with the username `flow` and your chosen password. The Compose file uses a persistent data volume and binds to localhost by default. Optional authenticator-app two-step verification and session management are available in **Settings → Account & security**. See [the security and sign-in guide](docs/WEB.md#sign-in-and-security).
 
 For access from other devices, put the instance behind a trusted HTTPS reverse proxy and set `FLOW_WEB_ORIGIN` to the address you use in your browser. Do not expose the development server directly to the internet or share its data volume with Flow Desktop or Flow Sync.
 

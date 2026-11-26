@@ -53,13 +53,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into())
     ).init();
     let bind: SocketAddr = std::env::var("FLOW_WEB_BIND").unwrap_or_else(|_| "127.0.0.1:8780".into()).parse()?;
-    let auth = auth::Config::from_env()?;
     let dist = PathBuf::from(std::env::var("FLOW_WEB_DIST").unwrap_or_else(|_| "../dist".into()));
     if !dist.join("index.html").is_file() {
         return Err("Frontend dist/index.html missing; build with pnpm build --mode web".into());
     }
     let data = PathBuf::from(std::env::var("FLOW_WEB_DATA").unwrap_or_else(|_| "./data".into()));
     std::fs::create_dir_all(&data)?;
+    let auth = auth::Config::from_env(&data)?;
     let extractor = Arc::new(InnertubeClient::new());
     extractor.keep_identity_in(data.join("visitor.json"));
     let pool = db::open(&data).await?;

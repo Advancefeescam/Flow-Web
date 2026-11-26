@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import App from "./App";
+import { WebAuthGate } from "./components/auth/WebAuthGate";
+import { isWebMode } from "./lib/api/env";
 import { TabRouter } from "./components/layout/TabRouter";
 import { PipWindowApp } from "./components/pip/PipWindowApp";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -26,7 +28,9 @@ const isPopoutPlayerWindow = (() => {
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ErrorBoundary>
-      {isPopoutPlayerWindow ? (
+      {isWebMode() ? (
+        <WebAuthGate><TabRouter><App /></TabRouter></WebAuthGate>
+      ) : isPopoutPlayerWindow ? (
         <PipWindowApp />
       ) : (
         <TabRouter>

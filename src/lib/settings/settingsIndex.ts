@@ -4,6 +4,7 @@ import { MUSIC_HOME_SHELVES } from "../musicHomeShelves";
 export type SettingsCategory =
   | "appearance"
   | "profiles"
+  | "webAccount"
   | "player"
   | "keyboard"
   | "music"
@@ -23,6 +24,7 @@ export type SettingsCategory =
 export const SETTINGS_CATEGORY_LABELS: Record<SettingsCategory, StringKey> = {
   appearance: "settings_appearance",
   profiles: "settings_profiles",
+  webAccount: "settings_web_account",
   player: "settings_player",
   keyboard: "settings_keyboard_shortcuts",
   music: "settings_music",
@@ -74,6 +76,11 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   ]),
   ...rows("profiles", [
     { title: "profiles_ask_whos_watching", summary: "profiles_ask_whos_watching_summary", keywords: ["launch", "startup", "picker"] },
+  ]),
+  ...rows("webAccount", [
+    { title: "settings_web_two_factor", keywords: ["2fa", "totp", "mfa", "authenticator", "security"] },
+    { title: "settings_web_sessions", keywords: ["devices", "sessions", "logout"] },
+    { title: "settings_web_sign_out", keywords: ["logout", "sign out"] },
   ]),
   ...rows("player", [
     { title: "settings_autoplay", summary: "settings_autoplay_desc" },
