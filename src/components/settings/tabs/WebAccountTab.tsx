@@ -1,9 +1,11 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { ShieldCheck, KeyRound, LogOut, Monitor, Copy, UserRound } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { ShieldCheck, LockKeyhole, LogOut, Monitor, LoaderCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "../../ui/Button";
 import { SettingsGroup } from "../SettingsGroup";
 import { SettingItem } from "../SettingItem";
-import { authInputClass } from "../../auth/WebAuthGate";
+import { AuthPasswordField, AuthCodeField, AuthError } from "../../auth/AuthFields";
+import { TotpEnrollment } from "../../auth/TotpEnrollment";
+import { ProfileAvatar } from "../../ui/ProfileAvatar";
 import { getWebSession, signOut, beginTotp, confirmTotp, disableTotp, cancelTotp, revokeOtherSessions, type WebSession, type Enrollment } from "../../../lib/api/webAuth";
 import { getString } from "../../../lib/i18n/index";
 
@@ -17,6 +19,13 @@ export function WebAccountTab() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!action) return;
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) dialog.showModal();
+    return () => { if (dialog?.open) dialog.close(); };
+  }, [action]);
   useEffect(() => {
     let alive = true;
     getWebSession().then(s => { if (alive) setSession(s); }).catch(e => { if (alive) setError(e.message); });
@@ -41,7 +50,7 @@ export function WebAccountTab() {
       setNotice(action === "setup" ? "Two-step verification is enabled. Other sessions were signed out."
         : action === "disable" ? "Two-step verification is disabled." : "All other sessions were signed out.");
       clear();
-    } catch (e) { setError(e instanceof Error ? e.message : "Security settings could not be updated."); }
+    } catch (e) { setCode(""); setError(e instanceof Error ? e.message : "Security settings could not be updated."); }
     finally { setBusy(false); }
   }
   async function cancel() {
@@ -58,45 +67,61 @@ export function WebAccountTab() {
     catch (e) { setError(e instanceof Error ? e.message : "Could not sign out."); setBusy(false); }
   }
   const needsCode = Boolean(enrollment || (session?.totpEnabled && action !== "setup"));
-  return <div className="space-y-6 pb-8 max-w-3xl">
+  const heading = action === "setup" ? "Set up two-step verification" : action === "disable" ? "Disable two-step verification?" : "Sign out other sessions?";
+  return <div className="space-y-6 pb-8 max-w-3xl min-w-0">
     <div className="space-y-1">
       <h2 className="text-2xl font-bold text-on-surface">{getString("settings_web_account")}</h2>
       <p className="text-sm text-on-surface-variant">Manage access to this Flow Web instance.</p>
     </div>
+    <section className="rounded-2xl bg-surface-row p-5 flex flex-wrap items-center gap-4">
+      <ProfileAvatar name={session?.username ?? "flow"} colorKey="" kind="initial" size="xl"/>
+      <div className="flex-1 min-w-[100px]">
+        <h3 className="font-semibold text-lg text-chrome-neutral-100 truncate">{session?.username ?? "flow"}</h3>
+        <p className="text-sm text-chrome-neutral-400">Administrator</p>
+      </div>
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-high px-3 py-1.5 text-xs font-medium text-chrome-neutral-200">
+        {session?.totpEnabled ? <ShieldCheck size={16}/> : <LockKeyhole size={16}/>}
+        {session ? session.totpEnabled ? "2FA enabled" : "Password protected" : "Loading…"}
+      </span>
+    </section>
+    <SettingsGroup title="Security">
+      <SettingItem title={getString("settings_web_two_factor")} description={session ? (session.totpEnabled ? "Enabled · Authenticator app" : "Off · Add an authenticator app") : "Loading…"} icon={<ShieldCheck size={20}/>} disabled={!session || busy} onSelect={() => open(session?.totpEnabled ? "disable" : "setup")}/>
+      <SettingItem title={getString("settings_web_sessions")} description={session ? session.sessionCount + (session.sessionCount === 1 ? " active session" : " active sessions") + ", including this browser" : "Loading…"} icon={<Monitor size={20}/>} disabled={!session || busy} onSelect={() => open("revoke")}/>
+    </SettingsGroup>
     <SettingsGroup title="Your account">
-      <SettingItem title="Administrator" description={session?.username ?? "Loading…"} icon={<UserRound size={20}/>}/>
       <SettingItem title={getString("settings_web_sign_out")} description="End this browser session." icon={<LogOut size={20}/>} disabled={!session || busy} onSelect={() => void logout()}/>
     </SettingsGroup>
-    <SettingsGroup title="Security">
-      <SettingItem title={getString("settings_web_two_factor")} description={session ? (session.totpEnabled ? "Enabled · Authenticator app" : "Disabled · Add an authenticator app") : "Loading…"} icon={<ShieldCheck size={20}/>} disabled={!session || busy} onSelect={() => open(session?.totpEnabled ? "disable" : "setup")}/>
-      <SettingItem title={getString("settings_web_sessions")} description={session ? session.sessionCount + " active session(s), including this browser" : "Loading…"} icon={<Monitor size={20}/>} disabled={!session || busy} onSelect={() => open("revoke")}/>
-    </SettingsGroup>
-    {action && <section className="rounded-3xl bg-surface-container p-5 space-y-4" aria-labelledby="security-action">
-      <h3 id="security-action" className="font-semibold text-on-surface flex items-center gap-2"><KeyRound size={20}/>{action === "setup" ? "Set up two-step verification" : action === "disable" ? "Disable two-step verification" : "Sign out other sessions"}</h3>
-      {enrollment && <div className="space-y-3">
-        <p className="text-sm text-on-surface-variant">Add a time-based account to your authenticator app. Use this setup key, six digits and a 30-second period. Setup expires in five minutes.</p>
-        <div className="rounded-xl bg-surface-container-high p-3 break-all font-mono text-sm select-all text-on-surface">{enrollment.secret}</div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="tonal" type="button" onClick={() => { if (!navigator.clipboard) { setError("Select and copy the setup key manually."); return; } void navigator.clipboard.writeText(enrollment.secret).then(() => setNotice("Setup key copied.")).catch(() => setError("Select and copy the setup key manually.")); }}><Copy size={16}/> Copy key</Button>
-          <a className="inline-flex items-center rounded-full px-4 py-2 text-primary text-sm font-medium" href={enrollment.uri}>Open authenticator</a>
+    {action && <dialog ref={dialogRef} onCancel={event => { event.preventDefault(); void cancel(); }} aria-labelledby="security-action"
+      className="fixed inset-0 m-auto w-[calc(100%-24px)] max-w-[460px] max-h-[calc(100dvh-24px)] overflow-y-auto rounded-[28px] border border-outline-soft bg-surface-container text-on-surface p-0 backdrop:bg-black/60">
+      <form onSubmit={run}>
+        <header className="px-6 pt-6 pb-4 flex items-start gap-3">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface-container-high text-primary"><LockKeyhole size={21}/></span>
+          <div className="min-w-0 flex-1">
+            <h2 id="security-action" className="text-lg font-bold leading-tight tracking-tight text-chrome-neutral-100">{heading}</h2>
+            <p className="mt-1 text-xs text-chrome-neutral-400">{action === "setup" ? enrollment ? "Step 2 of 2 · Add authenticator" : "Step 1 of 2 · Confirm password" : "Confirm your identity"}</p>
+          </div>
+        </header>
+        <div className="space-y-4 px-5 sm:px-6 pb-5">
+          {action === "setup" && !enrollment && <p className="text-sm leading-relaxed text-chrome-neutral-400">Confirm your password to add an authenticator app to your account.</p>}
+          {action === "disable" && <p className="text-sm leading-relaxed text-chrome-neutral-400">Your account will no longer require a verification code. Other sessions will be signed out.</p>}
+          {action === "revoke" && <p className="text-sm leading-relaxed text-chrome-neutral-400">All other browsers will need to sign in again. This browser stays signed in.</p>}
+          {enrollment && <TotpEnrollment enrollment={enrollment}/>}
+          <AuthPasswordField key={enrollment ? "verify" : "password"} label={enrollment ? "Confirm administrator password" : "Administrator password"} value={password} onChange={setPassword} disabled={busy}/>
+          {needsCode && <AuthCodeField value={code} onChange={setCode} disabled={busy}/>}
+          <AuthError message={error}/>
+          {enrollment && <p className="text-xs leading-relaxed text-chrome-neutral-400">If you lose your authenticator, server-owner recovery is required.</p>}
         </div>
-        <p className="text-xs text-on-surface-variant">Keep the setup key private. If you lose your authenticator, server-owner recovery is required.</p>
-      </div>}
-      <form className="space-y-3" onSubmit={run}>
-        <label className="block space-y-1 text-sm text-on-surface"><span>Administrator password</span>
-          <input type="password" autoComplete="current-password" className={authInputClass} required value={password} onChange={e => setPassword(e.target.value)} disabled={busy}/>
-        </label>
-        {needsCode && <label className="block space-y-1 text-sm text-on-surface"><span>Verification code</span>
-          <input className={authInputClass + " font-mono tracking-widest"} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" required value={code} onChange={e => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={busy}/>
-        </label>}
-        <div className="flex justify-end flex-wrap gap-2">
-          <Button type="button" variant="ghost" onClick={() => void cancel()} disabled={busy}>Cancel</Button>
-          <Button type="submit" disabled={busy || !password || (needsCode && code.length !== 6)}>{busy ? "Please wait…" : action === "setup" && !enrollment ? "Continue" : action === "setup" ? "Verify and enable" : action === "disable" ? "Disable" : "Sign out other sessions"}</Button>
-        </div>
+        <footer className="sticky bottom-0 flex flex-wrap justify-end gap-2 border-t border-outline-soft bg-surface-container-low px-5 sm:px-6 py-4">
+          <Button type="button" variant="ghost" onClick={() => void cancel()} disabled={busy}>{getString("cancel")}</Button>
+          <Button type="submit" variant={action === "disable" ? "destructive" : "primary"} disabled={busy || !password || (needsCode && code.length !== 6)}>
+            {busy && <LoaderCircle size={16} className="animate-spin"/>}
+            {busy ? "Please wait…" : action === "setup" && !enrollment ? "Continue" : action === "setup" ? "Verify and enable" : action === "disable" ? "Disable" : "Sign out other sessions"}
+          </Button>
+        </footer>
       </form>
-    </section>}
-    {error && <p role="alert" className="text-sm text-error">{error}</p>}
-    {notice && <p role="status" className="text-sm text-on-surface-variant">{notice}</p>}
-    <p className="text-xs text-on-surface-variant">The server owner manages the administrator password through FLOW_WEB_PASSWORD. This version has one administrator account; separate user accounts and passkeys are not yet available.</p>
+    </dialog>}
+    {!action && <AuthError message={error}/>}
+    {notice && <p role="status" className="flex items-start gap-2 rounded-xl bg-surface-container-high p-3 text-sm text-chrome-neutral-200"><CheckCircle2 size={18} className="shrink-0 text-primary"/>{notice}</p>}
+    <p className="text-xs leading-relaxed text-chrome-neutral-400">The server owner manages the administrator password. This instance currently has one administrator account.</p>
   </div>;
 }
