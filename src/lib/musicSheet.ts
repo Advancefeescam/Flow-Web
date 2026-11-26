@@ -180,10 +180,12 @@ export function sheetBox(): Box {
       ? Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--app-titlebar-height"))
       : NaN;
   const titlebar = Number.isFinite(custom) ? custom : APP_TITLEBAR_HEIGHT;
+  const shell = typeof document === "undefined" ? null : document.querySelector<HTMLElement>(".flow-web-shell");
+  const bounds = shell?.getBoundingClientRect();
   return {
     top: titlebar,
     right: typeof window !== "undefined" ? window.innerWidth : 0,
-    bottom: typeof window !== "undefined" ? window.innerHeight : 0,
+    bottom: bounds && bounds.height > 0 ? bounds.bottom : typeof window !== "undefined" ? window.innerHeight : 0,
     left: 0,
   };
 }

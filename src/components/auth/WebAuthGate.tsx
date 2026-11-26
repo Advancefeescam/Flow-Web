@@ -53,7 +53,7 @@ function Login({ session, onSuccess }: { session: WebSession; onSuccess: (sessio
     </header>
     <form className="space-y-5" onSubmit={submit}>
       <AuthUsernameField value={username} onChange={setUsername} disabled={busy}/>
-      <AuthPasswordField value={password} onChange={setPassword} disabled={busy} autoFocus/>
+      <AuthPasswordField value={password} onChange={setPassword} disabled={busy} autoFocus={!window.matchMedia?.("(pointer: coarse)")?.matches}/>
       {session.totpEnabled && <AuthCodeField value={code} onChange={setCode} disabled={busy}/>}
       <AuthError message={error}/>
       <Button type="submit" size="lg" className="w-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"

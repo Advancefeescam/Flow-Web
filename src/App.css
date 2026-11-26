@@ -1401,3 +1401,46 @@
   .flow-web-shell .flow-now-details { margin: 0; gap: .5rem; }
   .flow-web-shell .flow-auth-center { justify-content: flex-start; }
 }
+
+
+/* Compact collections and video controls use their actual available width. */
+@media (min-width: 640px) and (max-width: 1199px) and (orientation: portrait) {
+  .flow-web-shell .flow-watch-grid[data-theater] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+}
+@media (max-width: 1023px) {
+  .flow-web-shell .flow-playlist-page { overflow-y: auto; overscroll-behavior-y: contain; }
+  .flow-web-shell .flow-playlist-grid { height: auto; grid-auto-rows: max-content; padding: 1rem; gap: 1.25rem; }
+  .flow-web-shell .flow-playlist-header, .flow-web-shell .flow-playlist-hero,
+  .flow-web-shell .flow-playlist-hero-content, .flow-web-shell .flow-playlist-list { height: auto; }
+  .flow-web-shell .flow-playlist-hero { padding: 1rem; }
+  .flow-web-shell .flow-playlist-art { max-width: 24rem; align-self: center; }
+  .flow-web-shell .flow-playlist-rows { overflow: visible; }
+  .flow-web-shell .flow-playlist-toolbar { flex-wrap: wrap; }
+  .flow-web-shell .flow-collection-body, .flow-web-shell .flow-collection-sticky { padding-inline: 1rem; }
+  .flow-web-shell .flow-collection-hero { padding-inline: 1rem; }
+  .flow-web-shell .flow-collection-hero-content { gap: 1rem; }
+  .flow-web-shell .flow-collection-title { font-size: clamp(1.75rem, 4vw, 3rem); }
+}
+@media (max-width: 639px) {
+  .flow-web-shell .flow-playlist-grid { padding: .75rem; }
+  .flow-web-shell .flow-playlist-hero-content { gap: 1rem; }
+  .flow-web-shell .flow-playlist-list .flow-card-menu-button { opacity: 1; }
+  .flow-web-shell .flow-collection-hero { height: auto; min-height: 0; padding: 1rem .75rem 1.25rem; }
+  .flow-web-shell .flow-collection-hero-content { flex-direction: column; align-items: stretch; gap: 1rem; }
+  .flow-web-shell .flow-collection-art { width: min(52vw, 12rem); height: auto; align-self: center; }
+  .flow-web-shell .flow-collection-hero-content > div:last-child { align-items: center; text-align: center; }
+  .flow-web-shell .flow-collection-hero-content > div:last-child > div { justify-content: center; }
+  .flow-web-shell .flow-collection-title { font-size: clamp(1.625rem, 6vw, 2.5rem); overflow-wrap: anywhere; }
+  .flow-web-shell .flow-music-source-empty { display: none; }
+  .flow-web-shell .flow-video-transport { flex-wrap: wrap; gap: .125rem .25rem; }
+  .flow-web-shell .flow-video-transport-main { flex: 1 1 auto; gap: .125rem; }
+  .flow-web-shell .flow-video-transport-actions { flex: 0 1 auto; margin-inline-start: auto; max-width: 100%; gap: .125rem; flex-wrap: wrap; justify-content: flex-end; }
+  .flow-web-shell .flow-video-transport-main button, .flow-web-shell .flow-video-transport-actions button { min-width: 30px; min-height: 30px; flex-shrink: 0; }
+}
+@media (max-width: 380px) {
+  .flow-web-shell .flow-music-actions { gap: 0; }
+  .flow-web-shell .flow-music-topbar { padding-inline: .25rem; }
+}

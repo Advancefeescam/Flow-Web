@@ -86,7 +86,7 @@ export function Topbar() {
             aria-label={getString('topbar_forward')}
             onClick={() => navigate(1)}
             disabled={!canGoForward}
-            className="text-chrome-neutral-300 hover:text-chrome-neutral-100"
+            className="flow-history-forward text-chrome-neutral-300 hover:text-chrome-neutral-100"
           >
             <ArrowRight className="rtl:-scale-x-100" />
           </IconButton>

@@ -301,8 +301,8 @@ export function PlaylistDetailsPage({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="mx-auto grid h-full min-h-0 w-full max-w-[1600px] grid-cols-1 gap-8 p-6 lg:grid-cols-[360px_1fr]">
+    <div className="flow-playlist-page flex h-full min-h-0 flex-col">
+      <div className="flow-playlist-grid mx-auto grid h-full min-h-0 w-full max-w-[1600px] grid-cols-1 gap-8 p-6 lg:grid-cols-[360px_1fr]">
           <PlaylistAmbientHeader
             meta={meta}
             heroVideoId={leadVideo?.id}

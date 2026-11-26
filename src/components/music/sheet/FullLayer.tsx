@@ -219,7 +219,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
               {getString("playing_from")} <span className="font-medium text-[var(--player-ink)]">{queueSource}</span>
             </p>
           ) : (
-            <span />
+            <span className="flow-music-source-empty" />
           )}
 
           <PlayerButtonGroup className="flow-music-actions relative justify-self-end">

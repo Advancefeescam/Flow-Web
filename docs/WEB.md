@@ -84,14 +84,16 @@ For a particular release, use its actual tag instead of `upstream/HEAD`. Resolve
 The web shell keeps Flow's existing router, themes, stores, card grid and playback engine. Layout changes are scoped to web builds:
 
 - Compact (up to 639 CSS pixels): five or fewer primary destinations in a bottom bar, a full-width search field, stacked video search results, a compact music dock and a draggable mini player constrained above navigation.
-- Medium (640–1023 CSS pixels): collapsed navigation rail with the original drawer available, smaller page margins, and narrow-screen Shorts presentation.
-- Expanded (1024 CSS pixels and above): existing Flow Desktop navigation and watch layout.
+- Medium (640–1023 CSS pixels): collapsed navigation rail with the original drawer available, smaller page margins, and narrow-screen Shorts presentation. The compact navigation rail extends to 1199px for iPad landscape.
+- Expanded (1200 CSS pixels and above): existing Flow Desktop navigation and watch layout. At 1024–1199px, Watch uses a narrower related column in landscape and a stacked layout in portrait.
 
 The original drawer still provides the remaining destinations (FlowNeuro, Explore, history, settings, extensions and others). Hidden Shorts/Music navigation preferences are respected. Settings use their existing responsive tabs, and account security remains web-only. Music transport and swipe handling are retained; only the compact dock's visible controls are reduced, with the full player retaining the other options. The Shorts side panel becomes an overlay rather than consuming video width.
 
 The shell uses dynamic viewport units and safe-area insets for mobile browsers and installed PWAs. The breakpoints intentionally match Flow's current Tailwind sidebar and watch layout thresholds rather than changing the native application.
 
 References: [Material adaptive layout guidance](https://developer.android.com/codelabs/adaptive-material-guidance), [responsive navigation](https://developer.android.com/develop/ui/views/layout/build-responsive-navigation), [MDN viewport lengths](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/length), [MDN safe-area variables](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/env).
+
+The second adaptive pass also reflows music queue and collection pages, makes phone playlists scroll as a single page, reduces short-landscape header height, and constrains notifications and anchored menus. Desktop settings and playback behavior remain unchanged by the web CSS.
 
 ### Browser verification checklist
 

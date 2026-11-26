@@ -139,8 +139,8 @@ export function PlaylistAmbientHeader({
   ].filter((part): part is string => Boolean(part?.trim()));
 
   return (
-    <aside className="flex h-full min-h-0 flex-col">
-      <div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl p-6">
+    <aside className="flow-playlist-header flex h-full min-h-0 flex-col">
+      <div className="flow-playlist-hero relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-3xl p-6">
         {ambientSrc ? (
           <>
             <SoftBackdrop
@@ -161,8 +161,8 @@ export function PlaylistAmbientHeader({
           />
         )}
 
-        <div className="relative z-10 flex h-full min-h-0 flex-col gap-6">
-          <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-chrome-neutral-950">
+        <div className="flow-playlist-hero-content relative z-10 flex h-full min-h-0 flex-col gap-6">
+          <div className="flow-playlist-art relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-chrome-neutral-950">
             {ambientSrc ? (
               <img
                 src={ambientSrc}
@@ -204,7 +204,7 @@ export function PlaylistAmbientHeader({
             ) : null}
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             <IconButton
               aria-label={getString("downloads_download_playlist")}
               title={getString(

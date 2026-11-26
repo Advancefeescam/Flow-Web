@@ -821,8 +821,8 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
             )}
           </div>
 
-          <div className={cx("flex items-center justify-between gap-3", fade)}>
-            <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+          <div className={cx("flow-video-transport flex items-center justify-between gap-3", fade)}>
+            <div className="flow-video-transport-main flex min-w-0 items-center gap-1 sm:gap-2">
               {showNextPrevious && (
                 <button
                   type="button"
@@ -949,7 +949,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
               </button>
             </div>
 
-            <div className={cx("flex items-center gap-1 sm:gap-2 rounded-full px-1 py-1", shade.pill)}>
+            <div className={cx("flow-video-transport-actions flex items-center gap-1 sm:gap-2 rounded-full px-1 py-1", shade.pill)}>
               {isFullscreen && showChapters && (
                 <button
                   type="button"

@@ -269,7 +269,7 @@ export default function MusicCollectionPage({ kind }: { kind: CollectionKind }) 
       className="h-full min-h-0 overflow-y-auto pb-32"
     >
       <div
-        className={`sticky top-0 z-40 -mb-14 flex h-14 items-center border-b border-outline-soft bg-surface/95 px-8 transition-all duration-200 ease-out ${
+        className={`flow-collection-sticky sticky top-0 z-40 -mb-14 flex h-14 items-center border-b border-outline-soft bg-surface/95 px-8 transition-all duration-200 ease-out ${
           showMiniHeader
             ? 'translate-y-0 opacity-100'
             : 'pointer-events-none -translate-y-full opacity-0'
@@ -322,7 +322,7 @@ export default function MusicCollectionPage({ kind }: { kind: CollectionKind }) 
         />
       ) : null}
 
-      <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-8 pt-6">
+      <div className="flow-collection-body mx-auto flex max-w-[1600px] flex-col gap-4 px-8 pt-6">
         {songs.length > 0 ? (
           <div className="sticky top-14 z-30 -mx-2 bg-surface px-2 py-2">
             {selection.selecting ? (
@@ -426,7 +426,7 @@ export default function MusicCollectionPage({ kind }: { kind: CollectionKind }) 
           />
         ) : null}
       </div>
-      {kind === 'album' && otherVersions.length > 0 && <div className="mx-auto max-w-[1600px] px-8 pt-8">
+      {kind === 'album' && otherVersions.length > 0 && <div className="flow-collection-body mx-auto max-w-[1600px] px-8 pt-8">
         <MusicShelf title={getString('music_other_versions')} items={otherVersions}
           renderItem={(album) => <MusicItemCard variant="album" item={album}
             onPlay={() => navigate(`/music/album/${album.browseId}`)}
