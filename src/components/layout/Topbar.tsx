@@ -1,5 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, HatGlasses, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { useWebCompact } from "../../lib/webAdaptive";
+import { Search, ArrowLeft, ArrowRight, HatGlasses, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
 import { usePlayerStore } from '../../store/usePlayerStore';
 import { useUiStore } from '../../store/useUiStore';
 import { useAppSettingsStore } from '../../store/useAppSettingsStore';
@@ -25,6 +27,12 @@ export function Topbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isWatchPage = location.pathname.startsWith('/watch/');
+  const compact = useWebCompact();
+  const compactWatch = compact && isWatchPage;
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { setSearchOpen(false); }, [location.pathname]);
+  useEffect(() => { if (compactWatch && searchOpen) searchRef.current?.querySelector('input')?.focus(); }, [compactWatch, searchOpen]);
   const usesDrawer = useSidebarDrawer();
   // Lets the glow above the player through. Solid again the moment the video reaches the bar,
   // with no fade, so the picture never shows behind the search box.
@@ -41,12 +49,14 @@ export function Topbar() {
 
   return (
     <header
-      className={`sticky top-0 z-40 flex h-14 items-center justify-between border-b border-transparent px-3 ${
+      data-compact-watch={compactWatch}
+      data-search-open={searchOpen}
+      className={`flow-adaptive-topbar sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-transparent px-3 ${
         seeThrough ? 'bg-transparent transition-colors duration-200 ease-out' : 'bg-background'
       }`}
     >
       {/* Left */}
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flow-topbar-leading flex min-w-0 items-center gap-2">
         <IconButton
           id={SIDEBAR_MENU_BUTTON_ID}
           aria-label={getString('sidebar_menu')}
@@ -67,17 +77,17 @@ export function Topbar() {
           </IconButton>
         )}
         {showAppLogo && (
-          <div className="cursor-pointer" onClick={() => navigate('/')}>
+          <div className="flow-topbar-logo cursor-pointer" onClick={() => navigate('/')}>
             <Logo size={36} showText={true} />
           </div>
         )}
-        <div className="hidden ms-1 items-center sm:flex">
+        <div className="flow-topbar-history hidden ms-1 items-center sm:flex">
           <IconButton
             title={getString('topbar_back')}
             aria-label={getString('topbar_back')}
             onClick={() => navigate(-1)}
             disabled={!canGoBack}
-            className="text-chrome-neutral-300 hover:text-chrome-neutral-100"
+            className="flow-history-back text-chrome-neutral-300 hover:text-chrome-neutral-100"
           >
             <ArrowLeft className="rtl:-scale-x-100" />
           </IconButton>
@@ -86,7 +96,7 @@ export function Topbar() {
             aria-label={getString('topbar_forward')}
             onClick={() => navigate(1)}
             disabled={!canGoForward}
-            className="text-chrome-neutral-300 hover:text-chrome-neutral-100"
+            className="flow-history-forward text-chrome-neutral-300 hover:text-chrome-neutral-100"
           >
             <ArrowRight className="rtl:-scale-x-100" />
           </IconButton>
@@ -94,12 +104,13 @@ export function Topbar() {
       </div>
 
       {/* Center - Search */}
-      <div className="flex max-w-[720px] flex-1 items-center justify-center px-4 md:px-8">
+      <div ref={searchRef} className="flow-topbar-search flex min-w-0 max-w-[720px] flex-1 items-center justify-center px-4 md:px-8">
         <TopbarSearch />
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-2">
+      <div className="flow-topbar-actions flex shrink-0 items-center gap-2">
+        {compactWatch && <IconButton title={getString("search")} aria-label={getString("search")} aria-expanded={searchOpen} onClick={() => setSearchOpen(v => !v)}><Search /></IconButton>}
         <NotificationsBell />
         <IconButton
           onClick={() => {

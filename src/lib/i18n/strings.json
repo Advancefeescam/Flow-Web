@@ -1,4 +1,8 @@
 {
+  "settings_web_account": "Account & security",
+  "settings_web_two_factor": "Two-step verification",
+  "settings_web_sessions": "Active sessions",
+  "settings_web_sign_out": "Sign out",
   "app_name": "Flow",
   "subscriptions_search_placeholder": "Search subscriptions...",
   "subscriptions_import_button": "Import Subscriptions",
@@ -633,6 +637,8 @@
   "downloaded": "Downloaded",
   "download": "Download",
   "download_file_name": "File name",
+  "download_browser_unavailable": "No direct downloadable stream is available for this item.",
+  "download_browser_note": "The file will be saved by your browser. It will not appear in Flow's offline library.",
   "download_size_unknown": "Unknown",
   "download_resolution": "Resolution",
   "download_video_codec": "Video codec",

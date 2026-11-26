@@ -7,6 +7,7 @@ import { useMusicPlayerError } from "../../../lib/useMusicPlayerError";
 import { useCoverAppContent } from "../../../lib/useCoverAppContent";
 import { useMusicPlayerKeyboard } from "../../../lib/useMusicPlayerKeyboard";
 import { useMediaQuery } from "../../../lib/useMediaQuery";
+import { useWebCompact } from "../../../lib/webAdaptive";
 import { useBoolPref } from "../../../lib/usePreference";
 import { SETTINGS } from "../../../lib/settings/schema";
 import { useMusicWheelVolume } from "../../../lib/useMusicWheelVolume";
@@ -63,6 +64,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
   const [volumeOpen, setVolumeOpen] = useState(false);
   const [lyricsExpanded, setLyricsExpanded] = useState(false);
   const wide = useMediaQuery(WIDE_QUERY);
+  const phone = useWebCompact();
   const [paneVisible, setPaneVisible] = useBoolPref(SETTINGS.MUSIC_SIDE_PANE_VISIBLE);
   const open = currentTrack !== null && viewState !== "dock";
   const isQueue = viewState === "queue";
@@ -182,7 +184,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
       aria-label={currentTrack.title}
       aria-hidden={!open}
       // While the dock is dragged or the player sinks, the pointer belongs to the dock.
-      className={`absolute top-0 flex h-[calc(100vh-var(--app-titlebar-height))] w-screen flex-col overflow-hidden bg-[var(--player-ground)] outline-none ${open ? "" : "pointer-events-none"}`}
+      className={`flow-music-full absolute top-0 flex h-[calc(100vh-var(--app-titlebar-height))] w-screen flex-col overflow-hidden bg-[var(--player-ground)] outline-none ${open ? "" : "pointer-events-none"}`}
       // Screen coordinates, the same in either direction: the card it sits in is placed by them too.
       style={{ ...playerColors.rootStyle, left: 0, x: offsetX, y: offsetY, opacity: groundOpacity }}
       {...(open ? drag : {})}
@@ -203,7 +205,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
         />
 
         {/* TOP BAR */}
-        <div className="absolute top-0 z-40 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 p-6">
+        <div className="flow-music-topbar absolute top-0 z-40 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 p-6">
           <PlayerButtonGroup className="justify-self-start">
             <GroupItem id="collapse">
               <HapticButton onClick={closeOverlay} aria-label={getString("music_collapse")} whileTap={NO_TAP_SCALE} className={GROUP_BUTTON}>
@@ -213,14 +215,14 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
           </PlayerButtonGroup>
 
           {queueSource ? (
-            <p className="line-clamp-1 max-w-md rounded-full bg-[var(--player-tonal)] px-4 py-2 text-center text-sm text-[color-mix(in_srgb,var(--player-ink)_72%,transparent)]">
+            <p className="flow-music-source line-clamp-1 max-w-md rounded-full bg-[var(--player-tonal)] px-4 py-2 text-center text-sm text-[color-mix(in_srgb,var(--player-ink)_72%,transparent)]">
               {getString("playing_from")} <span className="font-medium text-[var(--player-ink)]">{queueSource}</span>
             </p>
           ) : (
-            <span />
+            <span className="flow-music-source-empty" />
           )}
 
-          <PlayerButtonGroup className="relative justify-self-end">
+          <PlayerButtonGroup className="flow-music-actions relative justify-self-end">
             {isLyrics && (
               <GroupItem id="lyrics-actions">
                 <LyricsActionsMenu track={currentTrack} className={GROUP_BUTTON} />
@@ -329,7 +331,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
             <div
               // Over the cover's colours, the controls' scrim fades from the cover's own backdrop.
               style={lyricsOnCover ? ({ "--player-ground": rgbCss(lyricsOnCover.backdrop) } as CSSProperties) : undefined}
-              className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-4 bg-linear-to-t from-[color-mix(in_srgb,var(--player-ground)_90%,transparent)] via-[color-mix(in_srgb,var(--player-ground)_50%,transparent)] to-transparent px-6 pb-10 pt-24">
+              className="flow-music-lyrics-controls absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-4 bg-linear-to-t from-[color-mix(in_srgb,var(--player-ground)_90%,transparent)] via-[color-mix(in_srgb,var(--player-ground)_50%,transparent)] to-transparent px-6 pb-10 pt-24">
               <div className="w-full max-w-2xl">
                 <MusicScrubber size="lg" showTimes countdown expressive />
               </div>
@@ -340,9 +342,9 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
           <motion.div
             layout
             transition={LAYOUT_SPRING}
-            className="relative z-10 flex min-h-0 flex-1 items-stretch justify-center gap-8 px-8 pb-10 pt-24"
+            className={`flow-music-content relative z-10 flex min-h-0 flex-1 items-stretch justify-center gap-8 px-8 pb-10 pt-24 ${phone && isQueue ? "flow-music-phone-queue" : ""}`}
           >
-            <div className={`flex min-h-0 min-w-0 justify-center ${showPane ? "flex-1" : !wide && isQueue ? "w-1/2" : "w-full max-w-2xl"}`}>
+            <div className={`flow-music-track-column flex min-h-0 min-w-0 justify-center ${showPane ? "flex-1" : !wide && isQueue ? "w-1/2" : "w-full max-w-2xl"}`}>
               <NowPlayingColumn
                 track={currentTrack}
                 compact={!wide && isQueue}
@@ -391,7 +393,7 @@ export function FullLayer({ offsetX, offsetY }: { offsetX: MotionValue<number>; 
                     exit={{ opacity: 0, x: 48 }}
                     transition={LAYOUT_SPRING}
                     style={paneSurface}
-                    className="flex min-h-0 w-1/2 flex-col rounded-2xl surface-panel p-4 transition-colors duration-500 ease-out"
+                    className="flow-music-queue-pane flex min-h-0 w-1/2 flex-col rounded-2xl surface-panel p-4 transition-colors duration-500 ease-out"
                   >
                     <MusicQueuePane />
                   </motion.div>

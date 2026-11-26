@@ -1,5 +1,5 @@
 import { invokeBackend } from "./errors";
-import { isTauriEnv } from "./env";
+import { hasBackend } from "./env";
 
 // --------------------------------------------------------------------------------
 // SponsorBlock
@@ -17,7 +17,7 @@ export async function getSponsorBlockSegments(
   videoId: string,
   serverUrl?: string,
 ): Promise<SponsorBlockSegment[]> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock SponsorBlock segments.");
     return [
       {
@@ -42,7 +42,7 @@ export interface NonMusicSegment {
 
 /** Looked up by a hash prefix of the id, so the server can't tell which video is playing. */
 export async function getNonMusicSegments(videoId: string, serverUrl?: string): Promise<NonMusicSegment[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<NonMusicSegment[]>("get_non_music_segments", { videoId, serverUrl });
 }
 
@@ -58,7 +58,7 @@ export interface SubmitSponsorBlockSegmentParams {
 export async function submitSponsorBlockSegment(
   params: SubmitSponsorBlockSegmentParams,
 ): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Skipping SponsorBlock submission.");
     return;
   }
@@ -90,7 +90,7 @@ export function deArrowThumbnail(override: DeArrowOverride | null, useRandomFram
 }
 
 export async function getDeArrowOverride(videoId: string): Promise<DeArrowOverride | null> {
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
   return invokeBackend<DeArrowOverride | null>("get_dearrow_override", { videoId });
 }
 
@@ -112,7 +112,7 @@ const YOUTUBE_VIDEO_ID = /^[a-zA-Z0-9_-]{11}$/;
 
 export async function getReturnYouTubeDislike(videoId: string): Promise<RydData | null> {
   if (!YOUTUBE_VIDEO_ID.test(videoId)) return null;
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
 
   try {
     return await invokeBackend<RydData | null>("get_return_youtube_dislike", { videoId });

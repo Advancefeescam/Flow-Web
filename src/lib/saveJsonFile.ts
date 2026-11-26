@@ -1,10 +1,10 @@
-import { isTauriEnv } from "./api/env";
+import { isTauriEnv, isWebMode } from "./api/env";
 import { writeBackupFile } from "./api/files";
 import { pickSaveFile } from "./dialogs";
 
 /** Saves through the native dialog in the app and as a browser download elsewhere. False when cancelled. */
 export async function saveJsonFile(title: string, defaultName: string, json: string): Promise<boolean> {
-  if (await isTauriEnv()) {
+  if (!isWebMode() && await isTauriEnv()) {
     const savePath = await pickSaveFile(title, defaultName, [{ name: "JSON", extensions: ["json"] }]);
     if (!savePath) return false;
     await writeBackupFile(savePath, json);
@@ -15,7 +15,9 @@ export async function saveJsonFile(title: string, defaultName: string, json: str
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = defaultName;
+  document.body.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
   return true;
 }

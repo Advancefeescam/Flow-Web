@@ -756,7 +756,7 @@ function VideoCardComponent({
         <div className="relative shrink-0">
           <button
             onClick={openMenuFromDots}
-            className="rounded-full p-1 text-chrome-neutral-500 opacity-0 transition duration-150 ease-out hover:bg-chrome-neutral-800 hover:text-chrome-neutral-200 group-hover:opacity-100"
+            className="flow-card-menu-button rounded-full p-1 text-chrome-neutral-500 opacity-0 transition duration-150 ease-out hover:bg-chrome-neutral-800 hover:text-chrome-neutral-200 group-hover:opacity-100"
           >
             <MoreVertical size={18} />
           </button>
@@ -777,7 +777,7 @@ function VideoCardComponent({
     return (
       <div
         ref={cardRef}
-        className={`group ${COLOR_WASH_HOST} flex w-full flex-row gap-4 rounded-xl px-1 py-2 ${isSearchRow ? 'items-start' : 'items-center'}`}
+        className={`group ${COLOR_WASH_HOST} flex w-full flex-row gap-4 rounded-xl px-1 py-2 ${isSearchRow ? 'flow-search-card items-start' : 'items-center'}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onContextMenu={handleContextMenu}
@@ -804,7 +804,7 @@ function VideoCardComponent({
         )}
 
         <div
-          className={`relative aspect-video shrink-0 cursor-pointer overflow-hidden rounded-xl bg-chrome-zinc-900 ${isSearchRow ? 'w-56 md:w-72 xl:w-[360px]' : 'w-40 sm:w-48'}`}
+          className={`relative aspect-video shrink-0 cursor-pointer overflow-hidden rounded-xl bg-chrome-zinc-900 ${isSearchRow ? 'flow-search-thumb w-56 md:w-72 xl:w-[360px]' : 'w-40 sm:w-48'}`}
           onClick={play}
           {...tabClickProps}
         >
@@ -837,7 +837,7 @@ function VideoCardComponent({
         </div>
 
         {isSearchRow ? (
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-0.5">
+          <div className="flow-search-meta flex min-w-0 flex-1 flex-col gap-1.5 pt-0.5">
             <h3
               onClick={play}
               {...tabClickProps}
@@ -907,7 +907,7 @@ function VideoCardComponent({
           <button
             type="button"
             onClick={openMenuFromDots}
-            className="mt-0.5 rounded-full p-1 text-chrome-neutral-500 opacity-0 transition duration-150 ease-out hover:bg-chrome-neutral-800 hover:text-chrome-neutral-200 group-hover:opacity-100"
+            className="flow-card-menu-button mt-0.5 rounded-full p-1 text-chrome-neutral-500 opacity-0 transition duration-150 ease-out hover:bg-chrome-neutral-800 hover:text-chrome-neutral-200 group-hover:opacity-100"
           >
             <MoreVertical size={18} />
           </button>
@@ -1035,7 +1035,7 @@ function VideoCardComponent({
         <div className="relative shrink-0">
           <button
             onClick={openMenuFromDots}
-            className="p-1 rounded-full text-chrome-zinc-500 hover:text-chrome-zinc-200 hover:bg-chrome-zinc-800 opacity-0 group-hover:opacity-100 transition duration-150 ease-out mt-0.5"
+            className="flow-card-menu-button p-1 rounded-full text-chrome-zinc-500 hover:text-chrome-zinc-200 hover:bg-chrome-zinc-800 opacity-0 group-hover:opacity-100 transition duration-150 ease-out mt-0.5"
           >
             <MoreVertical size={18} />
           </button>

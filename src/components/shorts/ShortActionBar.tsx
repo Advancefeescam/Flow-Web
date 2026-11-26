@@ -242,7 +242,7 @@ export function ShortActionBar({
   };
 
   return (
-    <motion.div layout className="mb-4 flex w-[260px] flex-col items-start gap-5 lg:w-[280px]">
+    <motion.div layout className="flow-short-actions mb-4 flex w-[260px] flex-col items-start gap-5 lg:w-[280px]">
       <ActionButton
         ariaLabel={getString('like')}
         active={state === "liked"}
@@ -321,7 +321,7 @@ function ActionButton({
         type="button"
         aria-label={ariaLabel}
         onClick={onClick}
-        className={`flex h-14 w-14 items-center justify-center rounded-full border border-chrome-white/10 bg-chrome-black/60 text-chrome-white transition-colors duration-200 ease-out hover:bg-chrome-black/80 ${
+        className={`flow-short-action-button flex h-14 w-14 items-center justify-center rounded-full border border-chrome-white/10 bg-chrome-black/60 text-chrome-white transition-colors duration-200 ease-out hover:bg-chrome-black/80 ${
           active ? "text-primary" : ""
         }`}
       >
@@ -341,7 +341,7 @@ function MoreMenu({ children }: { children: ReactNode }) {
     <div
       ref={ref}
       style={{ transformOrigin: "bottom right" }}
-      className="animate-menu-in absolute bottom-2 end-16 z-20 w-64 overflow-hidden rounded-xl border border-outline-soft bg-surface-container-high py-1"
+      className="flow-short-more animate-menu-in absolute bottom-2 end-16 z-20 w-64 overflow-hidden rounded-xl border border-outline-soft bg-surface-container-high py-1"
     >
       {children}
     </div>

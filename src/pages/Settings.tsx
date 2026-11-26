@@ -15,10 +15,12 @@ import { LyricsTab } from '../components/settings/tabs/LyricsTab';
 import { SubscriptionsTab } from '../components/settings/tabs/SubscriptionsTab';
 import { PrivacyTab } from '../components/settings/tabs/PrivacyTab';
 import { WellbeingTab } from '../components/settings/tabs/WellbeingTab';
+import { WebAccountTab } from '../components/settings/tabs/WebAccountTab';
 import { LanguageTab } from '../components/settings/tabs/LanguageTab';
 
 const tabComponents: Record<SettingsCategory, React.FC> = {
   appearance: AppearanceTab,
+  webAccount: WebAccountTab,
   profiles: ProfilesTab,
   player: PlayerTab,
   keyboard: KeyboardTab,

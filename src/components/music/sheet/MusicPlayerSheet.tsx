@@ -98,9 +98,11 @@ export function MusicPlayerSheet() {
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => measureSheet());
     observer?.observe(anchor);
     window.addEventListener("resize", measureSheet);
+    window.visualViewport?.addEventListener("resize", measureSheet);
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", measureSheet);
+      window.visualViewport?.removeEventListener("resize", measureSheet);
       registerSheetDock(null);
     };
   }, [mini.visible, mini.widthClass]);
@@ -119,7 +121,7 @@ export function MusicPlayerSheet() {
           className={`pointer-events-none fixed inset-0 ${raised || full.shown ? "z-[60]" : "z-50"}`}
         >
           {mini.visible && !mini.away && (
-            <div className={`absolute inset-x-0 bottom-6 mx-auto ${mini.widthClass}`}>
+            <div className={`flow-web-dock-position absolute inset-x-0 bottom-6 mx-auto ${mini.widthClass}`}>
               <BarSwipeReveal rounded={mini.pill ? "rounded-full" : "rounded-2xl"} />
             </div>
           )}
@@ -145,7 +147,7 @@ export function MusicPlayerSheet() {
           {mini.visible && (
             // Where the bar rests: the card measures its resting box from here, and the bar's
             // popovers hang from it outside the card's clip.
-            <div ref={anchorRef} inert={!mini.docked} className={`absolute inset-x-0 bottom-6 mx-auto ${mini.widthClass}`}>
+            <div ref={anchorRef} inert={!mini.docked} className={`flow-web-dock-position absolute inset-x-0 bottom-6 mx-auto ${mini.widthClass}`}>
               <MiniChrome mini={mini} />
             </div>
           )}

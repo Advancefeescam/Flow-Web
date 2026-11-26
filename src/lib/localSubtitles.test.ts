@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const invokeBackend = vi.fn();
 vi.mock("./api/errors", () => ({ invokeBackend: (...args: unknown[]) => invokeBackend(...args) }));
 
-const { addSubtitleFile, fileNameOf, isSubtitlePath } = await import("./localSubtitles");
-const { fetchCaptionText } = await import("./captionText");
+const { addSubtitleFile, fileNameOf, isSubtitlePath, removeSubtitleFile } = await import("./localSubtitles");
+const { fetchCaptionText, localCaptionUrl, registerBrowserCaption } = await import("./captionText");
 const { useLocalSubtitleStore, videoSubtitleState, MAX_SUBTITLE_OFFSET_MS } = await import("../store/useLocalSubtitleStore");
 const { useUiStore } = await import("../store/useUiStore");
 
@@ -42,6 +42,15 @@ describe("local subtitle files", () => {
     expect(invokeBackend).toHaveBeenLastCalledWith("read_subtitle_file", { path: "/m/a.srt" });
     await fetchCaptionText({ url: "http://127.0.0.1/stream/t" });
     expect(invokeBackend).toHaveBeenLastCalledWith("fetch_subtitles", { url: "http://127.0.0.1/stream/t" });
+  });
+
+  it("reads browser-picked captions without sending a host path to the server", async () => {
+    const path = registerBrowserCaption(SRT);
+    useLocalSubtitleStore.getState().addFile("v", { name: "captions.srt", path });
+    expect(await fetchCaptionText({ url: localCaptionUrl(path) })).toBe(SRT);
+    expect(invokeBackend).not.toHaveBeenCalled();
+    removeSubtitleFile("v", path);
+    await expect(fetchCaptionText({ url: localCaptionUrl(path) })).rejects.toThrow();
   });
 
   it("recognises subtitle paths on any platform", () => {

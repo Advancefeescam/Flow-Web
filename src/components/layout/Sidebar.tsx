@@ -17,6 +17,7 @@ import { useShortsEnabled } from '../../lib/useShortsContent';
 import { useMusicEnabled } from '../../lib/useMusicContent';
 import { SETTINGS } from '../../lib/settings/schema';
 import { useNotesEnabled } from '../../lib/useNotes';
+import { useWebRail } from '../../lib/webAdaptive';
 
 type SidebarProps = {
   mode?: 'normal' | 'overlay';
@@ -69,7 +70,8 @@ export function Sidebar({ mode = 'normal' }: SidebarProps) {
   const notesEnabled = useNotesEnabled();
 
   const isOverlay = mode === 'overlay';
-  const expanded = isOverlay || isSidebarExpanded;
+  const medium = useWebRail();
+  const expanded = isOverlay || (!medium && isSidebarExpanded);
   const collapsed = !expanded;
   const syncing = useSyncActivityStore((state) => state.syncing);
 

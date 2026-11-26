@@ -5,7 +5,7 @@ let deepFlow = false;
 let failNext = false;
 let failWith = "down";
 
-vi.mock("../api/env", () => ({ isTauriEnv: async () => true }));
+vi.mock("../api/env", () => ({ isTauriEnv: async () => true, isWebMode: () => false }));
 vi.mock("../api/recap", () => ({
   recordRecapBatch: async (entries: unknown[]) => {
     if (failNext) {

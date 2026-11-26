@@ -31,11 +31,15 @@ import type { RelatedContentItem, VideoSummary } from "../types/video";
 import { configuredProxyUrl } from "../lib/settings/appProxy";
 import { SETTINGS } from "../lib/settings/schema";
 
+import { MobileComments } from "../components/watch/MobileComments";
+import { useWebStackedWatch } from "../lib/webAdaptive";
+
 const CommentsSection = lazy(() => import("../components/watch/CommentsSection"));
 
 export function Watch() {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
+  const stackedWatch = useWebStackedWatch();
 
   const { loadSettings } = useSettingsStore();
 
@@ -272,9 +276,11 @@ export function Watch() {
         )
       }
       comments={commentsEnabled && !offlineRecord && !isLocalFile && playbackSettled ? (
-        <Suspense fallback={<div className="h-32" />}>
-          <CommentsSection videoId={videoId} />
-        </Suspense>
+        stackedWatch ? <MobileComments key={videoId} videoId={videoId}/> : (
+          <Suspense fallback={<div className="h-32" />}>
+            <CommentsSection videoId={videoId} />
+          </Suspense>
+        )
       ) : null}
       sidebar={
         <>
@@ -297,6 +303,7 @@ export function Watch() {
               loading={relatedLane.loading || unseen.waiting}
               hasMore={relatedLane.hasMore}
               loadingMore={relatedLane.loadingMore}
+              loadMoreFailed={relatedLane.loadMoreFailed}
               onLoadMore={relatedLane.loadMore}
               onSelect={handleRelatedClick}
               onAddToQueue={addToQueue}

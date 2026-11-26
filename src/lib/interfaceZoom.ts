@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { isWebMode } from "./api/env";
 
 import { isPopOutWindow } from "./api/pip";
 import { SETTINGS } from "./settings/schema";
@@ -34,7 +35,7 @@ export const currentInterfaceZoom = () => readInterfaceZoom(useAppSettingsStore.
 export function useInterfaceZoom(): void {
   const zoom = useAppSettingsStore((state) => readInterfaceZoom(state.values[SETTINGS.INTERFACE_ZOOM]));
   useEffect(() => {
-    if (isPopOutWindow()) return;
+    if (isWebMode() || isPopOutWindow()) return;
     void getCurrentWebview()
       .setZoom(zoom)
       .catch((error: unknown) => console.warn("Failed to set the interface size", error));

@@ -42,7 +42,7 @@ Run Flow on a home server, NAS or computer and open it from your browser. Your l
 - Video and audio downloads for supported direct streams.
 - Browser access on desktop and mobile, with PWA support in development.
 
-Flow Web is under active development. Some Flow Desktop features, including Flow Sync, multiple profiles and full backup/restore, are not available in the web runtime yet. Browser and device compatibility is still being tested. See the [feature parity tracker](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md#parity-tracker) for details.
+Flow Web is under active development. Some Flow Desktop features, including Flow Sync, multiple profiles and full backup/restore, are not available in the web runtime yet. Browser and device compatibility is still being tested. See the [feature parity tracker](docs/WEB.md#parity-tracker) for details.
 
 ### FlowNeuro
 
@@ -56,10 +56,10 @@ Flow Web runs as a headless server and serves its own web interface. Docker and 
 
 ### Docker / Podman
 
-The current web runtime is available on [`feat/web-runtime`](https://github.com/Advancefeescam/Flow-Web/tree/feat/web-runtime) while [PR #1](https://github.com/Advancefeescam/Flow-Web/pull/1) is in development. Build the image locally from source:
+Build the image locally from source:
 
 ```bash
-git clone --branch feat/web-runtime https://github.com/Advancefeescam/Flow-Web.git
+git clone https://github.com/Advancefeescam/Flow-Web.git
 cd Flow-Web
 
 export FLOW_WEB_ORIGIN=http://127.0.0.1:8780
@@ -71,11 +71,11 @@ docker compose -f compose.web.yml up --build
 
 For Podman, use `podman compose -f compose.web.yml up --build` instead.
 
-Open **http://127.0.0.1:8780** and sign in with the username `flow` and your chosen password. The Compose file uses a persistent data volume and binds to localhost by default.
+Open **http://127.0.0.1:8780** and sign in with the username `flow` and your chosen password. The Compose file uses a persistent data volume and binds to localhost by default. Optional authenticator-app two-step verification and session management are available in **Settings → Account & security**. See [the security and sign-in guide](docs/WEB.md#sign-in-and-security).
 
 For access from other devices, put the instance behind a trusted HTTPS reverse proxy and set `FLOW_WEB_ORIGIN` to the address you use in your browser. Do not expose the development server directly to the internet or share its data volume with Flow Desktop or Flow Sync.
 
-See [docs/WEB.md](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md) for deployment notes and current compatibility limitations.
+See [docs/WEB.md](docs/WEB.md) for deployment notes and current compatibility limitations.
 
 ---
 
@@ -110,9 +110,9 @@ Unlike Flow Desktop, which stores data directly on your device, Flow Web stores 
 
 ## Development
 
-Requirements: Node.js 24, pnpm 11.9, stable Rust and the Linux build dependencies listed in [docs/WEB.md](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md).
+Requirements: Node.js 24, pnpm 11.9, stable Rust and the Linux build dependencies listed in [docs/WEB.md](docs/WEB.md).
 
-From the web runtime branch:
+From the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -126,8 +126,8 @@ cd web-server
 cargo run
 ```
 
-- [Web runtime documentation](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md)
-- [Updating from Flow Desktop](https://github.com/Advancefeescam/Flow-Web/blob/feat/web-runtime/docs/WEB.md#updating-from-flow-desktop)
+- [Web runtime documentation](docs/WEB.md)
+- [Updating from Flow Desktop](docs/WEB.md#updating-from-flow-desktop)
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 

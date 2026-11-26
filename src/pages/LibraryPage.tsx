@@ -208,8 +208,8 @@ export const LibraryPage: React.FC<LibraryPageProps> = ({ onPlay, onAddToQueue }
   };
 
   return (
-    <div className="max-w-[1800px] mx-auto px-6 md:px-8 pt-8 pb-12 flex flex-col gap-10">
-      <header className="flex items-center gap-5">
+    <div className="flow-adaptive-page flow-library-page max-w-[1800px] mx-auto px-6 md:px-8 pt-8 pb-12 flex flex-col gap-10">
+      <header className="flow-library-header flex items-center gap-5">
 
         <div className="min-w-0">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-chrome-neutral-100">

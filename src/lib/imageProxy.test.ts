@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { originalImageUrl, proxiedImage } from "./imageProxy";
+import { originalImageUrl, proxiedImage, WEB_IMAGE_BASE } from "./imageProxy";
 
 const BASE = "http://127.0.0.1:41234/img/abc123";
 const THUMB = "https://i.ytimg.com/vi/dQw4w9WgXcQ/hq720.jpg";
@@ -43,5 +43,19 @@ describe("originalImageUrl", () => {
   it("returns any other URL unchanged", () => {
     expect(originalImageUrl(THUMB)).toBe(THUMB);
     expect(originalImageUrl("http://127.0.0.1:5000/stream/img-1")).toBe("http://127.0.0.1:5000/stream/img-1");
+  });
+});
+
+
+describe("browser artwork", () => {
+  it("routes an allowed thumbnail without RPC and can unwrap it", () => {
+    const routed = proxiedImage(THUMB, WEB_IMAGE_BASE);
+    expect(routed).toBe(WEB_IMAGE_BASE + "?u=" + encodeURIComponent(THUMB));
+    expect(originalImageUrl(routed)).toBe(THUMB);
+  });
+  it("leaves non-artwork hosts and unusual ports unchanged", () => {
+    for (const url of ["https://example.com/a.jpg", "https://i.ytimg.com:444/a.jpg", "https://user@i.ytimg.com/a.jpg"]) {
+      expect(proxiedImage(url, WEB_IMAGE_BASE)).toBe(url);
+    }
   });
 });

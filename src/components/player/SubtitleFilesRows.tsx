@@ -2,7 +2,7 @@ import { FilePlus2, X } from "lucide-react";
 import { PIP_WINDOW_LABEL } from "../../lib/api/pip";
 import { CURRENT_WINDOW_LABEL } from "../../lib/appWindow";
 import { getString } from "../../lib/i18n/index";
-import { usePickSubtitleFile } from "../../lib/localSubtitles";
+import { removeSubtitleFile, usePickSubtitleFile } from "../../lib/localSubtitles";
 import {
   useLocalSubtitleStore,
   videoSubtitleState,
@@ -75,14 +75,13 @@ export function AddSubtitleFileRow({ rowClass }: { rowClass: string }) {
 
 export function RemoveSubtitleFileButton({ path }: { path: string }) {
   const videoId = usePlayerStore((s) => s.currentVideo?.id ?? null);
-  const removeFile = useLocalSubtitleStore((s) => s.removeFile);
   if (!videoId) return null;
   return (
     <button
       type="button"
       aria-label={getString("subtitle_file_remove")}
       title={getString("subtitle_file_remove")}
-      onClick={() => removeFile(videoId, path)}
+      onClick={() => removeSubtitleFile(videoId, path)}
       className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-chrome-zinc-400 transition-colors duration-200 ease-out hover:bg-chrome-white/10 hover:text-chrome-white"
     >
       <X size={14} />

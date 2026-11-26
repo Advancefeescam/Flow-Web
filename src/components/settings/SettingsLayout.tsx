@@ -17,8 +17,10 @@ import {
   ShieldCheck,
   Hourglass,
   Languages,
+  LockKeyhole,
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { isWebMode } from '../../lib/api/env';
 import { getString } from '../../lib/i18n/index';
 import { SETTINGS_CATEGORY_LABELS, SETTINGS_INDEX, type SettingEntry, type SettingsCategory } from '../../lib/settings/settingsIndex';
 import { searchSettings } from '../../lib/settings/settingsSearch';
@@ -42,6 +44,7 @@ interface CategoryDef {
 const categories: CategoryDef[] = [
   { id: 'appearance', icon: <Palette size={18} /> },
   { id: 'profiles', icon: <UsersRound size={18} /> },
+  ...(isWebMode() ? [{ id: 'webAccount' as const, icon: <LockKeyhole size={18} /> }] : []),
   { id: 'player', icon: <PlayCircle size={18} /> },
   { id: 'keyboard', icon: <Keyboard size={18} /> },
   { id: 'music', icon: <Music2 size={18} /> },
@@ -73,7 +76,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
   const clearQuery = useSettingsSearchStore((state) => state.clearQuery);
   const [highlight, setHighlight] = useState<string | null>(null);
   const debouncedQuery = useDebounce(query, 120);
-  const results = useMemo(() => searchSettings(debouncedQuery, SETTINGS_INDEX), [debouncedQuery]);
+  const results = useMemo(() => searchSettings(debouncedQuery, SETTINGS_INDEX.filter(entry => isWebMode() || entry.category !== 'webAccount')), [debouncedQuery]);
   const searching = debouncedQuery.trim().length > 0;
   const paneRef = useRef<HTMLDivElement>(null);
   usePageEnterMotion(paneRef, activeTab, true);
@@ -110,9 +113,9 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
   }, [highlight, searching]);
 
   return (
-    <div className="mx-auto w-full h-[calc(100vh-64px)] flex">
-      <nav className="w-56 shrink-0 border-e border-outline-soft overflow-y-auto py-6 px-3 flex flex-col gap-1">
-        <h2 className="text-lg font-bold text-chrome-neutral-100 px-3 mb-4">{getString('settings_title')}</h2>
+    <div className={`mx-auto w-full flex ${isWebMode() ? "h-full min-h-0 flex-col md:flex-row" : "h-[calc(100vh-64px)]"}`}>
+      <nav className={isWebMode() ? "shrink-0 flex gap-1 overflow-x-auto border-b border-outline-soft p-2 md:w-56 md:flex-col md:border-b-0 md:border-e md:overflow-y-auto md:py-6 md:px-3" : "w-56 shrink-0 border-e border-outline-soft overflow-y-auto py-6 px-3 flex flex-col gap-1"}>
+        <h2 className={`text-lg font-bold text-chrome-neutral-100 px-3 mb-4 ${isWebMode() ? "hidden md:block" : ""}`}>{getString('settings_title')}</h2>
         {categories.map((cat) => (
           <button
             key={cat.id}
@@ -120,7 +123,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
               setActiveTab(cat.id);
               clearQuery();
             }}
-            className={`px-4 py-2.5 rounded-full flex items-center gap-3 text-sm font-medium transition-colors cursor-pointer ${
+            className={`px-4 py-2.5 rounded-full flex items-center gap-3 text-sm font-medium transition-colors cursor-pointer ${isWebMode() ? "shrink-0 whitespace-nowrap md:shrink md:whitespace-normal" : ""} ${
               !searching && activeTab === cat.id
                 ? 'bg-surface-container-high text-[var(--color-primary)]'
                 : 'text-chrome-neutral-400 hover:bg-surface-container-low hover:text-chrome-neutral-200'
@@ -135,7 +138,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
         ))}
       </nav>
 
-      <div ref={paneRef} className="flex-1 overflow-y-auto py-6 ps-10 pe-4">
+      <div ref={paneRef} className={isWebMode() ? "flex-1 min-w-0 overflow-y-auto py-5 px-4 md:py-6 md:ps-10 md:pe-4" : "flex-1 overflow-y-auto py-6 ps-10 pe-4"}>
         {searching ? <SettingsSearchResults results={results} onOpen={openResult} /> : children(activeTab)}
       </div>
     </div>

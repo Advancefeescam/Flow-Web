@@ -220,8 +220,8 @@ export function PlaylistSortableList({
   );
 
   return (
-    <section className="flex h-full min-h-0 min-w-0 flex-col">
-      <div className="flex shrink-0 items-center gap-2 border-b border-outline-soft bg-background pb-4">
+    <section className="flow-playlist-list flex h-full min-h-0 min-w-0 flex-col">
+      <div className="flow-playlist-toolbar flex shrink-0 items-center gap-2 border-b border-outline-soft bg-background pb-4">
         {selecting ? selectionBar : (
           <>
           <Select
@@ -264,7 +264,7 @@ export function PlaylistSortableList({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pt-4">
+      <div className="flow-playlist-rows min-h-0 flex-1 overflow-y-auto pt-4">
         {sortEnabled ? (
           <DndContext
             sensors={sensors}

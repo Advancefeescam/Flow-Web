@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 import { proxyImageUrl } from "./api/images";
-import { proxiedImage } from "./imageProxy";
+import { isWebMode } from "./api/env";
+import { proxiedImage, WEB_IMAGE_BASE } from "./imageProxy";
 import { useImageProxyStore } from "../store/useImageProxyStore";
 
 /**
@@ -34,8 +35,9 @@ export function useProxiedImageUrl(src: string | null | undefined): string | und
   const proxyBase = useImageProxyStore((state) => state.base);
   const trimmed = src?.trim();
   // Where the image route exists, hosts it serves need no per-image IPC call.
-  const routed = trimmed ? proxiedImage(trimmed, proxyBase) : trimmed;
-  const normalized = routed === trimmed ? trimmed : undefined;
+  const web = isWebMode();
+  const routed = trimmed ? proxiedImage(trimmed, web ? WEB_IMAGE_BASE : proxyBase) : trimmed;
+  const normalized = !web && routed === trimmed ? trimmed : undefined;
   const [proxied, setProxied] = useState<string | undefined>(() => {
     if (!normalized) return undefined;
     if (isLoopbackUrl(normalized)) return normalized;
@@ -80,5 +82,5 @@ export function useProxiedImageUrl(src: string | null | undefined): string | und
     };
   }, [normalized]);
 
-  return routed !== trimmed ? routed : (proxied ?? normalized);
+  return web || routed !== trimmed ? routed : (proxied ?? normalized);
 }

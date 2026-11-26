@@ -1,0 +1,48 @@
+name: Web container smoke test
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Build container
+        run: docker build -f Containerfile -t flow-web:ci .
+      - name: Verify local HTTP service
+        run: |
+          set -euo pipefail
+          password="$(openssl rand -hex 24)"
+          echo "::add-mask::$password"
+          docker run --detach --rm --name flow-web-ci -p 127.0.0.1:8780:8780 -e FLOW_WEB_PASSWORD="$password" -e FLOW_WEB_ORIGIN=http://127.0.0.1:8780 flow-web:ci
+          trap 'docker logs flow-web-ci || true; docker stop flow-web-ci || true' EXIT
+          umask 077
+          origin=http://127.0.0.1:8780
+          cookie="$(mktemp)"
+          for i in $(seq 1 60); do
+            if curl -fsS "$origin/" -o /tmp/flow-index.html; then break; fi
+            sleep 2
+          done
+          test -s /tmp/flow-index.html
+          grep -q '<title>Flow Web</title>' /tmp/flow-index.html
+          curl -fsS "$origin/api/v1/auth/session" | python3 -c 'import json,sys; assert not json.load(sys.stdin)["authenticated"]'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$origin/api/v1/health")" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -u "flow:$password" "$origin/api/v1/health")" = 401
+          curl -fsS "$origin/manifest.webmanifest" | python3 -c 'import json,sys; assert json.load(sys.stdin)["name"] == "Flow Web"'
+          printf '{"username":"flow","password":"%s","code":""}' "$password" | curl -fsS -c "$cookie" -H "Origin: $origin" -H 'Content-Type: application/json' --data-binary @- "$origin/api/v1/auth/login" | python3 -c 'import json,sys; assert json.load(sys.stdin)["authenticated"]'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$origin/media/image?u=https%3A%2F%2Fi.ytimg.com%2Fa.jpg")" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$cookie" "$origin/media/image?u=http%3A%2F%2F127.0.0.1%2F")" = 400
+          for command in list_downloads get_downloaded_video_ids list_download_collections; do
+            curl -fsS -b "$cookie" -H "Origin: $origin" -H 'Content-Type: application/json' -d '{}' "$origin/api/v1/rpc/$command" | python3 -c 'import json,sys; assert json.load(sys.stdin)==[]'
+          done
+          curl -fsS -b "$cookie" "$origin/api/v1/health" | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$cookie" -H 'Origin: https://example.invalid' -H 'Content-Type: application/json' -d '{}' "$origin/api/v1/rpc/get_settings")" = 403
+          curl -fsS -b "$cookie" -H "Origin: $origin" -H 'Content-Type: application/json' -d '{}' "$origin/api/v1/auth/logout" >/dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$cookie" "$origin/api/v1/health")" = 401
+          rm -f "$cookie"

@@ -1,5 +1,5 @@
 import { writeBackupFile } from "../../api/files";
-import { isTauriEnv } from "../../api/env";
+import { isTauriEnv, isWebMode } from "../../api/env";
 import { pickSaveFile } from "../../dialogs";
 import { formatAutoEq } from "./autoEqFormat";
 import { autoPreampDb } from "./filterMath";
@@ -18,6 +18,17 @@ export function eqExportText(state: EqState): string {
 
 /** Saves `text` where the user picks; false when they cancel. Throws when the write fails. */
 export async function saveEqTextFile(text: string, title: string, defaultName: string): Promise<boolean> {
+  if (isWebMode()) {
+    const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = defaultName;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    return true;
+  }
   if (!(await isTauriEnv())) return false;
   const path = await pickSaveFile(title, defaultName, [{ name: "EqualizerAPO", extensions: ["txt"] }]);
   if (!path) return false;

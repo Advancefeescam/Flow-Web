@@ -270,7 +270,7 @@ export function ShortsFeed() {
         })}
       </div>
 
-      <div className="absolute end-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-3">
+      <div className="flow-short-arrows absolute end-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-3">
         <NavButton
           ariaLabel={getString('shorts_previous_short')}
           disabled={activeIndex <= 0}

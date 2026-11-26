@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useState, useEffect } from "react";
+import { isWebMode } from "./lib/api/env";
 import { registerAutoBackup } from "./lib/api/backup";
 import { getString } from "./lib/i18n/index";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
@@ -190,7 +191,7 @@ function App() {
     void useSubscriptionStore.getState().loadSubscriptions();
     void useNotificationStore.getState().loadChannelPreferences();
     startAiList();
-    if (IS_MAIN_WINDOW) void registerAutoBackup(getString("settings_backup_failed_notice")).catch(() => {});
+    if (IS_MAIN_WINDOW && !isWebMode()) void registerAutoBackup(getString("settings_backup_failed_notice")).catch(() => {});
   }, []);
 
   useEffect(() => startWatchProgress(), []);
@@ -200,8 +201,8 @@ function App() {
     if (!IS_MAIN_WINDOW) return;
     const checkOnboarding = async () => {
       // A profile added from another device has its onboarding state in what that device sent.
-      await catchUpOnce();
       try {
+        await catchUpOnce();
         const completed = await getOnboardingStatus();
         if (!completed && location.pathname !== "/onboarding") {
           navigate("/onboarding");
@@ -231,7 +232,7 @@ function App() {
 
   if (loadingOnboarding || !tabsRestored) {
     return (
-      <div style={windowLayoutStyle} className="relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans">
+      <div style={windowLayoutStyle} className={`relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans ${isWebMode() ? "flow-web-shell" : ""}`}>
         <ThemeController />
         <TitleBar />
         <div className="flex flex-1 items-center justify-center">
@@ -246,7 +247,7 @@ function App() {
   }
 
   return (
-    <div style={windowLayoutStyle} className="relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans">
+    <div style={windowLayoutStyle} className={`relative flex h-screen flex-col overflow-hidden bg-background text-chrome-zinc-100 font-sans ${isWebMode() ? "flow-web-shell" : ""}`}>
       <ThemeController />
       <SelectionMenu />
       <TitleBar />

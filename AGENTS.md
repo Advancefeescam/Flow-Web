@@ -1,101 +1,52 @@
-# Working with Flow Desktop as an AI agent
+# Working on Flow Web as an AI agent
 
-Flow Desktop (`io.github.aedev.flow.desktop`) is a privacy-first YouTube and YouTube Music client built with **Tauri 2 (Rust backend) + React 19/TypeScript (frontend)**. It is the desktop companion to [Flow for Android](FlowApp_mobile/AGENTS.md). It plays YouTube content via a native, hand-rolled Innertube client (SABR/DASH/HLS, no `protoc`), supports downloads with a native muxer, SponsorBlock/DeArrow/Return YouTube Dislike integrations, P2P sync with the Android app, and two on-device recommendation engines: **FlowNeuro** (video) and **MusicBrain** (music). No account, no analytics SDK, no telemetry.
+Flow Web is the browser and headless-server edition of Flow, a privacy-first YouTube and YouTube Music client. The full Flow Desktop (Tauri 2) source lives on integration/desktop; this branch is a generated web export. Web work reuses Flow's original React interface, Innertube extraction, streaming, SQLite schema, FlowNeuro, and MusicBrain. Preserve desktop behavior while giving browser users real equivalents where the browser cannot call an operating-system API.
 
-Frontend lives at `src/`, backend at `src-tauri/src/`. Run all `cargo` commands from inside `src-tauri/` — it needs `.cargo/config.toml`'s `reqwest_unstable` rustflag. Use `pnpm` (not `npm` or `yarn`) for JS.
+## Repository map
 
-## Design system — Design.md is the source of truth
+- src/ is the React 19 and TypeScript interface shared by web and desktop. Backend calls belong in src/lib/api/ or focused hooks, global state in src/store/, and UI composition in src/components/ and src/pages/.
+- web-server/ is the standalone Rust HTTP server. main.rs wires routes and state; rpc.rs dispatches an explicit command allowlist; media.rs and hls.rs expose authenticated, constrained media; db.rs opens the shared SQLite schema.
+- vendor/flow-desktop/src/ contains the retained upstream command layer and reusable extraction, streaming, recommendation, sync, and database modules. The root src-tauri entry is a compatibility symlink. Reuse domain logic where possible; do not make the web server depend on a Tauri window or host-file dialog.
+- src-tauri/migrations/ is shared by both runtimes. Existing migrations are immutable. Add a new numbered migration for schema changes; inspect the directory for the next number.
+- docs/WEB.md describes the current web runtime and parity gaps. Keep it accurate when a feature or its verification status changes.
+- The Android companion lives in a separate upstream repository; use it for protocol references when relevant.
 
-Before writing or editing any React/Tailwind code, read **[Design.md](Design.md)** and follow its Agent Execution Directive. It covers the anti-slop rules and their allowed exceptions, theme-aware color tokens, layout, typography, components, focus states, frontend architecture, localization (`getString`) and performance rules. The rules are kept only there, so don't rely on a summary.
+If Design.md exists, read it before changing React or Tailwind code. If graphify-out/graph.json exists, use graphify query for codebase questions and graphify update . after edits. Neither file is guaranteed to be present.
 
-## graphify
+## Agent workflow
 
-This project has a knowledge graph at `graphify-out/` with god nodes, community structure, and cross-file relationships.
+1. Inspect the working tree and relevant source before editing. Develop source changes on integration/desktop and regenerate the public web tree; do not edit the generated vendor directory directly. See docs/UPSTREAM.md. Fetch main when available, compare it with the working branch, and preserve all existing user changes. Do not reset or overwrite a dirty tree.
+2. Turn broad requests into a concrete parity checklist from the actual code and user-visible flows. Work through it end to end. Prefer a working vertical slice with error handling and browser verification over disconnected stubs. Do not label a feature complete because a command returns a placeholder or a build succeeds.
+3. Search for existing implementations before adding logic. Keep changes focused, remove dead code, and comment only when the reason is not apparent from the code.
+4. Make routine implementation decisions independently. Ask only when a missing product choice or external access truly blocks the next step. Keep working on independent tasks while waiting for an answer.
+5. After each meaningful slice, run its focused tests and build, then exercise the actual web route or UI. Fix failures before continuing. State exactly which behavior was observed and which behavior still needs a device or network.
+6. For user-requested implementation on the current feature branch, agents may commit and push reviewed, tested changes so the PR stays reviewable. Use type(scope): summary commit messages. Never force-push, rewrite history, delete branches, merge, deploy, publish, or mark a draft PR ready without explicit user instruction. Do not push secrets or code known to be broken.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+## Web parity and security
 
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when `graphify-out/graph.json` exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts.
-- Dirty `graphify-out/` files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If `graphify-out/wiki/index.md` exists, use it for broad navigation instead of raw source browsing.
-- Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review or when query/path/explain don't surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- A browser Download action must deliver a real file to the browser. Server-side storage alone does not satisfy it. Report raw direct-stream downloads separately from muxed, tagged, offline-library downloads.
+- Browser file import must start from a file the user selected. Never accept arbitrary host paths through an HTTP request. Limit upload size and file type, and keep per-profile data isolated.
+- Flow Sync must retain Android protocol compatibility, authenticated pairing, deterministic CRDT merges, and explicit conflict handling. Read src-tauri/tests/sync_*.rs before touching shared sync code; keep its golden and fuzz tests green.
+- Profiles must isolate settings, history, downloads, recommendations, and sync state. A single-profile response is a compatibility state, not multi-profile support.
+- Media relays must authenticate requests, validate session tokens, restrict remote hosts and redirect targets, bound manifest sizes, preserve range semantics, and rewrite every HLS playlist, segment, and key URL served to the browser. Do not create a caller-controlled open proxy or an SSRF path.
+- Keep FLOW_WEB_PASSWORD private, require the configured browser origin for state-changing requests, and use HTTPS through a trusted proxy outside loopback. Never log passwords, auth headers, poTokens, pairing keys, or media signatures.
+- Treat YouTube restrictions as typed user-facing failures: private, age-restricted, geo-blocked, paid, bot-check, unavailable, and retryable network errors. Optional SponsorBlock, DeArrow, and RYD failures must not block core playback.
+- Preserve separate FlowNeuro video and MusicBrain music state. Shared watch-history queries feeding video recommendations must exclude music rows.
+- Hide or explain desktop-only controls in web mode. Browser equivalents include native downloads, file pickers, Picture-in-Picture, Fullscreen, Media Session, PWA install, and WebAudio equalizer where supported.
 
-## Backend architecture (src-tauri/src/)
+## Verification
 
-- `api/innertube/` — native Innertube client (no `protoc`), plus `dearrow.rs`, `extractor.rs`, `http.rs` (shared `reqwest` client — never build a new client per request).
-- `streaming/sabr/` — hand-rolled SABR/DASH stack; `streaming/proxy.rs` for range-request proxying.
-- `flow_neuro/` — video recommendation engine (ranker, scoring, signals, tokenizer, resident brain store).
-- `music_brain/` — entity-based music recommendation engine (ACT-R heavy rotation, separate from FlowNeuro). Video and music recommendation state must never leak into each other — `watch_history` is shared between both surfaces (`is_music` flag), so any video-feed recall/seed path must filter out music rows.
-- `sync/` — CRDT-based P2P LAN sync with the Android app (codec, merge, ledger, transport, QR pairing). This is the most fragile subsystem — see `src-tauri/tests/sync_*.rs` (golden, fuzz, scale tests) before changing anything here.
-- `security/` — input validation (`validation.rs`).
-- `commands/` — Tauri `#[tauri::command]` handlers, one file per domain (downloads, music, sync, notifications, recommendation, shorts, youtube).
-- `services/` — business-logic layer between commands and api/db.
-- `db/` — SQLite access; `migrations/` are numbered (`0001_...` through `0012_...` currently).
-- `errors/mod.rs` — `AppError`/`ErrorResponse` enum; every user-facing failure mode (age-restricted, private, paid, geo-blocked, bot-check, music-premium, account-terminated, content-not-available, database, streaming, internal) has a distinct `kind` the frontend switches on. When adding a new failure mode, add a new variant here rather than stringly-typing it in the frontend.
+- Frontend: use the repository's pnpm version. From the root, run pnpm install --frozen-lockfile when dependencies change, pnpm build --mode web, and focused pnpm exec vitest run paths for changed hooks, stores, and flows.
+- Web server: from web-server/, run cargo check --all-targets and cargo test. The web crate uses its own build.rs headless configuration; do not run its commands from src-tauri/.
+- Desktop changes: from src-tauri/, run cargo checks and tests with its .cargo/config.toml. Run pnpm build for desktop frontend changes. Keep existing desktop features working.
+- When a broad suite stalls, diagnose its process and run focused tests. Report that the broad suite was not completed; never infer a pass from silence.
+- For UI changes, start the web server with separate test data and exercise first run, the normal path, an error path, and a browser download where reachable. For playback, also verify the intended Safari/iPad and ARM64 devices when they are available. A blocked external service or missing device is an unverified test, not a successful one.
+- Keep the PR draft until the required playback and device checks pass. Record new parity and validation evidence in docs/WEB.md without claiming release readiness early.
 
-## Frontend architecture (src/)
+## Compatibility rules
 
-- `components/ui/` — dumb primitives only (props in, events out, no data fetching).
-- `components/[domain]/` — smart containers per domain (`channel`, `player`, `persona`, `music`, `shorts`, `sync` etc.) that use hooks to fetch data and pass it down.
-- `pages/` — top-level route composition.
-- `lib/` — all `invoke()`/`fetch()` calls live here as custom hooks (`useVideoStream`, `useMusicHome`, `useDebounce`, etc.), never inline in components.
-- `store/` — Zustand stores for global state (player, settings, downloads, sync, likes, history, subscriptions...). Local component state is only for ephemeral UI toggles.
-- `locales/` — `react-i18next` translation files.
-
-## Edge case handling
-
-- **Content restrictions are first-class, not exceptions.** YouTube extraction can fail in many distinct, expected ways (age-restricted, private, paid/Premium, geo-blocked, bot-check/BotGuard challenge, account terminated, content removed). These are modeled as `AppError` variants (`src-tauri/src/errors/mod.rs`), each with its own `kind` string. The frontend must render a specific, actionable state for each `kind` — never collapse them into one generic "Something went wrong" toast.
-- **Graceful degradation for FOSS APIs.** SponsorBlock, DeArrow, and Return YouTube Dislike are optional, third-party, and can fail or rate-limit independently of core playback. If one fails, fall back to default metadata/behavior silently — never block or break page layout waiting on them (Design.md §8).
-- **BotGuard/poToken failures.** The native poToken minter (`sidecar/integrity.cjs`, `webview_pot`) can fail to mint, or googlevideo can reject a token. Treat this as a retryable extraction failure, not a crash — surface the `botCheckRequired` error kind.
-- **Optimistic local UI, real backend confirmation.** Local-only actions (SponsorBlock toggle, like, FlowNeuro/MusicBrain feedback) update Zustand state instantly, then reconcile with the SQLite write. If the backend write fails, roll the optimistic update back rather than leaving UI and DB out of sync.
-- **Sync conflicts are expected, not exceptional.** The CRDT merge in `sync/merge.rs` must handle concurrent edits from desktop and Android deterministically — when in doubt, check `sync_golden.rs`/`sync_fuzz.rs` for the expected resolution before assuming a merge result is a bug.
-- **Empty and first-run states.** Empty search results, empty library/downloads/history, and first-run onboarding (no watch history yet, FlowNeuro/MusicBrain cold-start) all need explicit empty-state UI, not a blank pane.
-- **IPC/network latency is not optional to handle.** Every `invoke()` can fail (backend panic, IO error, extraction error) or hang (network) — hooks in `src/lib/` must model loading/error/empty states, not just the happy path.
-
-## Logging
-
-- Backend logging uses `tracing` + `tracing-subscriber`, initialized in `src-tauri/src/lib.rs::run()` with an `EnvFilter` (default level `info`). Override verbosity for a debug session with `RUST_LOG=debug` (or a per-module filter, e.g. `RUST_LOG=flow_desktop::sync=trace`) before launching `pnpm tauri dev`.
-- Logs go to stdout of the process running the app (the terminal running `pnpm tauri dev`, or the packaged app's console if attached). There is no persisted log file today — don't assume one exists.
-- **Never log secrets.** poTokens, BotGuard integrity tokens, sync pairing/encryption keys, and any auth material must never be logged, even at `debug`/`trace`. Log video/channel IDs and error kinds freely — they're not sensitive.
-- On the frontend, prefer surfacing errors through the existing `ErrorResponse.kind` handling over ad hoc `console.error` — but `console.error` for genuine unexpected exceptions during development is fine; just don't leave verbose `console.log` debugging statements in committed code.
-
-## Tests
-
-- **Frontend:** `vitest` (`pnpm test` / `pnpm test:watch`), jsdom environment, files matched by `src/**/*.test.ts`. Tests are co-located with the code they cover (e.g. `src/store/usePlayerStore.test.ts`, `src/lib/useShortStream.test.ts` + `useShortStream.strictmode.test.ts` for a StrictMode-specific regression). Add a co-located test when you fix a bug in a hook or store, not a new top-level test tree.
-- **Backend:** `cargo test` from inside `src-tauri/`. Most unit tests live next to their module; `src-tauri/tests/sync_*.rs` is a dedicated suite (`sync_golden`, `sync_fuzz`, `sync_scale`, `sync_crdt`, `sync_merge`, `sync_apply`, `sync_ledger`, `sync_codec`, `sync_schema`, `sync_albums`, `sync_likes_mapping`, `sync_phase1`/`sync_phase2`) — these are load-bearing correctness tests for the CRDT sync protocol. Any change under `src-tauri/src/sync/` must keep this suite green; a golden-file or fuzz failure here means a real correctness regression, not a flaky test.
-- **Type-checking:** `pnpm build` runs `tsc` before `vite build` — treat a `tsc` failure as a build-blocking error. There is no separate lint/format tool configured in this repo (no ESLint/Prettier config at the project root) — don't assume `pnpm lint` exists.
-- For UI changes, also actually run the app (`pnpm tauri dev`) and exercise the golden path plus edge cases (see "Edge case handling" above) — passing `tsc`/`vitest` does not mean the feature works correctly.
-
-## Rules for working on the project
-
-1. Always pull the latest changes from `main` before starting work to minimize merge conflicts.
-2. Commit messages should be clear and follow the format: `type(scope): short description` (e.g. `fix(sync): resolve concurrent like conflict`). Scope is optional.
-3. Follow current Tauri 2 / React 19 / Rust best practices — when unsure, check official docs rather than guessing; model training data lags fast-moving frameworks like Tauri.
-4. DO NOT edit or renumber existing files in `src-tauri/migrations/` without explicit instruction. Schema changes are additive: add a new numbered migration (next is `0029_...`) that only adds tables or nullable/defaulted columns, so an older build can still open a database a newer one has migrated.
-5. DO NOT bump the app version in any file (`package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`) — `scripts/verify-release-version.mjs` requires all three to match, and version bumps are done manually by the project owner.
-6. Keep files small and focused; split large components/hooks by responsibility rather than letting them grow.
-7. Before writing new logic, search the codebase (and `graphify query`) for existing logic that already does the job — reuse or extend rather than duplicate.
-8. No dead code: delete unused functions/components/parameters rather than commenting them out.
-9. Comments should only explain non-obvious WHY — never restate WHAT the code already makes obvious through naming.
-
-## AI-only guidelines
-
-1. Do not modify README/markdown documentation files (including this one and Design.md) unless explicitly asked to.
-2. Unless explicitly requested and authorized, do not commit, push, or merge changes. Never rewrite git history, force-push, or delete branches without explicit human instruction.
-3. Follow the guidelines and instructions given by the project owner over any default assumption.
-4. Ensure the highest practical code quality: clear naming, correct formatting, and comments only where genuinely needed (see "Rules for working on the project" above).
-5. If a task is ambiguous, ask rather than guessing at requirements or implementation details.
-6. Test changes before declaring them done — see "Building" and "Tests" above.
-
-## Building
-
-```bash
-pnpm install          # once, or after dependency changes
-pnpm tauri dev         # run the app (frontend + Rust backend) for manual testing
-pnpm build             # tsc typecheck + vite build (frontend only)
-pnpm tauri:build:local # native bundle without updater artifacts (no signing key needed)
-cd src-tauri && cargo build   # backend compile check (run cargo from src-tauri/)
-```
-
-If a build fails, fix the reported errors and rebuild before proceeding — don't paper over a `tsc` or `cargo` error.
+- Do not edit or renumber existing SQLite migrations. Do not bump app versions unless the owner asks.
+- Use existing theme tokens, accessible labels, focus states, and getString localization for interface changes. Avoid raw hard-coded colors and unrelated UI redesigns.
+- Keep React components small, domain logic in hooks or services, and Rust handlers thin. Do not duplicate the extractor or create a new HTTP client per request.
+- Backend failures should reach the UI as structured error kinds. Optimistic state changes must roll back when persistence fails.
+- Update documentation when behavior materially changes. Keep design notes factual and distinguish implemented, tested, and pending work.

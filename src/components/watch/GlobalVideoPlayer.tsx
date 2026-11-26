@@ -1,3 +1,5 @@
+import { isWebMode } from "../../lib/api/env";
+import { useWebStackedWatch } from "../../lib/webAdaptive";
 import { miniPlayerWidthPx } from "../../lib/miniPlayerSize";
 import { getString } from "../../lib/i18n/index";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -44,6 +46,7 @@ function boundsEqual(a: PlayerBounds | null, b: PlayerBounds | null) {
 
 export function GlobalVideoPlayer() {
   const navigate = useNavigate();
+  const stackedWatch = useWebStackedWatch();
   const location = useLocation();
   const currentVideo = usePlayerStore((s) => s.currentVideo);
   const videoPlayerMode = usePlayerStore((s) => s.videoPlayerMode);
@@ -112,6 +115,15 @@ export function GlobalVideoPlayer() {
       const frame = frameRef.current;
       if (!frame) return;
       frame.style.transform = `translate3d(${bounds.left}px, ${bounds.top}px, 0)`;
+      if (stackedWatch) {
+        const main = document.querySelector<HTMLElement>("[data-flow-watch-player-slot]")?.closest("main");
+        const viewport = main?.getBoundingClientRect();
+        if (viewport) {
+          const top = Math.min(bounds.height, Math.max(0, viewport.top - bounds.top));
+          const bottom = Math.min(bounds.height, Math.max(0, bounds.top + bounds.height - viewport.bottom));
+          frame.style.clipPath = `inset(${top}px 0 ${bottom}px 0)`;
+        }
+      }
       if (!prev || prev.width !== bounds.width || prev.height !== bounds.height) {
         frame.style.width = `${bounds.width}px`;
         frame.style.height = `${bounds.height}px`;
@@ -128,12 +140,13 @@ export function GlobalVideoPlayer() {
     const sync = () => {
       const next = readSlotBounds();
       if (!next) return;
+      if (stackedWatch) pageTop = null;
       pageTop ??=
         document.querySelector("[data-flow-watch-player-slot='true']")?.closest("main")?.getBoundingClientRect().top ?? null;
       publishBelowTopbar(pageTop !== null && next.top >= pageTop - 0.5);
       const prev = lastSlotBoundsRef.current;
       lastSlotBoundsRef.current = next;
-      if (!boundsEqual(prev, next)) writeFrameBounds(next, prev);
+      if (stackedWatch || !boundsEqual(prev, next)) writeFrameBounds(next, prev);
       if (!prev || prev.width !== next.width || prev.height !== next.height) {
         setSlotBounds((old) => (boundsEqual(old, next) ? old : next));
       }
@@ -152,6 +165,13 @@ export function GlobalVideoPlayer() {
     };
     const observer = new ResizeObserver(onResize);
     if (slot) observer.observe(slot);
+    if (isWebMode()) {
+      const page = slot?.closest("main");
+      const topbar = document.querySelector(".flow-adaptive-topbar");
+      if (page) observer.observe(page);
+      if (topbar) observer.observe(topbar);
+      window.visualViewport?.addEventListener("resize", onResize);
+    }
     window.addEventListener("resize", onResize);
 
     let scrollRaf: number | null = null;
@@ -179,7 +199,8 @@ export function GlobalVideoPlayer() {
     return () => {
       observer.disconnect();
       // Fullscreen uses insets, and the floating layout writes its own transform after this.
-      if (frameRef.current) frameRef.current.style.transform = "";
+      if (frameRef.current) { frameRef.current.style.transform = ""; frameRef.current.style.clipPath = ""; }
+      if (isWebMode()) window.visualViewport?.removeEventListener("resize", onResize);
       lastSlotBoundsRef.current = null;
       publishBelowTopbar(false);
       if (resizeRaf !== null) window.cancelAnimationFrame(resizeRaf);
@@ -188,7 +209,7 @@ export function GlobalVideoPlayer() {
       if (scrollRaf !== null) window.cancelAnimationFrame(scrollRaf);
       window.cancelAnimationFrame(settleRaf);
     };
-  }, [isFloating, isPoppedOut, isVideoFullscreen, currentVideo?.id, location.pathname]);
+  }, [isFloating, isPoppedOut, isVideoFullscreen, currentVideo?.id, location.pathname, stackedWatch]);
 
   // Every fullscreen starts with the whole picture; a panel opens only when asked for there.
   useEffect(() => {
@@ -210,8 +231,8 @@ export function GlobalVideoPlayer() {
     frame.style.height = `${to.height}px`;
     lastSlotBoundsRef.current = to;
     setSlotBounds(to);
-    glideFrame(frame, { top: from.top, left: from.left, width: from.width, height: from.height }, to, isTheaterMode);
-  }, [isTheaterMode, isFloating, isPoppedOut, isVideoFullscreen]);
+    if (!stackedWatch) glideFrame(frame, { top: from.top, left: from.left, width: from.width, height: from.height }, to, isTheaterMode);
+  }, [isTheaterMode, isFloating, isPoppedOut, isVideoFullscreen, stackedWatch]);
 
   useEffect(() => {
     const previousPath = previousPathRef.current;
@@ -340,10 +361,10 @@ export function GlobalVideoPlayer() {
           isVideoFullscreen
             ? "fixed z-[300] flex overflow-hidden bg-chrome-black"
             : isFloating
-            ? `group fixed z-50 overflow-hidden rounded-xl border border-chrome-white/10 bg-chrome-black touch-none ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"}`
+            ? `flow-floating-video group fixed z-50 overflow-hidden rounded-xl border border-chrome-white/10 bg-chrome-black touch-none ${isDragging ? "cursor-grabbing select-none" : "cursor-grab"}`
             : isTheaterMode
-            ? "fixed z-30 bg-chrome-black"
-            : "fixed z-30 rounded-xl bg-chrome-black"
+            ? "flow-watch-frame fixed z-30 bg-chrome-black"
+            : "flow-watch-frame fixed z-30 rounded-xl bg-chrome-black"
         }
         style={frameStyle}
         dir="ltr"

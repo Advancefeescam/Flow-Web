@@ -1,6 +1,8 @@
 import { flushRecapQueue } from "../recap/recapQueue";
 import { pickSaveFile } from "../dialogs";
 import { exportBackupFile, type BackupFileKind, type ExportResult } from "../api/backup";
+import { isWebMode } from "../api/env";
+import { saveBrowserExport } from "./browserExports";
 
 const FILE_NAMES: Record<BackupFileKind, (now: number) => string> = {
   APP_DATA: (now) => `flow_backup_${now}.json`,
@@ -18,6 +20,10 @@ export function backupFileName(kind: BackupFileKind, now = Date.now()): string {
 /** Asks where to save, then writes the file. Null when the viewer cancels. */
 export async function saveBackupFile(kind: BackupFileKind, title: string): Promise<ExportResult | null> {
   const name = backupFileName(kind);
+  if (isWebMode()) {
+    if (kind === "WATCH_HISTORY" || kind === "NEWPIPE_SUBSCRIPTIONS") return saveBrowserExport(kind, title, name);
+    throw new Error("Full Flow backup export is not available in this web build");
+  }
   const extension = name.endsWith(".zip") ? "zip" : "json";
   const path = await pickSaveFile(title, name, [{ name: extension.toUpperCase(), extensions: [extension] }]);
   if (!path) return null;

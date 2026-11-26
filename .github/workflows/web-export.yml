@@ -1,0 +1,30 @@
+name: Prepare web export
+on:
+  push:
+    branches: [integration/desktop]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+concurrency:
+  group: prepare-flow-web-export
+  cancel-in-progress: false
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: integration/desktop
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare draft web export
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+          bash scripts/prepare-web-export.sh

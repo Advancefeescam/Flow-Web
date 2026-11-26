@@ -62,8 +62,8 @@ export function ToastHost() {
   return (
     <div
       aria-live="polite"
-      className="pointer-events-none fixed end-6 z-[100] w-[360px] max-w-[calc(100vw-3rem)] transition-[bottom] duration-200 ease-out"
-      style={{ bottom: dockVisible ? ABOVE_DOCK_PX : BOTTOM_PX }}
+      className="flow-web-toast pointer-events-none fixed end-6 z-[100] w-[360px] max-w-[calc(100vw-3rem)] transition-[bottom] duration-200 ease-out"
+      style={{ bottom: `calc(${dockVisible ? ABOVE_DOCK_PX : BOTTOM_PX}px + var(--flow-web-nav-space, 0px))` }}
     >
       <AnimatePresence initial={false}>
         {toast ? (
