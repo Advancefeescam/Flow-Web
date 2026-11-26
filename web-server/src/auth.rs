@@ -40,6 +40,7 @@ struct Session {
     pending: Option<(Vec<u8>, Instant)>,
 }
 struct AuthState {
+    healthy: bool,
     persisted: Persisted,
     sessions: HashMap<[u8; 32], Session>,
     attempts: u32,
@@ -142,7 +143,7 @@ impl Config {
         }
         Ok(Self {
             digest: digest(&password), origin: url.origin().ascii_serialization(), secure, path,
-            state: Arc::new(Mutex::new(AuthState { persisted, sessions: HashMap::new(), attempts: 0, window: Instant::now() })),
+            state: Arc::new(Mutex::new(AuthState { healthy: true, persisted, sessions: HashMap::new(), attempts: 0, window: Instant::now() })),
         })
     }
     fn valid_password(&self, password: &str) -> bool {
@@ -157,7 +158,7 @@ impl Config {
             tracing::error!("Could not persist authentication state: {e}");
             // Fail closed after an ambiguous disk commit; a restart reloads the durable state.
             state.sessions.clear();
-            state.persisted = value;
+            state.healthy = false;
             return Err(error(StatusCode::INTERNAL_SERVER_ERROR, "Could not save security settings. Check the server."));
         }
         state.persisted = value;
@@ -192,6 +193,7 @@ fn attempt(state: &mut AuthState) -> Result<(), Response> {
 fn invalid() -> Response { error(StatusCode::UNAUTHORIZED, "Invalid username, password or verification code.") }
 fn dispatch(config: &Config, path: &str, method: &Method, key: Option<[u8; 32]>, input: Input) -> Result<Response, Response> {
     let mut state = config.state.lock().map_err(|_| error(StatusCode::INTERNAL_SERVER_ERROR, "Authentication unavailable."))?;
+    if !state.healthy { return Err(error(StatusCode::SERVICE_UNAVAILABLE, "Authentication storage unavailable. Restart after repairing it.")); }
     state.sessions.retain(|_, s| s.expires > Instant::now());
     if path == "/api/v1/auth/session" && *method == Method::GET {
         return Ok(ok(status(&state, key)));
@@ -277,10 +279,10 @@ pub async fn guard(State(config): State<Config>, request: Request, next: Next) -
     let headers = request.headers();
     let key = session_key(headers);
     let read = method == Method::GET || method == Method::HEAD;
-    let cross_origin = headers.get("sec-fetch-site").and_then(|v| v.to_str().ok()) == Some("cross-site")
-        || (!read && headers.get(header::ORIGIN).and_then(|v| v.to_str().ok()) != Some(config.origin.as_str()));
     let matched = request.extensions().get::<MatchedPath>().map(|p| p.as_str()).unwrap_or("");
     let protected = [&path[..], matched].iter().any(|p| *p == "/api" || *p == "/media" || p.starts_with("/api/") || p.starts_with("/media/"));
+    let cross_origin = (protected && headers.get("sec-fetch-site").and_then(|v| v.to_str().ok()) == Some("cross-site"))
+        || (!read && headers.get(header::ORIGIN).and_then(|v| v.to_str().ok()) != Some(config.origin.as_str()));
     let mut response = if cross_origin {
         error(StatusCode::FORBIDDEN, "Cross-origin request refused.")
     } else if path.starts_with("/api/v1/auth/") {
@@ -297,7 +299,7 @@ pub async fn guard(State(config): State<Config>, request: Request, next: Next) -
     } else {
         let authorized = config.state.lock().ok().is_some_and(|mut state| {
             state.sessions.retain(|_, s| s.expires > Instant::now());
-            key.is_some_and(|k| state.sessions.contains_key(&k))
+            state.healthy && key.is_some_and(|k| state.sessions.contains_key(&k))
         });
         if (protected || !read) && !authorized {
             error(StatusCode::UNAUTHORIZED, "Sign in to Flow Web.")
@@ -327,7 +329,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("flow-auth-{}", Uuid::new_v4()));
         fs::create_dir(&dir).unwrap();
         let config = Config { digest: digest("long-test-password"), origin: "http://localhost:8780".into(), secure: false,
-            path: dir.join("web-auth.json"), state: Arc::new(Mutex::new(AuthState { persisted: Persisted::default(),
+            path: dir.join("web-auth.json"), state: Arc::new(Mutex::new(AuthState { healthy: true, persisted: Persisted::default(),
                 sessions: HashMap::new(), attempts: 0, window: Instant::now() })) };
         let login = |code: String| Input { username: "flow".into(), password: "long-test-password".into(), code };
         assert!(dispatch(&config, "/api/v1/auth/login", &Method::POST, None, Input::default()).is_err());

@@ -22,14 +22,22 @@ jobs:
           echo "::add-mask::$password"
           docker run --detach --rm --name flow-web-ci -p 127.0.0.1:8780:8780 -e FLOW_WEB_PASSWORD="$password" -e FLOW_WEB_ORIGIN=http://127.0.0.1:8780 flow-web:ci
           trap 'docker logs flow-web-ci || true; docker stop flow-web-ci || true' EXIT
+          umask 077
+          origin=http://127.0.0.1:8780
+          cookie="$(mktemp)"
           for i in $(seq 1 60); do
-            if curl -fsS -u "flow:$password" http://127.0.0.1:8780/ -o /tmp/flow-index.html; then
-              break
-            fi
+            if curl -fsS "$origin/" -o /tmp/flow-index.html; then break; fi
             sleep 2
           done
           test -s /tmp/flow-index.html
           grep -q '<title>Flow Web</title>' /tmp/flow-index.html
-          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8780/)" = 401
-          curl -fsS -u "flow:$password" http://127.0.0.1:8780/manifest.webmanifest | python3 -c 'import json,sys; assert json.load(sys.stdin)["name"] == "Flow Web"'
-          test "$(curl -s -o /dev/null -w '%{http_code}' -u "flow:$password" -H 'Origin: https://example.invalid' -H 'Content-Type: application/json' -d '{}' http://127.0.0.1:8780/api/v1/rpc/get_settings)" = 403
+          curl -fsS "$origin/api/v1/auth/session" | python3 -c 'import json,sys; assert not json.load(sys.stdin)["authenticated"]'
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$origin/api/v1/health")" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -u "flow:$password" "$origin/api/v1/health")" = 401
+          curl -fsS "$origin/manifest.webmanifest" | python3 -c 'import json,sys; assert json.load(sys.stdin)["name"] == "Flow Web"'
+          printf '{"username":"flow","password":"%s","code":""}' "$password" | curl -fsS -c "$cookie" -H "Origin: $origin" -H 'Content-Type: application/json' --data-binary @- "$origin/api/v1/auth/login" | python3 -c 'import json,sys; assert json.load(sys.stdin)["authenticated"]'
+          curl -fsS -b "$cookie" "$origin/api/v1/health" | python3 -c 'import json,sys; assert json.load(sys.stdin)["status"] == "ok"'
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$cookie" -H 'Origin: https://example.invalid' -H 'Content-Type: application/json' -d '{}' "$origin/api/v1/rpc/get_settings")" = 403
+          curl -fsS -b "$cookie" -H "Origin: $origin" -H 'Content-Type: application/json' -d '{}' "$origin/api/v1/auth/logout" >/dev/null
+          test "$(curl -s -o /dev/null -w '%{http_code}' -b "$cookie" "$origin/api/v1/health")" = 401
+          rm -f "$cookie"

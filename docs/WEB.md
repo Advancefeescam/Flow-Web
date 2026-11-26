@@ -2,13 +2,23 @@
 
 This branch keeps the original Flow frontend, extraction, streaming and SQLite code. It is not yet a validated release. The desktop app remains available through the existing build path.
 
+## Sign-in and security
+
+Open the instance in a regular browser. Sign in as `flow` with the existing `FLOW_WEB_PASSWORD` (at least 16 characters, ideally a long random secret). HTTP Basic authentication is no longer accepted for API or media requests.
+
+In **Settings → Account & security**, configure optional TOTP using a six-digit authenticator app with a 30-second period. Start enrollment with the administrator password, copy the setup key into your authenticator, then confirm with the password and a valid code. Enrollment expires after five minutes. Enabling or disabling TOTP revokes other sessions. Codes cannot be reused, including immediately after enrollment; wait for the next code before testing sign-in. Sessions last 12 hours and are invalidated on server restart. The browser's session cookie is HttpOnly, SameSite=Strict, and Secure when `FLOW_WEB_ORIGIN` is HTTPS. Login and sensitive actions are rate limited across the instance.
+
+This is single-administrator authentication, not separate user accounts. Password changes remain an environment configuration change followed by a restart. Passkeys, recovery codes, QR-based enrollment and isolated per-user data are not implemented. The setup key is stored in the separate private `web-auth.json` in the configured data directory; back it up securely and do not share it. A trusted server owner can recover from a lost authenticator by stopping the service, securely moving `web-auth.json` out of the data directory, and restarting with the existing password. This disables TOTP, so re-enroll immediately. Never remove the main Flow database. Use one server process per data directory.
+
+For testing on localhost, set `FLOW_WEB_ORIGIN=http://127.0.0.1:8780`. Remote access requires a trusted HTTPS reverse proxy and the exact external HTTPS origin. Do not publicly expose this experimental build before security and media tests have passed.
+
 ## Development
 
 - Install Node 24, the repository's pnpm version, stable Rust, and Linux build dependencies.
 - Run `pnpm install --frozen-lockfile` and `pnpm build --mode web` from the repository root.
 - Set `FLOW_WEB_PASSWORD` to a private password of at least 16 characters; set `FLOW_WEB_ORIGIN` to the exact browser origin.
 - Run `cd web-server && cargo run`.
-- Open http://127.0.0.1:8780. The experimental instance uses HTTP Basic authentication. Use HTTPS on a trusted reverse proxy for remote access, and never publish this test server openly.
+- Open http://127.0.0.1:8780. Sign in on the Flow Web login screen using username `flow` and your configured password. Use HTTPS on a trusted reverse proxy for remote access, and never publish this test server openly.
 
 ## Container
 

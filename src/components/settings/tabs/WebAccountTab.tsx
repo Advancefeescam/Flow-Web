@@ -77,7 +77,7 @@ export function WebAccountTab() {
         <p className="text-sm text-on-surface-variant">Add a time-based account to your authenticator app. Use this setup key, six digits and a 30-second period. Setup expires in five minutes.</p>
         <div className="rounded-xl bg-surface-container-high p-3 break-all font-mono text-sm select-all text-on-surface">{enrollment.secret}</div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="tonal" type="button" onClick={() => void navigator.clipboard.writeText(enrollment.secret).then(() => setNotice("Setup key copied.")).catch(() => setError("Select and copy the setup key manually."))}><Copy size={16}/> Copy key</Button>
+          <Button variant="tonal" type="button" onClick={() => { if (!navigator.clipboard) { setError("Select and copy the setup key manually."); return; } void navigator.clipboard.writeText(enrollment.secret).then(() => setNotice("Setup key copied.")).catch(() => setError("Select and copy the setup key manually.")); }}><Copy size={16}/> Copy key</Button>
           <a className="inline-flex items-center rounded-full px-4 py-2 text-primary text-sm font-medium" href={enrollment.uri}>Open authenticator</a>
         </div>
         <p className="text-xs text-on-surface-variant">Keep the setup key private. If you lose your authenticator, server-owner recovery is required.</p>
