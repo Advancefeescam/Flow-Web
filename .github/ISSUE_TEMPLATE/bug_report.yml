@@ -1,175 +1,66 @@
 name: Bug report
-description: Report a reproducible problem in Flow Desktop.
+description: Report a reproducible problem in Flow Web.
 title: "[Bug]: "
-labels:
-  - bug
-  - needs-triage
+labels: [bug]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for helping improve Flow. Please include enough detail for someone else to reproduce the problem. Remove tokens, cookies, account data, and other secrets from logs before submitting them.
-
   - type: checkboxes
     id: checks
     attributes:
       label: Before submitting
       options:
-        - label: I searched the existing open and closed issues for this problem.
+        - label: I checked the web runtime documentation and existing reports.
           required: true
-        - label: I can reproduce this on the latest available Flow release or a current development build.
+        - label: I removed credentials, cookies, signed media URLs and personal data.
           required: true
-        - label: I removed private account data, authentication tokens, cookies, and personal information.
-          required: true
-
   - type: input
-    id: app-version
+    id: commit
     attributes:
-      label: Flow version
-      description: Use the release version or commit SHA. Do not write only "latest."
-      placeholder: "0.1.0 or 1a2b3c4"
+      label: Flow Web commit or version
     validations:
       required: true
-
-  - type: dropdown
-    id: operating-system
-    attributes:
-      label: Operating system
-      options:
-        - Windows 11
-        - Windows 10
-        - macOS
-        - Ubuntu
-        - Debian
-        - Fedora or another RPM-based distribution
-        - Other Linux distribution
-    validations:
-      required: true
-
   - type: input
-    id: os-version
+    id: browser
     attributes:
-      label: OS version
-      description: Include the exact release or build number and desktop environment on Linux.
-      placeholder: "Windows 11 24H2 build 26100; macOS 15.5; Ubuntu 24.04 GNOME"
+      label: Browser, version and client OS
+      placeholder: Safari / iPadOS, Chrome / Windows, Firefox / Linux
     validations:
       required: true
-
-  - type: dropdown
-    id: architecture
-    attributes:
-      label: CPU architecture
-      options:
-        - x64 / x86_64
-        - ARM64 / aarch64
-        - Other
-    validations:
-      required: true
-
-  - type: dropdown
-    id: package
-    attributes:
-      label: Installation package
-      options:
-        - Windows NSIS installer
-        - macOS DMG
-        - Linux AppImage
-        - Linux deb
-        - Linux rpm
-        - Development build from source
-        - Other
-    validations:
-      required: true
-
   - type: input
-    id: webview
+    id: server
     attributes:
-      label: WebView/runtime version
-      description: On Windows, include the Microsoft Edge WebView2 version. On Linux, include the WebKitGTK version if known.
-      placeholder: "WebView2 149.0.4022.80 or WebKitGTK 2.x"
-
-  - type: dropdown
-    id: graphics-mode
-    attributes:
-      label: Graphics compatibility tried (Linux)
-      description: Settings > Appearance > Graphics compatibility. Restart Flow after changing it. Many blank, black or flickering windows go away with Compatible.
-      options:
-        - Not tried
-        - Automatic
-        - Compatible
-        - Safe
-        - Not on Linux
-
-  - type: input
-    id: graphics
-    attributes:
-      label: Graphics details (Linux)
-      description: Copy the Graphics and Video decoders rows from Settings > About. Report on GitHub in Settings > Diagnostics & logs fills this in.
-      placeholder: "Tier 0 (default), Automatic mode, x11, appimage, WebKitGTK 2.48.3"
-
+      label: Server OS, architecture and deployment
+      placeholder: Debian ARM64 / Podman Compose / source build
+    validations:
+      required: true
   - type: dropdown
     id: area
     attributes:
       label: Affected area
-      multiple: true
       options:
-        - Startup or installation
-        - Video playback or streaming
-        - Music playback
-        - Shorts
+        - Video playback or seeking
+        - Music
         - Search or browsing
-        - Subscriptions or playlists
-        - Recommendations
-        - Import, export, or local database
-        - Window or desktop integration
-        - Performance or resource usage
+        - Library or recommendations
+        - Downloads
+        - PWA or responsive UI
+        - Server, authentication or deployment
         - Other
     validations:
       required: true
-
   - type: textarea
     id: steps
     attributes:
-      label: Reproduction steps
-      description: Start from a fresh app launch and include the smallest reliable sequence.
-      placeholder: |
-        1. Launch Flow.
-        2. Open ...
-        3. Select ...
-        4. Observe ...
+      label: Steps to reproduce
     validations:
       required: true
-
   - type: textarea
-    id: expected
+    id: result
     attributes:
-      label: Expected behavior
+      label: Expected and actual behavior
     validations:
       required: true
-
-  - type: textarea
-    id: actual
-    attributes:
-      label: Actual behavior
-      description: Include how often it happens and whether restarting changes the result.
-    validations:
-      required: true
-
-  - type: textarea
-    id: media
-    attributes:
-      label: Relevant media or URL
-      description: If playback-specific, include a public video, playlist, channel, or music URL that reproduces the issue. Do not share private links.
-
   - type: textarea
     id: logs
     attributes:
-      label: Logs
-      description: Paste the smallest relevant log section. Redact secrets and personal data.
-      render: shell
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Additional context
-      description: Add screenshots, recordings, network conditions, proxy/VPN details, or regression information when relevant.
+      label: Relevant logs, screenshots or public video URL
+      description: Redact secrets, signed media URLs and private instance addresses.
