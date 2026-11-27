@@ -22,7 +22,11 @@ export const MAX_SUBTITLE_OFFSET_MS = 10 * 60 * 1000;
 function readSaved(): Saved {
   try {
     const parsed: unknown = JSON.parse(profileStorage.getItem(STORAGE_KEY) ?? "{}");
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Saved) : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    // Browser-picked File objects do not survive a reload; hide their stale entries.
+    return Object.fromEntries(Object.entries(parsed as Saved).map(([id, state]) => [
+      id, { ...state, files: state.files.filter((file) => !file.path.startsWith("web:")) },
+    ]));
   } catch {
     return {};
   }

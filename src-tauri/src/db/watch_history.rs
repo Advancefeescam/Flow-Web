@@ -27,7 +27,7 @@ impl WatchHistoryRecord {
     #[must_use]
     pub fn is_short_video(&self) -> bool {
         self.is_short
-            || crate::flow_neuro::scoring::is_known_short(
+            || crate::models::video::is_known_short(
                 self.total_duration_seconds
                     .and_then(|seconds| u64::try_from(seconds).ok()),
             )
@@ -396,7 +396,13 @@ mod channel_tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         upsert_watch_record(&pool, &record(Some("UC1"), 10))
             .await
             .unwrap();
@@ -413,7 +419,13 @@ mod channel_tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         let song = |seconds| WatchHistoryRecord {
             video_id: "song".into(),
             is_music: true,
@@ -445,7 +457,13 @@ mod channel_tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         let short = WatchHistoryRecord {
             total_duration_seconds: Some(150),
             is_short: true,
@@ -477,7 +495,13 @@ mod shorts_and_years_tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         pool
     }
 

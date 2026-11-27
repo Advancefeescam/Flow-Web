@@ -6,6 +6,8 @@ import { DownloadActivityDialog } from "./dialog/DownloadActivityDialog";
 import { MusicDownloadDialog } from "./dialog/MusicDownloadDialog";
 import { VideoDownloadDialog } from "./dialog/VideoDownloadDialog";
 import { downloadSurfaceLayoutId } from "./surface";
+import { isWebMode } from "../../lib/api/env";
+import { WebDownloadDialog } from "./dialog/WebDownloadDialog";
 
 export function DownloadDialog() {
   const dialog = useDownloadStore((state) => state.dialog);
@@ -29,7 +31,11 @@ export function DownloadDialog() {
 
       {/* Choosing dialogs fade in and out; they have no dock card to morph from. */}
       <AnimatePresence>
-        {dialog?.kind === "video" ? (
+        {isWebMode() && dialog?.kind === "video" ? (
+          <WebDownloadDialog key="web-download-video" item={{ kind: "video", video: dialog.video }} onClose={close} />
+        ) : isWebMode() && dialog?.kind === "music" ? (
+          <WebDownloadDialog key="web-download-music" item={{ kind: "music", track: dialog.track }} onClose={close} />
+        ) : dialog?.kind === "video" ? (
           <VideoDownloadDialog key="download-video" video={dialog.video} onClose={close} />
         ) : dialog?.kind === "music" ? (
           <MusicDownloadDialog key="download-music" track={dialog.track} onClose={close} />

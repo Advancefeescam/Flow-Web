@@ -67,6 +67,8 @@ import { useNumberPref } from "../../lib/usePreference";
 import { useAppSettingsStore } from "../../store/useAppSettingsStore";
 import { controlsShade, controlsShadeClasses } from "../../lib/player/controlsShade";
 import { watchSeekCollapse } from "../../lib/player/seekCollapse";
+import { isWebMode } from "../../lib/api/env";
+import { webScrubTime } from "../../lib/webPlayback";
 
 export interface FlowPlayerControlsProps {
   title?: string;
@@ -323,6 +325,9 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
   const playheadRef = useRef<HTMLDivElement>(null);
   // Hovered or being dragged: the only time the thumb shows, so the only time it is moved.
   const seekBarActiveRef = useRef(false);
+  const webCommitScrub = isWebMode() && !isLive;
+  const scrubPointerRef = useRef<number | null>(null);
+  const scrubPreviewTimeRef = useRef<number | null>(null);
   const drawSeekBarRef = useRef<() => void>(() => {});
   const currentTimeRef = useRef<HTMLSpanElement>(null);
   const [seekStep] = useNumberPref(SETTINGS.DOUBLE_TAP_SEEK_SECONDS, 10);
@@ -397,7 +402,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
     const updateProgress = () => {
       if (!video?.isConnected) video = container.querySelector("video");
       if (!video) return;
-      const cur = video.currentTime;
+      const cur = webCommitScrub ? scrubPreviewTimeRef.current ?? video.currentTime : video.currentTime;
       // The thumb is scaled to nothing unless the bar is hovered or dragged.
       const playhead = seekBarActiveRef.current ? playheadRef.current : null;
 
@@ -551,7 +556,7 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
   };
 
   useEffect(() => {
-    if (!isScrubbing) return;
+    if (!isScrubbing || webCommitScrub) return;
 
     const handlePointerMove = (e: PointerEvent) => {
       const track = containerRef.current?.querySelector(
@@ -587,7 +592,32 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [isScrubbing, duration, seekTo, setIsScrubbing, containerRef, isLive]);
+  }, [isScrubbing, duration, seekTo, setIsScrubbing, containerRef, isLive, webCommitScrub]);
+
+  // In a browser, dragging over an unbuffered timeline must not start and
+  // abort a new network seek on every pointermove. Draw the preview locally
+  // and seek only once on release; touch uses the same pointer path.
+  const previewWebSeek = (event: React.PointerEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const time = webScrubTime(event.clientX, rect.left, rect.width, duration);
+    if (time === null) return;
+    scrubPreviewTimeRef.current = time;
+    seekBarActiveRef.current = true;
+    drawSeekBarRef.current();
+    updateHoverPreview(event.clientX, event.currentTarget);
+  };
+
+  const finishWebSeek = (event: React.PointerEvent<HTMLDivElement>, commit: boolean) => {
+    if (scrubPointerRef.current !== event.pointerId) return;
+    if (commit) previewWebSeek(event);
+    const target = scrubPreviewTimeRef.current;
+    scrubPointerRef.current = null;
+    scrubPreviewTimeRef.current = null;
+    if (commit && target !== null) seekTo(target);
+    hideHoverPreview();
+    setIsScrubbing(false);
+    drawSeekBarRef.current();
+  };
 
   const handlePointerSeek = (clientX: number) => {
     const track = containerRef.current?.querySelector("[data-progress-track]");
@@ -659,12 +689,28 @@ export const FlowPlayerControls: React.FC<FlowPlayerControlsProps> = ({
               // During a drag the document-level pointermove owns the pill.
               if (!isScrubbing) hideHoverPreview();
             }}
+            style={webCommitScrub ? { touchAction: "none" } : undefined}
+            onPointerDown={(event) => {
+              if (!webCommitScrub || !event.isPrimary || event.button !== 0 || !(duration > 0)) return;
+              event.preventDefault();
+              event.currentTarget.setPointerCapture(event.pointerId);
+              scrubPointerRef.current = event.pointerId;
+              setIsScrubbing(true);
+              previewWebSeek(event);
+            }}
+            onPointerMove={(event) => {
+              if (webCommitScrub && scrubPointerRef.current === event.pointerId) previewWebSeek(event);
+            }}
+            onPointerUp={(event) => finishWebSeek(event, true)}
+            onPointerCancel={(event) => finishWebSeek(event, false)}
+            onLostPointerCapture={(event) => finishWebSeek(event, false)}
             onMouseDown={(event) => {
+              if (webCommitScrub) return;
               setIsScrubbing(true);
               handlePointerSeek(event.clientX);
             }}
-            onMouseUp={() => setIsScrubbing(false)}
-            onClick={(event) => handlePointerSeek(event.clientX)}
+            onMouseUp={() => { if (!webCommitScrub) setIsScrubbing(false); }}
+            onClick={(event) => { if (!webCommitScrub) handlePointerSeek(event.clientX); }}
           >
             {!isLive && (
               <div className={fade}>

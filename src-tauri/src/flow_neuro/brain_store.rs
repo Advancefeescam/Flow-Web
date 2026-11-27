@@ -163,18 +163,27 @@ impl BrainStore {
     }
 
     fn spawn_flush_loop(self: Arc<Self>) {
-        tauri::async_runtime::spawn(async move {
-            let mut ticker = tokio::time::interval(FLUSH_INTERVAL);
-            loop {
-                ticker.tick().await;
-                if !self.flush_is_due(BOOKKEEPING_FLUSH_INTERVAL) {
-                    continue;
-                }
-                if let Err(error) = self.flush().await {
-                    tracing::error!(%error, "[FlowNeuro] failed to flush brain");
-                }
-            }
+        #[cfg(flow_web_headless)]
+        tokio::spawn(async move {
+            self.run_flush_loop().await;
         });
+        #[cfg(not(flow_web_headless))]
+        tauri::async_runtime::spawn(async move {
+            self.run_flush_loop().await;
+        });
+    }
+
+    async fn run_flush_loop(&self) {
+        let mut ticker = tokio::time::interval(FLUSH_INTERVAL);
+        loop {
+            ticker.tick().await;
+            if !self.flush_is_due(BOOKKEEPING_FLUSH_INTERVAL) {
+                continue;
+            }
+            if let Err(error) = self.flush().await {
+                tracing::error!(%error, "[FlowNeuro] failed to flush brain");
+            }
+        }
     }
 }
 

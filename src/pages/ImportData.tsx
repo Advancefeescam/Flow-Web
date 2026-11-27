@@ -4,6 +4,8 @@ import { SettingsGroup } from "../components/settings/SettingsGroup";
 import { SettingItem } from "../components/settings/SettingItem";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { pickFile } from "../lib/dialogs";
+import { isWebMode } from "../lib/api/env";
+import { pickBrowserImportFile } from "../lib/backup/pickBrowserImportFile";
 import { getString } from "../lib/i18n/index";
 import { IMPORT_EVERYTHING, IMPORT_FILE_EXTENSIONS, importFile, type ImportCounts, type ImportSelection, type ImportStage } from "../lib/backup/importFile";
 import { ImportSourceChooser } from "../components/import/ImportSourceChooser";
@@ -23,7 +25,7 @@ export const ImportData: React.FC = () => {
   };
 
   const pickAndImport = async () => {
-    const path = await pickFile(getString("import_select_file"), [{ name: getString("import_supported_formats_title"), extensions: IMPORT_FILE_EXTENSIONS }]);
+    const path = isWebMode() ? await pickBrowserImportFile() : await pickFile(getString("import_select_file"), [{ name: getString("import_supported_formats_title"), extensions: IMPORT_FILE_EXTENSIONS }]);
     if (!path) return;
     setErrorMessage("");
     setCounts(null);
@@ -142,7 +144,7 @@ export const ImportData: React.FC = () => {
         </div>
 
         <div className="col-span-12 space-y-6 lg:col-span-5">
-          <ImportSourceChooser disabled={["reading", "parsing", "saving"].includes(importState)} />
+          {!isWebMode() && <ImportSourceChooser disabled={["reading", "parsing", "saving"].includes(importState)} />}
 
           <SettingsGroup title={getString("import_supported_formats_title")}>
             {formatItems.map((format) => (

@@ -96,6 +96,7 @@ import {
 } from "../../lib/externalAudioSync";
 import { useSubtitleSettingsSync } from "../../lib/useSubtitleSettingsSync";
 import { openPopoutPlayer } from "../../lib/pipHandoff";
+import { isWebMode } from "../../lib/api/env";
 import { sleepTimerTakesEnd } from "../../lib/useSleepTimerDriver";
 import { usePlaybackStartSpeed } from "../../lib/playbackStartSpeed";
 import { VIDEO_FIT_CLASS, VIDEO_FITS } from "../../lib/videoFit";
@@ -1538,6 +1539,18 @@ export const Player: React.FC<PlayerProps> = ({
       setIsFullscreen(false);
       void syncNativeFullscreen(false);
     }
+    if (isWebMode()) {
+      const video = videoRef.current;
+      if (!video) return;
+      if (document.pictureInPictureElement === video) {
+        void document.exitPictureInPicture().catch(() => {});
+      } else if (typeof video.requestPictureInPicture === "function") {
+        void video.requestPictureInPicture().catch(() => enterVideoPip("manual"));
+      } else {
+        enterVideoPip("manual");
+      }
+      return;
+    }
     if (popoutPipEnabled) {
       // Falls back to the in-app mini player if the OS window cannot be opened,
       // rather than leaving the click with nothing to show for it.
@@ -1940,6 +1953,17 @@ export const Player: React.FC<PlayerProps> = ({
         : url;
 
     if (!Hls.isSupported()) {
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = hlsManifestUrl;
+        video.load();
+        if (desiredPlayingRef.current) void video.play().catch(() => {});
+        return () => {
+          if (video.src === hlsManifestUrl) {
+            video.removeAttribute("src");
+            video.load();
+          }
+        };
+      }
       logPlayerEventRef.current("hls-mse-unsupported", { hlsManifestUrl });
       fireRetrySourceRef.current("hls:mse-unsupported");
       return;
@@ -2767,6 +2791,7 @@ export const Player: React.FC<PlayerProps> = ({
       >
       <video
         ref={videoRef}
+        data-flow-main-video
         // Set before src: the equalizer can only read cross-origin audio fetched with CORS.
         crossOrigin="anonymous"
         src={isDashPlayback || isHlsPlayback ? undefined : src || undefined}

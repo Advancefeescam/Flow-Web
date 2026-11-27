@@ -11,7 +11,12 @@ const FALLBACK_LANGUAGE: &str = "en";
 /// The system language, normalized the way Android normalizes `Locale.getDefault().language`.
 #[must_use]
 pub fn system_language() -> String {
+    #[cfg(not(flow_web_headless))]
     let language = tauri_plugin_os::locale()
+        .map(|locale| languages::normalize(&locale))
+        .unwrap_or_default();
+    #[cfg(flow_web_headless)]
+    let language = std::env::var("FLOW_WEB_LANGUAGE")
         .map(|locale| languages::normalize(&locale))
         .unwrap_or_default();
     if language.is_empty() {

@@ -1,4 +1,5 @@
 import { platform } from "@tauri-apps/plugin-os";
+import { isWebMode } from "./api/env";
 
 // Linux renders through WebKitGTK: media decodes via GStreamer, and on machines
 // that needed a startup workaround tier the UI composites on the CPU (see
@@ -7,7 +8,7 @@ import { platform } from "@tauri-apps/plugin-os";
 // player/card behaviors gate on this. WebView2 (Windows) and WKWebView (macOS)
 // are unaffected.
 export const IS_LINUX_RUNTIME =
-  typeof navigator !== "undefined" &&
+  !isWebMode() && typeof navigator !== "undefined" &&
   /Linux/i.test(navigator.userAgent) &&
   !/Android/i.test(navigator.userAgent);
 /**
@@ -26,4 +27,4 @@ export const IS_MACOS_RUNTIME = (() => {
 })();
 
 // Native macOS chrome sits outside the webview's content area.
-export const APP_TITLEBAR_HEIGHT = IS_MACOS_RUNTIME ? 0 : 32;
+export const APP_TITLEBAR_HEIGHT = isWebMode() || IS_MACOS_RUNTIME ? 0 : 32;

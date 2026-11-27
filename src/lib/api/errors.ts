@@ -1,4 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+import { isWebMode } from "./env";
+import { invokeWeb } from "./webTransport";
 
 export interface BackendErrorResponse {
   message: string;
@@ -69,7 +71,7 @@ export async function invokeBackend<T>(
   args?: Record<string, unknown>,
 ): Promise<T> {
   try {
-    return await invoke<T>(command, args);
+    return isWebMode() ? await invokeWeb<T>(command, args) : await invoke<T>(command, args);
   } catch (error) {
     throw normalizeBackendError(error);
   }

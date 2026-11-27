@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { AlertCircle, Check, Loader2, Upload } from "lucide-react";
 import { getString } from "../../lib/i18n/index";
 import { pickFile } from "../../lib/dialogs";
+import { isWebMode } from "../../lib/api/env";
+import { pickBrowserImportFile } from "../../lib/backup/pickBrowserImportFile";
 import {
   IMPORT_EVERYTHING,
   IMPORT_FILE_EXTENSIONS,
@@ -22,7 +24,7 @@ export const ImportStep: React.FC = () => {
 
   const pickAndImport = async () => {
     if (busy) return;
-    const path = await pickFile(getString("import_select_file"), [
+    const path = isWebMode() ? await pickBrowserImportFile() : await pickFile(getString("import_select_file"), [
       { name: getString("import_supported_formats_title"), extensions: IMPORT_FILE_EXTENSIONS },
     ]);
     if (!path) return;

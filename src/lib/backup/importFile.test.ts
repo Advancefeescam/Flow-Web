@@ -10,7 +10,9 @@ const setSettingValue = vi.fn();
 const subscribe = vi.fn();
 const showToast = vi.fn();
 let profilesView: unknown = null;
+const { webMode } = vi.hoisted(() => ({ webMode: { value: false } }));
 
+vi.mock("../api/env", () => ({ isWebMode: () => webMode.value, isTauriEnv: async () => false }));
 vi.mock("../api/backup", () => ({ readBackupFile: (...args: unknown[]) => readBackupFile(...args) }));
 vi.mock("../api/db", () => ({ getSetting: vi.fn(), setSetting: vi.fn(), addWatchRecordsBulk: vi.fn() }));
 vi.mock("../api/recommendation", () => ({
@@ -66,6 +68,7 @@ describe("importFile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     profilesView = null;
+    webMode.value = false;
     importBackupCollections.mockImplementation(async (collections: Record<string, unknown[]>) => summaryOf(collections));
     setSettingValue.mockResolvedValue(true);
   });
@@ -156,5 +159,21 @@ describe("importFile", () => {
     });
 
     expect(stages).toEqual(["reading", "parsing", "saving"]);
+  });
+
+  it("reads a browser-selected legacy JSON file without a server path", async () => {
+    webMode.value = true;
+    const file = new File([JSON.stringify({ schemaVersion: 1, settings: { autoplay_enabled: false } })], "flow.json", { type: "application/json" });
+    const result = await importFile(file, IMPORT_EVERYTHING, () => {});
+    expect(result.type === "done" && result.counts.settings).toBe(1);
+    expect(readBackupFile).not.toHaveBeenCalled();
+  });
+
+  it("rejects a web collection backup before changing data", async () => {
+    webMode.value = true;
+    const file = new File([JSON.stringify({ schemaVersion: 2, settings: {}, collections: COLLECTIONS })], "flow.json");
+    await expect(importFile(file, IMPORT_EVERYTHING, () => {})).rejects.toThrow("collection restore");
+    expect(setSettingValue).not.toHaveBeenCalled();
+    expect(importBackupCollections).not.toHaveBeenCalled();
   });
 });

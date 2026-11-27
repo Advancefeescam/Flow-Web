@@ -1,6 +1,7 @@
 import { ArchiveRestore } from "lucide-react";
 import { getSetting, setSetting, addWatchRecordsBulk } from "../api/db";
 import { readBackupFile, type UnreadableReason } from "../api/backup";
+import { isWebMode } from "../api/env";
 import { bootstrapFromHistory, bootstrapFromSubscriptions, importBrain } from "../api/recommendation";
 import { parseSubscriptionExport } from "../api/youtube";
 import { confirmAction } from "../dialogs";
@@ -94,7 +95,7 @@ interface LocalPlaylist { id: string; name: string; description?: string; tracks
  * is ready to show.
  */
 export async function importFile(
-  path: string,
+  path: string | File,
   selection: ImportSelection,
   onProgress: (progress: ImportProgress) => void,
 ): Promise<ImportFileResult> {
@@ -110,11 +111,18 @@ export async function importFile(
   const counts: ImportCounts = { subscriptions: 0, playlists: 0, history: 0, likes: 0, settings: 0, neuro: false };
 
   report({ stage: "reading", percent: 15, message: getString("import_reading") });
-  const read = await readBackupFile(path);
+  let read: Awaited<ReturnType<typeof readBackupFile>>;
+  if (typeof path === "string") {
+    read = await readBackupFile(path);
+  } else {
+    if (path.size > 16 * 1024 * 1024) throw new Error(getString("import_error_too_large"));
+    if (!/\.(json|xml|opml|csv|txt|html|htm)$/i.test(path.name)) throw new Error(getString("import_file_not_recognized"));
+    read = { type: "text", text: await path.text() };
+  }
   if (read.type === "unreadable") throw new Error(getString(UNREADABLE_MESSAGES[read.reason]));
   if (read.type === "external") {
     report({ stage: "saving", percent: 60, message: getString("import_writing") });
-    const outcome = await runOtherAppImport(read.kind, [path]);
+    const outcome = await runOtherAppImport(read.kind, [path as string]);
     if (outcome.type === "failed") throw new Error(importFailureMessage(outcome.reason));
     counts.subscriptions = outcome.report.subscriptions;
     counts.history = outcome.report.history;
@@ -132,6 +140,11 @@ export async function importFile(
   const isJson = trimmed.startsWith("{") || trimmed.startsWith("[");
   const isHtml = trimmed.toLowerCase().includes("<html") || trimmed.toLowerCase().includes("<!doctype html");
   if (isJson && !backupData) { try { backupData = JSON.parse(text); } catch { if (trimmed.includes("\n")) { backupData = { isFreeTubeHistory: true, rawText: text }; } else { throw new Error(getString("import_error_invalid_json")); } } }
+
+  if (isWebMode() && isJson && backupData && typeof backupData === "object" &&
+    (isProfilesMaster(backupData) || backupData.scope === "MASTER" || backupData.scope === "BRAIN" || "collections" in backupData)) {
+    throw new Error("This Flow backup needs collection restore, which is not available in Flow Web yet.");
+  }
 
   report({ stage: "saving", percent: 60, message: getString("import_writing") });
 

@@ -2,6 +2,10 @@ pub mod botguard;
 pub mod clients;
 pub mod context;
 pub mod gate_tracker;
+#[cfg(not(flow_web_headless))]
+pub(crate) mod hidden_webview;
+#[cfg(flow_web_headless)]
+#[path = "headless_webview.rs"]
 pub(crate) mod hidden_webview;
 pub mod http;
 pub mod locale;

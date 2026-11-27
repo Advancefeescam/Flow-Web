@@ -23,7 +23,7 @@ import type {
   ExploreTarget,
   PostSummary,
 } from "../../types/video";
-import { isTauriEnv } from "./env";
+import { hasBackend } from "./env";
 import {
   BackendApiError,
   getBackendErrorMessage,
@@ -39,7 +39,7 @@ export function getYoutubeErrorMessage(error: unknown): string {
 export async function searchVideos(
   request: SearchVideosRequest,
 ): Promise<SearchVideosResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning curated mock video results.");
     return {
       items: [
@@ -88,12 +88,12 @@ export async function searchVideos(
 }
 
 export async function getOriginalTitle(videoId: string): Promise<string | null> {
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
   return invokeBackend<string | null>("get_original_title", { videoId });
 }
 
 export async function getVideoDetails(videoId: string): Promise<VideoDetails> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock video details.");
     return {
       id: videoId,
@@ -108,7 +108,7 @@ export async function getVideoDetails(videoId: string): Promise<VideoDetails> {
 }
 
 export async function getRelatedVideos(videoId: string): Promise<RelatedPage> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock related content.");
     return {
       items: [
@@ -133,13 +133,13 @@ export async function getRelatedVideos(videoId: string): Promise<RelatedPage> {
 }
 
 export async function getMoreRelatedVideos(continuation: string): Promise<RelatedPage> {
-  if (!(await isTauriEnv())) return { items: [], continuation: null };
+  if (!(await hasBackend())) return { items: [], continuation: null };
   return invokeBackend<RelatedPage>("get_more_related_videos", { continuation });
 }
 
 /** A listed video's length, views, upload date and category, from one small request. */
 export async function getVideoMetadata(videoId: string): Promise<VideoMetadata> {
-  if (!(await isTauriEnv())) throw new Error("Video metadata requires the desktop app.");
+  if (!(await hasBackend())) throw new Error("Video metadata requires the desktop app.");
   return invokeBackend<VideoMetadata>("get_video_metadata", { videoId });
 }
 
@@ -150,23 +150,23 @@ export interface PaidPromotionLabel {
 }
 
 export async function getPaidPromotion(videoId: string): Promise<PaidPromotionLabel | null> {
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
   return invokeBackend<PaidPromotionLabel | null>("get_paid_promotion", { videoId });
 }
 
 export async function getVideoCategory(videoId: string): Promise<string | null> {
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
   return invokeBackend<string | null>("get_video_category", { videoId });
 }
 
 /** Storyboard specification for hover previews and seek thumbnails. */
 export async function getVideoStoryboard(videoId: string): Promise<StoryboardLevel[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<StoryboardLevel[]>("get_video_storyboard", { videoId });
 }
 
 export async function getStreamInfo(videoId: string, refresh = false): Promise<StreamInfo> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning public fallback stream link.");
     return {
       streamId: videoId,
@@ -231,12 +231,12 @@ export interface SabrDebugState {
 export async function getSabrDebugState(
   sessionId: string,
 ): Promise<SabrDebugState | null> {
-  if (!(await isTauriEnv())) return null;
+  if (!(await hasBackend())) return null;
   return invokeBackend<SabrDebugState | null>("get_sabr_debug_state", { sessionId });
 }
 
 export async function getChannelDetails(channelId: string): Promise<ChannelDetails> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock channel details.");
     return {
       id: channelId,
@@ -258,7 +258,7 @@ export async function getChannelDetails(channelId: string): Promise<ChannelDetai
 
 /** A channel's header, tabs and Home shelves, from one request. */
 export async function getChannelPage(channelId: string): Promise<ChannelPage> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     const [details, home] = await Promise.all([getChannelDetails(channelId), getChannelTab(channelId)]);
     return { details, home };
   }
@@ -267,7 +267,7 @@ export async function getChannelPage(channelId: string): Promise<ChannelPage> {
 
 /** A channel's About panel, by the token its header carries. */
 export async function getChannelAbout(token: string): Promise<ChannelAbout> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     throw new Error("The About panel requires the desktop app.");
   }
   return invokeBackend<ChannelAbout>("get_channel_about", { token });
@@ -275,7 +275,7 @@ export async function getChannelAbout(token: string): Promise<ChannelAbout> {
 
 /** Resolve a channel URL (handle / custom / user) to its canonical `UC…` id. */
 export async function resolveChannelId(url: string): Promise<string> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     throw new Error("Channel resolution requires the desktop app.");
   }
   return invokeBackend<string>("resolve_channel_id", { url });
@@ -287,7 +287,7 @@ export async function getChannelTab(
   pageToken?: string | null,
   query?: string | null,
 ): Promise<ChannelTabResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock channel tab data.");
     
     let mockItems: ChannelItem[] = [];
@@ -360,7 +360,7 @@ export async function getPlaylistDetails(
   playlistId: string,
   pageToken?: string | null,
 ): Promise<PlaylistDetailsResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock playlist details.");
     return {
       id: playlistId,
@@ -391,7 +391,7 @@ export async function getPlaylistDetails(
 
 /** A Mix's queue as a playlist. `videoId` seeds a Mix whose id names no video. */
 export async function getMixPlaylist(playlistId: string, videoId?: string | null): Promise<PlaylistDetailsResponse> {
-  if (!(await isTauriEnv())) throw new Error("Mixes require the desktop app.");
+  if (!(await hasBackend())) throw new Error("Mixes require the desktop app.");
   return invokeBackend<PlaylistDetailsResponse>("get_mix_playlist", { playlistId, videoId: videoId ?? null });
 }
 
@@ -399,7 +399,7 @@ export async function getComments(
   videoId: string,
   pageToken?: string | null,
 ): Promise<CommentsResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock comments.");
     return {
       comments: [
@@ -424,13 +424,13 @@ export async function getComments(
 
 /** A Short's comments, through its reel's comment panel when it has one. */
 export async function getShortComments(videoId: string, pageToken?: string | null): Promise<CommentsResponse> {
-  if (!(await isTauriEnv())) return getComments(videoId, pageToken);
+  if (!(await hasBackend())) return getComments(videoId, pageToken);
   return invokeBackend<CommentsResponse>("get_short_comments", { videoId, pageToken });
 }
 
 /** YouTube's Timed list for a video, from the token of its comment section's Newest order. */
 export async function getTimedComments(videoId: string, sectionToken: string): Promise<Comment[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<Comment[]>("get_timed_comments", { videoId, sectionToken });
 }
 
@@ -439,7 +439,7 @@ export async function getPostComments(
   params?: string | null,
   pageToken?: string | null,
 ): Promise<CommentsResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock post comments.");
     return {
       comments: [
@@ -470,7 +470,7 @@ export async function getLiveChat(
   continuation?: string | null,
   replayOffsetMs?: number | null,
 ): Promise<LiveChatResponse> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock live chat.");
     return { messages: [], continuation: null, pollingIntervalMs: 0, isReplay: false };
   }
@@ -483,13 +483,13 @@ export async function getLiveChat(
 
 /** One of Explore's destinations in `region`. */
 export async function getExploreDestination(destination: ExploreDestinationId, region: string): Promise<ExplorePage> {
-  if (!(await isTauriEnv())) return { title: null, tabs: [], shelves: [] };
+  if (!(await hasBackend())) return { title: null, tabs: [], shelves: [] };
   return invokeBackend<ExplorePage>("get_explore_destination", { destination, region });
 }
 
 /** A destination's tab, by the target its page named. */
 export async function getExplorePage(target: ExploreTarget, region: string): Promise<ExplorePage> {
-  if (!(await isTauriEnv())) return { title: null, tabs: [], shelves: [] };
+  if (!(await hasBackend())) return { title: null, tabs: [], shelves: [] };
   return invokeBackend<ExplorePage>("get_explore_page", { target, region });
 }
 
@@ -499,19 +499,19 @@ export async function getExploreGrid(
   continuation: string | null,
   region: string,
 ): Promise<ExploreGrid> {
-  if (!(await isTauriEnv())) return { videos: [], continuation: null };
+  if (!(await hasBackend())) return { videos: [], continuation: null };
   return invokeBackend<ExploreGrid>("get_explore_grid", { target, continuation, region });
 }
 
 /** Suggestions for `query`; `region` is the viewer's two-letter country code. */
 /** Opens the suggest host's connection so the first keystroke doesn't wait for one. */
 export async function warmSearchSuggestions(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("warm_search_suggestions");
 }
 
 export async function getSearchSuggestions(query: string, region?: string | null): Promise<SearchSuggestion[]> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock suggestions.");
     return ["tutorial", "crash course", "setup guide"].map((tail) => ({ text: `${query} ${tail}`, entity: null }));
   }
@@ -521,7 +521,7 @@ export async function getSearchSuggestions(query: string, region?: string | null
 export async function parseSubscriptionExport(
   data: string,
 ): Promise<[string, string][]> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock parsed subscriptions.");
     return [
       ["UCsBjURrdU234nU351gVEfTA", "Fireship"],
@@ -533,12 +533,12 @@ export async function parseSubscriptionExport(
 
 /** Videos refused for good (members-only, private, blocked here...) when they were opened. */
 export async function getUnplayableVideoIds(): Promise<string[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<string[]>("get_unplayable_video_ids");
 }
 
 export async function getSubscriptionRotationFeed(): Promise<VideoSummary[]> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning empty subscriptions rotation.");
     return [];
   }
@@ -564,7 +564,7 @@ export async function getSubscriptionRssFeed(
   channelIds: string[],
   limit = 1500,
 ): Promise<SubscriptionRssFeed> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Returning mock subscription RSS feed.");
     return {
       videos: channelIds.slice(0, 4).map((channelId, index) => ({
@@ -603,7 +603,7 @@ export async function getSubscriptionRssFeed(
  */
 /** Collaborations of the followed channels; a few more channels are looked at on each call. */
 export async function scanSubscriptionCollaborations(channelIds: string[]): Promise<VideoSummary[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<VideoSummary[]>("scan_subscription_collaborations", { channelIds });
 }
 
@@ -641,7 +641,7 @@ export async function getSubscriptionPosts(
   recentUploaderIds: string[],
   page: number,
 ): Promise<SubscriptionPostsPage> {
-  if (!(await isTauriEnv())) return { posts: [], nextPage: null };
+  if (!(await hasBackend())) return { posts: [], nextPage: null };
   const result = await invokeBackend<WirePostsPage>("get_subscription_posts", {
     channels,
     recentUploaderIds,
@@ -655,7 +655,7 @@ export async function getSubscriptionPosts(
 
 /** Forgets every channel's cached posts, so the next page reads each channel again. */
 export async function forgetSubscriptionPosts(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("forget_subscription_posts");
 }
 
@@ -664,7 +664,7 @@ export async function streamSubscriptionRssFeed(
   onBatch: (feed: SubscriptionRssFeed) => void,
   limit = 1500,
 ): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     onBatch(await getSubscriptionRssFeed(channelIds, limit));
     return;
   }

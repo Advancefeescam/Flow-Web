@@ -1,3 +1,4 @@
+import { isWebMode } from "../../lib/api/env";
 import { getString } from "../../lib/i18n/index";
 import { Copy, Minus, Square, X } from "lucide-react";
 import { IS_MACOS_RUNTIME } from "../../lib/platform";
@@ -11,6 +12,10 @@ function cx(...classes: Array<string | false | null | undefined>) {
 }
 
 export function TitleBar() {
+  return isWebMode() ? null : <DesktopTitleBar />;
+}
+
+function DesktopTitleBar() {
   const { text, section } = useResolvedWindowTitle();
   const { isMaximized, isFullscreen, minimize, toggleMaximize, close } = useWindowControls();
   useNativeWindowTitle(text || getString('app_name'));

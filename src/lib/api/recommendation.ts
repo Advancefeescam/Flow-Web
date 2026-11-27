@@ -1,7 +1,7 @@
 import type { MusicTasteProfile } from "../../types/music";
 import type { VideoSummary } from "../../types/video";
 import { isDeepFlowCurrentlyActive } from "../deepFlow";
-import { isTauriEnv } from "./env";
+import { hasBackend } from "./env";
 import { invokeBackend } from "./errors";
 import { profileStorage } from "../storage/profileStorage";
 
@@ -33,7 +33,7 @@ export interface RecommendationEvent {
 }
 
 export async function getRecommendationEvents(limit = 50): Promise<RecommendationEvent[]> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     return [];
   }
   return invokeBackend<RecommendationEvent[]>("get_recommendation_events", { limit });
@@ -53,7 +53,7 @@ export async function logInteraction(
 ): Promise<void> {
   if (isDeepFlowCurrentlyActive()) return;
 
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock Log] ${interactionType} - ${title} (${percentWatched * 100}%)`);
     return;
   }
@@ -88,13 +88,13 @@ export interface WatchReport {
 
 /** Feeds the backend watch session. It turns a whole viewing into one click and one watch or skip. */
 export async function reportWatchProgress(report: WatchReport): Promise<void> {
-  if (isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   return invokeBackend<void>("report_watch_progress", { report });
 }
 
 /** `natural` is a video that played to its end; any other end waits briefly for the video to resume. */
 export async function endWatchSession(report: WatchReport, natural: boolean): Promise<void> {
-  if (isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   return invokeBackend<void>("end_watch_session", { report, natural });
 }
 
@@ -110,7 +110,7 @@ export async function markNotInterested(
 ): Promise<void> {
   if (isDeepFlowCurrentlyActive()) return;
 
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Not interested - ${title}`);
     return;
   }
@@ -128,13 +128,13 @@ export async function markNotInterested(
 
 /** Cards seen beside a video, kept only for "Hide videos you've already seen". */
 export async function recordSeenVideos(ids: string[]): Promise<void> {
-  if (isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   return invokeBackend<void>("record_seen_videos", { ids });
 }
 
 /** Which of these videos were already seen in a recommendation list. */
 export async function seenVideoIdsAmong(ids: string[]): Promise<string[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<string[]>("seen_video_ids_among", { ids });
 }
 
@@ -143,14 +143,14 @@ export async function recordFeedImpressions(
 ): Promise<void> {
   if (isDeepFlowCurrentlyActive()) return;
 
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     return;
   }
   return invokeBackend<void>("record_feed_impressions", { videos });
 }
 
 export async function completeOnboarding(preferred: string[]): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.warn("Tauri not detected. Setting onboarding complete in local storage.");
     profileStorage.setItem("mock_setting_onboarded", "true");
     profileStorage.setItem("mock_setting_preferred_topics", JSON.stringify(preferred));
@@ -160,7 +160,7 @@ export async function completeOnboarding(preferred: string[]): Promise<void> {
 }
 
 export async function getOnboardingStatus(): Promise<boolean> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     const status = profileStorage.getItem("mock_setting_onboarded") === "true";
     console.log("[FlowNeuro Mock Onboarding Status Check]", status);
     return status;
@@ -169,7 +169,7 @@ export async function getOnboardingStatus(): Promise<boolean> {
 }
 
 export async function getFlowPersona(): Promise<PersonaDetails> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     const preferred = profileStorage.getItem("mock_setting_preferred_topics");
     const topics: string[] = preferred ? JSON.parse(preferred) : [];
     
@@ -315,7 +315,7 @@ export async function getBrainSnapshot(forceRefresh?: boolean): Promise<UserBrai
     return brainCache;
   }
 
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     const preferred = profileStorage.getItem("mock_setting_preferred_topics");
     const brain = emptyBrain();
     brain.preferred_topics = preferred ? JSON.parse(preferred) : [];
@@ -332,7 +332,7 @@ export async function getBrainSnapshot(forceRefresh?: boolean): Promise<UserBrai
 
 /** A typed search is the most explicit interest statement there is; it teaches the engine once. */
 export async function learnFromSearch(query: string): Promise<void> {
-  if (!query.trim() || isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (!query.trim() || isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   await invokeBackend<boolean>("learn_from_search", { query });
   brainCache = null;
 }
@@ -343,13 +343,13 @@ export async function noteSubscription(
   channelName: string,
   subscribed: boolean,
 ): Promise<void> {
-  if (isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   await invokeBackend<void>("note_subscription", { channelId, channelName, subscribed });
 }
 
 /** Upload titles a feed already fetched say what each channel is about. */
 export async function observeChannelUploads(uploads: VideoSummary[]): Promise<void> {
-  if (uploads.length === 0 || isDeepFlowCurrentlyActive() || !(await isTauriEnv())) return;
+  if (uploads.length === 0 || isDeepFlowCurrentlyActive() || !(await hasBackend())) return;
   await invokeBackend<void>("observe_channel_uploads", { uploads });
 }
 
@@ -366,7 +366,7 @@ export interface ImportedVideo {
 
 /** Learns gently from an imported history: newest first, no music, capped per channel. */
 export async function bootstrapFromHistory(videos: ImportedVideo[]): Promise<number> {
-  if (videos.length === 0 || !(await isTauriEnv())) return 0;
+  if (videos.length === 0 || !(await hasBackend())) return 0;
   const learned = await invokeBackend<number>("bootstrap_from_history", { videos });
   brainCache = null;
   return learned;
@@ -374,7 +374,7 @@ export async function bootstrapFromHistory(videos: ImportedVideo[]): Promise<num
 
 /** Seeds topics from imported subscription names when the brain has not learned yet. */
 export async function bootstrapFromSubscriptions(channelNames: string[]): Promise<number> {
-  if (channelNames.length === 0 || !(await isTauriEnv())) return 0;
+  if (channelNames.length === 0 || !(await hasBackend())) return 0;
   const seeded = await invokeBackend<number>("bootstrap_from_subscriptions", { channelNames });
   brainCache = null;
   return seeded;
@@ -382,13 +382,13 @@ export async function bootstrapFromSubscriptions(channelNames: string[]): Promis
 
 /** Makes an imported brain the engine's own; the backend checks it and converts its keys. */
 export async function importBrain(brain: unknown): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("import_brain", { brain });
   brainCache = null;
 }
 
 export async function unblockTopic(topic: string): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Unblocking topic: ${topic}`);
     if (brainCache) {
       brainCache.blocked_topics = brainCache.blocked_topics.filter(t => t !== topic);
@@ -402,7 +402,7 @@ export async function unblockTopic(topic: string): Promise<void> {
 export async function addBlockedTopic(topic: string): Promise<void> {
   const normalized = topic.trim().toLowerCase();
   if (!normalized) return;
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Blocking topic: ${normalized}`);
     if (brainCache) {
       brainCache.blocked_topics = [...new Set([...brainCache.blocked_topics, normalized])];
@@ -419,7 +419,7 @@ export async function addBlockedTopic(topic: string): Promise<void> {
 export async function addPreferredTopic(topic: string): Promise<void> {
   const trimmed = topic.trim();
   if (!trimmed) return;
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Adding preferred topic: ${trimmed}`);
     if (brainCache) {
       brainCache.preferred_topics = [...new Set([...brainCache.preferred_topics, trimmed])];
@@ -441,7 +441,7 @@ export async function addPreferredTopic(topic: string): Promise<void> {
 export async function removePreferredTopic(topic: string): Promise<void> {
   const normalized = topic.trim().toLowerCase();
   if (!normalized) return;
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Removing preferred topic: ${topic}`);
     if (brainCache) {
       brainCache.preferred_topics = brainCache.preferred_topics.filter(
@@ -456,7 +456,7 @@ export async function removePreferredTopic(topic: string): Promise<void> {
 }
 
 export async function unblockChannel(channelId: string): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Unblocking channel: ${channelId}`);
     if (brainCache) {
       brainCache.blocked_channels = brainCache.blocked_channels.filter(c => c !== channelId);
@@ -469,7 +469,7 @@ export async function unblockChannel(channelId: string): Promise<void> {
 
 /** Blocks a channel; its name is kept so Hidden channels can show it without a lookup. */
 export async function blockChannel(channelId: string, channelName?: string): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Blocking channel: ${channelId}`);
     return;
   }
@@ -478,7 +478,7 @@ export async function blockChannel(channelId: string, channelName?: string): Pro
 }
 
 export async function resetBrain(): Promise<void> {
-  if (!(await isTauriEnv())) {
+  if (!(await hasBackend())) {
     console.log(`[FlowNeuro Mock] Resetting brain`);
     profileStorage.removeItem("mock_setting_onboarded");
     profileStorage.removeItem("mock_setting_preferred_topics");
@@ -530,29 +530,29 @@ export interface NeighbourChannel {
 }
 
 export async function getNeighbourChannels(): Promise<NeighbourChannel[]> {
-  if (!(await isTauriEnv())) return [];
+  if (!(await hasBackend())) return [];
   return invokeBackend<NeighbourChannel[]>("get_neighbour_channels");
 }
 
 /** Home stops drawing on the channel until the viewer watches it again. */
 export async function forgetRememberedChannel(channelId: string): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("forget_remembered_channel", { channelId });
 }
 
 /** Forgets every channel watched often; channels turned down stay turned down. */
 export async function clearChannelMemory(): Promise<void> {
-  if (!(await isTauriEnv())) return;
+  if (!(await hasBackend())) return;
   await invokeBackend<void>("clear_channel_memory");
 }
 
 /** Names of hidden channels this device does not know, from their RSS feeds. */
 export async function resolveHiddenChannelNames(channelIds: string[]): Promise<Record<string, string>> {
-  if (channelIds.length === 0 || !(await isTauriEnv())) return {};
+  if (channelIds.length === 0 || !(await hasBackend())) return {};
   return invokeBackend<Record<string, string>>("resolve_hidden_channel_names", { channelIds });
 }
 
 export async function getTasteOverview(): Promise<TasteOverview> {
-  if (!(await isTauriEnv())) return { picks: [], groups: [], hiddenChannels: [], rememberedChannels: [] };
+  if (!(await hasBackend())) return { picks: [], groups: [], hiddenChannels: [], rememberedChannels: [] };
   return invokeBackend<TasteOverview>("get_taste_overview");
 }

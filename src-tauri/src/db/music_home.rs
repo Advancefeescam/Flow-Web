@@ -47,7 +47,13 @@ mod tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
+        #[cfg(not(flow_web_headless))]
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+        #[cfg(flow_web_headless)]
+        sqlx::migrate!("../src-tauri/migrations")
+            .run(&pool)
+            .await
+            .unwrap();
         let page = MusicHomePage {
             chips: Vec::new(),
             sections: Vec::new(),

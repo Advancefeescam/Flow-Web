@@ -6,6 +6,7 @@ import { SettingItem } from '../SettingItem';
 import { Button } from '../../ui/Button';
 import { usePreference } from '../../../lib/usePreference';
 import { saveBackupFile } from '../../../lib/backup/exportFile';
+import { isWebMode } from '../../../lib/api/env';
 import type { BackupFileKind } from '../../../lib/api/backup';
 import { getPlural, getString } from '../../../lib/i18n/index';
 import { AutoBackupGroup } from './AutoBackupGroup';
@@ -70,7 +71,7 @@ export function DataTab() {
 
   return (
     <div className="space-y-6 pb-8">
-      <AutoBackupGroup />
+      {!isWebMode() && <AutoBackupGroup />}
 
       <SettingsGroup title={getString('settings_group_database')}>
         <SettingItem title={getString('settings_history_records')}><span className="text-sm font-mono text-chrome-neutral-100">{historyCount}</span></SettingItem>
@@ -84,9 +85,11 @@ export function DataTab() {
         <SettingItem title={getString('settings_diagnostics')} description={getString('settings_diagnostics_desc')}>
           <Button variant="secondary" size="sm" onClick={() => navigate('/settings/diagnostics')}><FileText size={14} />{getString('settings_open')}</Button>
         </SettingItem>
-        <SettingItem title={getString('settings_export_data')} description={getString('settings_export_data_desc')}>
-          <Button variant="secondary" size="sm" onClick={() => handleExport(backupType as BackupFileKind, getString('settings_export_data'))}><Download size={14} />{getString('settings_export')}</Button>
-        </SettingItem>
+        {!isWebMode() && (
+          <SettingItem title={getString('settings_export_data')} description={getString('settings_export_data_desc')}>
+            <Button variant="secondary" size="sm" onClick={() => handleExport(backupType as BackupFileKind, getString('settings_export_data'))}><Download size={14} />{getString('settings_export')}</Button>
+          </SettingItem>
+        )}
         <SettingItem title={getString('settings_export_history')} description={getString('settings_export_history_desc')}>
           <Button variant="secondary" size="sm" onClick={() => handleExport('WATCH_HISTORY', getString('settings_export_history'))}><Download size={14} />{getString('settings_export')}</Button>
         </SettingItem>

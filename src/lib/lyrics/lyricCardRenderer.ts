@@ -247,7 +247,12 @@ function drawMesh(ctx: CanvasRenderingContext2D, mesh: Uint8ClampedArray, x: num
   const field = document.createElement("canvas");
   field.width = MESH_SIZE;
   field.height = MESH_SIZE;
-  field.getContext("2d")?.putImageData(new ImageData(new Uint8ClampedArray(mesh), MESH_SIZE, MESH_SIZE), 0, 0);
+  const fieldContext = field.getContext("2d");
+  if (fieldContext) {
+    const image = fieldContext.createImageData(MESH_SIZE, MESH_SIZE);
+    image.data.set(mesh);
+    fieldContext.putImageData(image, 0, 0);
+  }
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   const aspect = width / height;
